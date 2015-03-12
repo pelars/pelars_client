@@ -26,7 +26,7 @@ struct timespec orwl_gettime(void) {
 #else
 
 #include <time.h>
-struct timespec orwl_gettime(void) {
+inline struct timespec orwl_gettime(void) {
   struct timespec t;
   clock_gettime(CLOCK_MONOTONIC,&t);
   return t;

@@ -2,6 +2,13 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/contrib/contrib.hpp>
 #include <boost/network/protocol/http/client.hpp>
+#include "kinect_grabber.h"
+#include "data_writer.h"
+#include <iostream>
+#include "alttime.h"
+#include "ompparallelFor.h"
+#include <json/json.h>
+
 
 // Draw the Linemod results
 void drawResponse(const std::vector<cv::linemod::Template>& templates,
@@ -16,3 +23,6 @@ struct result_t
   cv::linemod::Match m;
   struct timespec end;
 };
+
+
+int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & websocket, int session);
