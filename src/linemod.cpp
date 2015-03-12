@@ -38,7 +38,7 @@ cv::Ptr<cv::linemod::Detector> readLinemod(const std::string& filename)
 
 int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & websocket, int session)
 {
-
+  std::cout << "starting" << std::endl;
   // Some matching parameters for linemod
   short matching_threshold = 85;
   short learning_lower_bound = 90;

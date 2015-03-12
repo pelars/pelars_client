@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "libfreenect.h"
+ #include <iostream>
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 
@@ -78,11 +79,12 @@ int main(int argc, char** argv)
 	signal(SIGTERM, signalHandler);
 	signal(SIGQUIT, signalHandler);
 
+	boost::interprocess::shared_memory_object shm_obj(boost::interprocess::open_or_create, "region", boost::interprocess::read_write);
+	shm_obj.truncate(640 * 480 * 6 + 4); 
+   	boost::interprocess::mapped_region region(shm_obj, boost::interprocess::read_write);
 
-   boost::interprocess::shared_memory_object shm_obj(boost::interprocess::open_or_create, "region", boost::interprocess::read_write);
-   boost::interprocess::mapped_region region(shm_obj, boost::interprocess::read_write);
-   common = (unsigned char *)region.get_address();
-   if(!common)
+   	common = (unsigned char *)region.get_address();
+   	if(!common)
    {
    	printf("cannot map\n");
    	return -1;
