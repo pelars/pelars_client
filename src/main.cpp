@@ -60,10 +60,11 @@ int main(int argc, char * argv[])
   std::cout << "moongoose ready" << std::endl;
 
   // Starting the linemod thread
-  std::cout << "starting thread" << std::endl;
-  thread_list[1] = std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session);
-  std::cout << "started" << std::endl;
-  thread_list[1].join();
+  std::thread linemod(std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session));
+  thread_list[0].swap(linemod);
+  
+  for(auto &thread : thread_list)
+    thread.join();
 
   // Terminate everything and exit
   // Stopping the kinect grabber

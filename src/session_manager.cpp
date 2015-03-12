@@ -30,6 +30,7 @@ int SessionManager::getNewSession()
 
 	// Clear the string stream
 	string_stream_.str(std::string());
+	return session_;
 }
 
 void SessionManager::closeSession(int session)

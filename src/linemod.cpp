@@ -101,14 +101,12 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
   //Main loop. Executes until 'q' is pressed or there is an error with the kinect acquisition.
   for(;;)
   {
-    std::cout << "getting data" << std::endl;
     // Acquire depth and color images from the kinect and prepare them for linemod
     if(!kme.get(color, depth))
     {
       std::cout << "failed to fetch data from the kinect\n";
       break;
     }
-    std::cout << "got data" << std::endl;
     sources.push_back(color);
     sources.push_back(depth);
     display = color.clone();
@@ -146,8 +144,8 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
             t.end = orwl_gettime();
             results[i].push_back(t);
           }
-          else
-            std::cout << "bad quality for obj: " << i << " with similarity: " << m.similarity << std::endl;
+          //else
+            //std::cout << "bad quality for obj: " << i << " with similarity: " << m.similarity << std::endl;
         }
       }
     };
@@ -185,7 +183,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
         // Json message
         root["obj"]["type"] = "object";
         root["obj"]["session"] = session;
-        root["obj"]["id"] = j;
+        root["obj"]["id"] = i;
         root["obj"]["x"] = m.x; // (m.x - center_x_depth) * dz / focal_x_depth;
         root["obj"]["y"] = m.y; // (m.y - center_y_depth) * dz / focal_y_depth;
         root["obj"]["z"] = dz;
@@ -204,7 +202,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
     end = orwl_gettime();
     matching_time = (end.tv_sec - begin.tv_sec);
     matching_time += (end.tv_nsec - begin.tv_nsec) / 1000000000.0;
-    std::cout << "total matching time " << matching_time << std::endl;
+    //std::cout << "total matching time " << matching_time << std::endl;
     
     // Get min and max values of the depth map and convert it to grayscale
     cv::minMaxIdx(depth, &min, &max);
