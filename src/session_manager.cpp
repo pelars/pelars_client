@@ -19,17 +19,17 @@ int SessionManager::getNewSession()
 	do
 	{
 		session_ = rand();
-		std::cout << "asking for session id " << session_ << std::endl;
+		std::cout << "Requesting session id " << session_ << std::endl;
 
 		boost::network::http::client::request request(endpoint_ + session_endpoint_data_ + std::to_string(session_));
 		response_ = client_.get(request);
 		string_stream_ << body(response_);
 		session_manager_response_ = string_stream_.str();
-
+		std::cout << "got response " << session_manager_response_  << std::endl;
+		string_stream_.str(std::string());
 	}while(!session_manager_response_.compare("open"));
-
 	// Clear the string stream
-	string_stream_.str(std::string());
+	std::cout << "Got session id " << session_ << std::endl;
 	return session_;
 }
 

@@ -11,7 +11,7 @@ KinectManagerExchange::KinectManagerExchange(): shm_obj_(boost::interprocess::op
 	boost::interprocess::mapped_region r(shm_obj_, boost::interprocess::read_write);
 	r.swap(region_);
 	common_ = (unsigned char *)region_.get_address();
-	std::cout << "shared pointer is " << common_ << std::endl;
+	std::cout << "shared pointer is " << region_.get_address() << std::endl;
 }
 
 void KinectManagerExchange::stop() 
@@ -26,6 +26,74 @@ void KinectManagerExchange::start()
 {
   //std::thread t(&KinectManagerExchange::subhandler,this);
   //manager.swap(t);
+}
+
+bool KinectManagerExchange::getColorRGB(cv::Mat & color)
+{
+	static int lastframe = -2;
+	while(true)
+	{
+		int frame = *(int*)common_;
+		if(frame == lastframe)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			continue;
+		}
+		lastframe = frame;
+		break;
+	}
+
+	color.create(480, 640, CV_8UC3);                
+	int k1 = 3 * 640 * 480;
+	memcpy(color.data, common_ + 4, k1);
+	cv::cvtColor(color, color, CV_BGR2RGB); //this will put colors right
+
+	return true;
+}
+
+bool KinectManagerExchange::getColorBGR(cv::Mat & color)
+{
+	static int lastframe = -2;
+	while(true)
+	{
+		int frame = *(int*)common_;
+		if(frame == lastframe)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			continue;
+		}
+		lastframe = frame;
+		break;
+	}
+
+	color.create(480, 640, CV_8UC3);                
+	int k1 = 3 * 640 * 480;
+	memcpy(color.data, common_ + 4, k1);
+
+	return true;
+}
+
+bool KinectManagerExchange::getColorGRAY(cv::Mat & color)
+{
+	static int lastframe = -2;
+	while(true)
+	{
+		int frame = *(int*)common_;
+		if(frame == lastframe)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			continue;
+		}
+		lastframe = frame;
+		break;
+	}
+
+	color.create(480, 640, CV_8UC3);                
+	int k1 = 3 * 640 * 480;
+	memcpy(color.data, common_ + 4, k1);
+	cv::cvtColor(color, color, CV_BGR2GRAY); //this will put colors right
+
+	return true;
 }
 
 bool KinectManagerExchange::get(cv::Mat & color, cv::Mat & depth)

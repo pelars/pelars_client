@@ -3,6 +3,7 @@
 #include "kinect_grabber.h"
 #include "linemod.h"
 #include "session_manager.h"
+#include "face_detector.h"
 #include <thread>
 
 int main(int argc, char * argv[])
@@ -22,7 +23,7 @@ int main(int argc, char * argv[])
     return -1;
   }
 
-  std::vector<std::thread> thread_list(1);
+  std::vector<std::thread> thread_list(2);
 
   //Keep aliver
   std::thread ws_writer(asiothreadfx);
@@ -34,6 +35,8 @@ int main(int argc, char * argv[])
   KinectManagerExchange kme;
   kme.start();
 
+
+
   // Check the endpoint string and connect to the collector
   // TODO if connection fails exit
   std::string end_point = argc < 3 ? "http://127.0.0.1:8080/pelars/" : argv[2];  //http://10.100.34.226:8080/pelars/
@@ -44,8 +47,9 @@ int main(int argc, char * argv[])
 
   // Check the endpoint string and connect to the session manager
   // TODO if connection fails exit
-  std::string session_endpoint = end_point + "Sessionmanager";
-  std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;;
+  //std::string session_endpoint = end_point + "Sessionmanager";
+  std::string session_endpoint = "http://127.0.0.1:8080/networkmanager/Localsessionmanager";
+  std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;
 
   //Creating a Session Manager and getting a newsession ID
   SessionManager sm(session_endpoint);
@@ -59,14 +63,20 @@ int main(int argc, char * argv[])
   std::thread mg_thread(serve, webserver);
   std::cout << "moongoose ready" << std::endl;
 
+  // Create face detector
+  FaceDetector face_detector(session);
+
   // Starting the linemod thread
-  std::thread linemod(std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session));
-  thread_list[0].swap(linemod);
+  thread_list[0] = std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session);
+  thread_list[1] = std::thread(&FaceDetector::detect, &face_detector, std::ref(kme), std::ref(collector));
   
   for(auto &thread : thread_list)
     thread.join();
 
+
   // Terminate everything and exit
+  // Close session
+  sm.closeSession(session);
   // Stopping the kinect grabber
   kme.stop();
   // Stopping the websocket
