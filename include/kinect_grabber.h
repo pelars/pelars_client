@@ -18,6 +18,12 @@ public:
 
   bool get(cv::Mat & color, cv::Mat & depth);
 
+  bool getColorRGB(cv::Mat & color);
+
+  bool getColorBGR(cv::Mat & color);
+
+  bool getColorGRAY(cv::Mat & color);
+
 
 private:
   

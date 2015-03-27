@@ -2,6 +2,8 @@
 #include <boost/network/protocol/http/client.hpp>
 #include <string>
 
+extern bool to_stop;
+
 class SessionManager {
 
 public:

@@ -6,6 +6,10 @@
 #include "face_detector.h"
 #include <thread>
 
+// To stop all the threads if one receives a stop signal
+bool to_stop = false;
+bool online = true;
+
 int main(int argc, char * argv[])
 {
   // Check correct number of input arguments
@@ -23,9 +27,10 @@ int main(int argc, char * argv[])
     return -1;
   }
 
+  // Standard vector containing the different threads
   std::vector<std::thread> thread_list(2);
 
-  //Keep aliver
+  // Keep aliver
   std::thread ws_writer(asiothreadfx);
 
   // Start time
@@ -35,20 +40,21 @@ int main(int argc, char * argv[])
   KinectManagerExchange kme;
   kme.start();
 
-
-
   // Check the endpoint string and connect to the collector
   // TODO if connection fails exit
-  std::string end_point = argc < 3 ? "http://127.0.0.1:8080/pelars/" : argv[2];  //http://10.100.34.226:8080/pelars/
+  //std::string end_point = argc < 3 ? "http://127.0.0.1:8080/pelars/" : argv[2];  //http://10.100.34.226:8080/pelars/
+  std::string end_point = argc < 3 ? "http://127.0.0.1:8080/networkmanager/" : argv[2];
   end_point = end_point.back() == '/' ? end_point : end_point + "/";
   DataWriter collector(end_point + "Collector");
+  //DataWriter collector(end_point + "Localcollector");
   std::cout << "WebServer endpoint : " << end_point << std::endl;
   std::cout << "Collector endpoint : " << end_point + "Collector" << std::endl;
+  //std::cout << "Collector endpoint : " << end_point + "Localcollector" << std::endl;
 
   // Check the endpoint string and connect to the session manager
   // TODO if connection fails exit
-  //std::string session_endpoint = end_point + "Sessionmanager";
-  std::string session_endpoint = "http://127.0.0.1:8080/networkmanager/Localsessionmanager";
+  std::string session_endpoint = end_point + "Sessionmanager";
+  //std::string session_endpoint = "http://127.0.0.1:8080/networkmanager/Localsessionmanager";
   std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;
 
   //Creating a Session Manager and getting a newsession ID
@@ -63,16 +69,13 @@ int main(int argc, char * argv[])
   std::thread mg_thread(serve, webserver);
   std::cout << "moongoose ready" << std::endl;
 
-  // Create face detector
-  FaceDetector face_detector(session);
-
   // Starting the linemod thread
   thread_list[0] = std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session);
-  thread_list[1] = std::thread(&FaceDetector::detect, &face_detector, std::ref(kme), std::ref(collector));
-  
+  thread_list[1] = std::thread(detectFaces, std::ref(collector), session);
+
+  // Wait for the termination of all threads
   for(auto &thread : thread_list)
     thread.join();
-
 
   // Terminate everything and exit
   // Close session

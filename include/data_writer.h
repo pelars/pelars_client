@@ -7,6 +7,7 @@
 #include <sstream>
 #include <fstream>
 
+extern bool online;
 
 class DataWriter
 {

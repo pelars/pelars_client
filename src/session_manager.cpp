@@ -16,22 +16,34 @@ int SessionManager::getNewSession()
 {
 	// Continue sending possible session id's until a good one is found and the session manager gives a positive answer
     // TODO Make some other check on the session manager liveness and on the time spent asking for a session
+    bool error = false;
 	do
 	{
 		session_ = rand();
 		std::cout << "Requesting session id " << session_ << std::endl;
-
-		boost::network::http::client::request request(endpoint_ + session_endpoint_data_ + std::to_string(session_));
-		response_ = client_.get(request);
-		string_stream_ << body(response_);
-		session_manager_response_ = string_stream_.str();
-		std::cout << "got response " << session_manager_response_  << std::endl;
-		string_stream_.str(std::string());
-	}while(!session_manager_response_.compare("open"));
+		try{
+			boost::network::http::client::request request(endpoint_ + session_endpoint_data_ + std::to_string(session_));
+			response_ = client_.get(request);
+			string_stream_ << body(response_);
+			session_manager_response_ = string_stream_.str();
+			std::cout << "got response " << session_manager_response_  <<std::endl;
+			session_manager_response_.erase(std::remove(session_manager_response_.begin(), session_manager_response_.end(), '\n'), session_manager_response_.end());
+			string_stream_.str(std::string());
+		}
+		catch (std::exception& e){
+			std::cout << "Error in during the session request: " << e.what()  << std::endl;
+			error = true;
+			to_stop = true;
+			break;
+		}
+		
+	}while(session_manager_response_.compare("open") != 0);
 	// Clear the string stream
-	std::cout << "Got session id " << session_ << std::endl;
+	if (!error)
+		std::cout << "Got session id " << session_ << std::endl;
 	return session_;
 }
+
 
 void SessionManager::closeSession(int session)
 {
@@ -45,6 +57,6 @@ void SessionManager::closeSession(int session)
 	response_ = client_.get(request_);
 	string_stream_ << body(response_);
 	std::string client_response_ = string_stream_.str();
-	std::cout << "Session manager resonse " << client_response_ << std::endl;
+	std::cout << "Session manager resonse: " << client_response_ << std::endl;
 	string_stream_.str(std::string());
 }

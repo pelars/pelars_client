@@ -80,8 +80,6 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
     num_modalities_vector.push_back( (int)detectors[i]->getModalities().size());
   std::vector<std::vector<cv::linemod::Match>> matches_vector(template_num);
 
-
-
   // Creating a thread pool to detect templates in parallel
   ThreadPool pool(std::thread::hardware_concurrency());
 
@@ -215,7 +213,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
 
     // Check if any key is pressed and in case process input
     char key = (char)cvWaitKey(10);
-    if( key == 'q' )
+    if( key == 'q' || to_stop )
         break;
     switch (key)
     {

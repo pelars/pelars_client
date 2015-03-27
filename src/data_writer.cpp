@@ -12,7 +12,7 @@ DataWriter::DataWriter(const std::string & uri): uri_(uri), m_open_(false), m_do
 
   // Initialize the Asio transport policy
   m_client_.init_asio();
-    con_ = m_client_.get_connection(uri_, ec_);
+  con_ = m_client_.get_connection(uri_, ec_);
   std::cout << "connection result: " << ec_.message() << " " << con_ << std::endl;
   m_hdl_ = con_->get_handle();
   m_client_.connect(con_);
@@ -23,13 +23,18 @@ DataWriter::DataWriter(const std::string & uri): uri_(uri), m_open_(false), m_do
 void 
 DataWriter::writeData(const std::string s)
 { 
-  if(con_)
+  if(con_ && online)
     m_client_.send(m_hdl_, s , websocketpp::frame::opcode::text, ec_);
+  else
+  {
+    std::cout << "writing to file !!!!!" << std::endl;
+  }
 }
 
 void 
 DataWriter::stop()
 {
+  online = false;
   std::cout << "stop requested from DataWriter\n";
   m_client_.stop();
   thread_.join();
@@ -37,6 +42,7 @@ DataWriter::stop()
 
 void DataWriter::on_close(websocketpp::connection_hdl) {
   std::cout << "stop requested from on_close\n";
+  online = false;
 
 }
 

@@ -9,6 +9,8 @@
 #include "ompparallelFor.h"
 #include <json/json.h>
 
+extern bool to_stop;
+
 
 // Draw the Linemod results
 void drawResponse(const std::vector<cv::linemod::Template>& templates,
