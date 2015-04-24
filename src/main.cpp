@@ -42,24 +42,26 @@ int main(int argc, char * argv[])
 
   // Check the endpoint string and connect to the collector
   // TODO if connection fails exit
-  //std::string end_point = argc < 3 ? "http://127.0.0.1:8080/pelars/" : argv[2];  //http://10.100.34.226:8080/pelars/
-  std::string end_point = argc < 3 ? "http://127.0.0.1:8080/networkmanager/" : argv[2];
+  std::string end_point = argc < 3 ? "http://127.0.0.1:8080/pelars/" : argv[2];  //http://10.100.34.226:8080/pelars/
+  //std::string end_point = argc < 3 ? "http://127.0.0.1:8080/networkmanager/" : argv[2];
   end_point = end_point.back() == '/' ? end_point : end_point + "/";
-  DataWriter collector(end_point + "Collector");
-  //DataWriter collector(end_point + "Localcollector");
+  
   std::cout << "WebServer endpoint : " << end_point << std::endl;
   std::cout << "Collector endpoint : " << end_point + "Collector" << std::endl;
   //std::cout << "Collector endpoint : " << end_point + "Localcollector" << std::endl;
 
   // Check the endpoint string and connect to the session manager
   // TODO if connection fails exit
-  std::string session_endpoint = end_point + "Sessionmanager";
+  std::string session_endpoint = end_point + "session/";
   //std::string session_endpoint = "http://127.0.0.1:8080/networkmanager/Localsessionmanager";
   std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;
 
   //Creating a Session Manager and getting a newsession ID
   SessionManager sm(session_endpoint);
   int session = sm.getNewSession();
+
+  DataWriter collector(end_point + "Collector", session);
+  //DataWriter collector(end_point + "Localcollector");
 
   // Creating a local mongoose server for web debug
   std::cout << "opening moongoose for debug on port 8081" << std::endl;
@@ -76,6 +78,15 @@ int main(int argc, char * argv[])
   // Wait for the termination of all threads
   for(auto &thread : thread_list)
     thread.join();
+
+
+  std::string tmp;
+  if(online)
+    tmp = collector.file_name_ + std::string("_backup_") + collector.file_extention_;
+  else
+    tmp = collector.file_name_ + std::string("_local_") + collector.file_extention_;
+
+  std::rename(collector.complete_file_name_.c_str(), tmp.c_str());
 
   // Terminate everything and exit
   // Close session

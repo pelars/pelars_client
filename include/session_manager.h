@@ -1,8 +1,11 @@
 #pragma once
 #include <boost/network/protocol/http/client.hpp>
 #include <string>
+#include <json/json.h>
+
 
 extern bool to_stop;
+extern bool online;
 
 class SessionManager {
 

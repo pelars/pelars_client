@@ -38,7 +38,6 @@ cv::Ptr<cv::linemod::Detector> readLinemod(const std::string& filename)
 
 int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & websocket, int session)
 {
-  std::cout << "starting" << std::endl;
   // Some matching parameters for linemod
   short matching_threshold = 85;
   short learning_lower_bound = 90;
@@ -190,9 +189,12 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
 
         //Send message
         std::string out_string = writer.write(root);
-        io.post( [&websocket, out_string]() {
-             websocket.writeData(out_string);
-         });
+        if(online)
+          io.post( [&websocket, out_string]() {
+               websocket.writeData(out_string);
+           });
+        
+        websocket.writeLocal(out_string);    
       }
     }
 

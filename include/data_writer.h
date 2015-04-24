@@ -6,6 +6,7 @@
 #include <websocketpp/common/thread.hpp>
 #include <sstream>
 #include <fstream>
+#include <mutex>
 
 extern bool online;
 
@@ -21,20 +22,24 @@ public:
   websocketpp::lib::mutex m_lock_;
   bool m_open_;
   bool m_done_;
+  bool failed_;
   std::vector<std::string> * buffer_;
   client::connection_ptr con_;
   websocketpp::lib::error_code ec_;
   websocketpp::error::category cat_;
   websocketpp::lib::thread thread_;
+  std::mutex m_;
+  std::ofstream fs_;
+  std::string file_name_, file_extention_, complete_file_name_;
 
-  DataWriter(const std::string & uri);
+  DataWriter(const std::string & uri, const int session);
+  ~DataWriter();
   void stop();
-  void on_close(websocketpp::connection_hdl);
-  void on_fail(websocketpp::connection_hdl);
+  void onClose(websocketpp::connection_hdl);
+  void onFail(websocketpp::connection_hdl);
+  void writeLocal(const std::string s);
 
-
-  void
-  writeData(const std::string  s);
+  void writeData(const std::string  s);
 
 };
 

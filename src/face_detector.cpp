@@ -86,10 +86,12 @@ void detectFaces(DataWriter & websocket, int session)
 	        //Send message
 	        std::string out_string = writer.write(root);
 	        //std::cout << "sending " << out_string << std::endl;
-	        io.post( [&websocket, out_string]() {
-	             websocket.writeData(out_string);
-	         });
-
+	        if(online)
+          		io.post( [&websocket, out_string]() {
+                websocket.writeData(out_string);
+                });
+            
+            websocket.writeLocal(out_string);    
 	  	}
 
 		//-- Show what you got

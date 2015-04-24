@@ -5,6 +5,7 @@
 // Asion communication service and Asio keep alive
 extern boost::asio::io_service io;
 extern struct timespec start;
+extern bool online;
 
 void aliver(const boost::system::error_code& /*e*/);
 
