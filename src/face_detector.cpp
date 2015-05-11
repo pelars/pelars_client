@@ -100,10 +100,10 @@ void detectFaces(DataWriter & websocket, int session)
 	    gray_gpu.release();
 	    facesBuf_gpu.release();
 
-	    int c = cv::waitKey(10);
-			if( (char)c == 'q' ) {
-				to_stop_ = true;
-			}
+	    int c = cv::waitKey(20);
+		if( (char)c == 'q' ) {
+			to_stop_ = true;
+		}
 	}
 	
 	to_stop = true;

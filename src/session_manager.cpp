@@ -14,6 +14,7 @@ SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint)
 
 int SessionManager::getNewSession()
 {
+	/*
 	// Continue sending possible session id's until a good one is found and the session manager gives a positive answer
     // TODO Make some other check on the session manager liveness and on the time spent asking for a session
     bool error = false;
@@ -52,6 +53,55 @@ int SessionManager::getNewSession()
 	if (!error)
 		std::cout << "Got session id " << session_ << std::endl;
 	return session_;
+	*/
+
+		// Continue sending possible session id's until a good one is found and the session manager gives a positive answer
+    // TODO Make some other check on the session manager liveness and on the time spent asking for a session
+    bool error = false;
+    Json::Value root;
+    Json::StyledWriter writer;
+
+    // Json message
+    root["teacher_name"] = "test";
+    root["institution_name"] = "institution_test";
+    root["institution_address"] = "institution_test_address";
+    root["namespace" ] = "italy";
+    std::string out_string = writer.write(root);
+
+    bool parsed_success;
+
+	std::cout << "Requesting session id " << std::endl;
+	try{
+		boost::network::http::client::request endpoint(endpoint_);
+		//response_ = client_.get(endpoint); 
+		response_ = client_.put(endpoint, out_string);
+		string_stream_ << body(response_);
+		session_manager_response_ = string_stream_.str();
+		std::cout << "got response " << session_manager_response_  <<std::endl;
+		session_manager_response_.erase(std::remove(session_manager_response_.begin(), session_manager_response_.end(), '\n'), session_manager_response_.end());
+		string_stream_.str(std::string());
+		Json::Value root;
+		Json::Reader reader;
+		parsed_success = reader.parse(session_manager_response_, root, false);
+		session_ = root["session_id"].asInt();
+	}
+	catch (std::exception& e){
+		std::cout << "Error during the session request: " << e.what()  << "; setting session id to 0" <<std::endl;
+		error = true;
+		online = false;
+		session_ = -1;
+	}
+	if(!parsed_success){
+		std::cout << "Error during the session request: Couldn't parse json message; setting session id to 0" <<std::endl;
+		error = true;
+		online = false;
+		session_ = -1;
+	}
+
+	if (!error)
+		std::cout << "Got session id " << session_ << std::endl;
+	
+	return session_;
 }
 
 
@@ -68,14 +118,14 @@ void SessionManager::closeSession(int session)
     std::string out_string = writer.write(root);
 
 	type_ = "close";
-	std::cout << "closing session  " << session << std::endl;
+	std::cout << "closing session " << session << std::endl;
 	if(online){
 	 	//Sending data to close the session with the session manager
 		boost::network::http::client::request request_(endpoint_ + std::to_string(session_));
 		response_ = client_.post(request_, out_string);
 		string_stream_ << body(response_);
 		std::string client_response_ = string_stream_.str();
-		std::cout << "Session manager resonse: " << client_response_ << std::endl;
+		std::cout << "Session manager response: " << client_response_ << std::endl;
 		string_stream_.str(std::string());
 	}
 }

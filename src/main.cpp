@@ -70,10 +70,11 @@ int main(int argc, char * argv[])
   mg_set_option(webserver, "listening_port", "8081");
   std::thread mg_thread(serve, webserver);
   std::cout << "moongoose ready" << std::endl;
-
+  std::cout << "online " << online << std::endl;
   // Starting the linemod thread
   thread_list[0] = std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session);
   thread_list[1] = std::thread(detectFaces, std::ref(collector), session);
+  std::cout << "online " << online << std::endl;
 
   // Wait for the termination of all threads
   for(auto &thread : thread_list)

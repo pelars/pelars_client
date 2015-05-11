@@ -36,7 +36,8 @@ DataWriter::writeData(const std::string s)
 void 
 DataWriter::stop()
 {
-  online = false;
+  //NECESSARYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY ?
+  //online = false;
   std::cout << "stop requested from DataWriter\n";
   m_client_.stop();
   if(!failed_)
@@ -53,6 +54,7 @@ void DataWriter::onClose(websocketpp::connection_hdl) {
 void DataWriter::onFail(websocketpp::connection_hdl) {
   std::cout << "stop requested from on_fail\n";
   failed_ = true;
+  online = false;
   stop();
 }
 

@@ -214,7 +214,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
     cv::imshow("color", display);
 
     // Check if any key is pressed and in case process input
-    char key = (char)cvWaitKey(10);
+    char key = (char)cvWaitKey(20);
     if( key == 'q' || to_stop )
         break;
     switch (key)
