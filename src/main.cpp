@@ -9,6 +9,7 @@
 // To stop all the threads if one receives a stop signal
 bool to_stop = false;
 bool online = true;
+std::string cnamespace = "Denmark";
 
 int main(int argc, char * argv[])
 {
@@ -42,12 +43,12 @@ int main(int argc, char * argv[])
 
   // Check the endpoint string and connect to the collector
   // TODO if connection fails exit
-  std::string end_point = argc < 3 ? "http://127.0.0.1:8080/pelars/" : argv[2];  //http://10.100.34.226:8080/pelars/
+  std::string end_point = argc < 3 ? "http://pelars.sssup.it:8080/pelars/" : argv[2];  //http://10.100.34.226:8080/pelars/
   //std::string end_point = argc < 3 ? "http://127.0.0.1:8080/networkmanager/" : argv[2];
   end_point = end_point.back() == '/' ? end_point : end_point + "/";
   
   std::cout << "WebServer endpoint : " << end_point << std::endl;
-  std::cout << "Collector endpoint : " << end_point + "Collector" << std::endl;
+  std::cout << "Collector endpoint : " << end_point + "collector" << std::endl;
   //std::cout << "Collector endpoint : " << end_point + "Localcollector" << std::endl;
 
   // Check the endpoint string and connect to the session manager
@@ -60,7 +61,7 @@ int main(int argc, char * argv[])
   SessionManager sm(session_endpoint);
   int session = sm.getNewSession();
 
-  DataWriter collector(end_point + "Collector", session);
+  DataWriter collector(end_point + "collector", session);
   //DataWriter collector(end_point + "Localcollector");
 
   // Creating a local mongoose server for web debug
@@ -70,11 +71,10 @@ int main(int argc, char * argv[])
   mg_set_option(webserver, "listening_port", "8081");
   std::thread mg_thread(serve, webserver);
   std::cout << "moongoose ready" << std::endl;
-  std::cout << "online " << online << std::endl;
+
   // Starting the linemod thread
   thread_list[0] = std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session);
   thread_list[1] = std::thread(detectFaces, std::ref(collector), session);
-  std::cout << "online " << online << std::endl;
 
   // Wait for the termination of all threads
   for(auto &thread : thread_list)

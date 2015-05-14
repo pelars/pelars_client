@@ -1,5 +1,7 @@
 #include "session_manager.h"
 
+extern std::string cnamespace;
+
 SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint)
 {
 	srand (time(NULL));
@@ -65,7 +67,7 @@ int SessionManager::getNewSession()
     root["teacher_name"] = "test";
     root["institution_name"] = "institution_test";
     root["institution_address"] = "institution_test_address";
-    root["namespace" ] = "italy";
+    root["namespace" ] = cnamespace;
     std::string out_string = writer.write(root);
 
     bool parsed_success;
