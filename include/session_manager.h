@@ -2,6 +2,7 @@
 #include <boost/network/protocol/http/client.hpp>
 #include <string>
 #include <json/json.h>
+#include "tinyxml2.h"
 
 
 extern bool to_stop;
@@ -17,12 +18,14 @@ public:
 
 	void closeSession(int session);
 
+	void createUser();
+
 private:
 
 	int session_;
 	boost::network::http::client client_;
 	boost::network::http::client::response response_;
-	std::string endpoint_, type_, teacher_name_, institution_name_, institution_address_, session_endpoint_data_, session_manager_response_;
+	std::string endpoint_, session_manager_response_;
 	std::stringstream string_stream_;
-
+	tinyxml2::XMLDocument data_;
 };

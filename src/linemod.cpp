@@ -1,5 +1,8 @@
 #include "linemod.h"
 
+extern float similarity;
+extern const std::string currentDateTimeNow;
+
 // Draw the Linemod results
 void drawResponse(const std::vector<cv::linemod::Template>& templates,
                   int num_modalities, cv::Mat& dst, cv::Point offset, int T, int objid)
@@ -43,6 +46,12 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
   short learning_lower_bound = 90;
   short learning_upper_bound = 95;
 
+  //CREating data for storing the streams
+  std::vector<uint8_t> rgb_buffer_compressedx_;
+  std::ofstream onfvideojpeg;
+  onfvideojpeg.open("out" + currentDateTimeNow + ".mpg",std::ios::binary);
+
+
   //Kinect v1 intrinsic parameters
   const double focal_x_depth = 5.9421434211923247e+02;
   const double focal_y_depth = 5.9104053696870778e+02;
@@ -57,13 +66,18 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
   std::vector<int> num_modalities_vector;
 
   // Load all the templates listed in the input file
-  std::string path;
+  std::string data;
   short i = 0;
-  while (infile >> path)
+  float thresh;
+  std::vector<float> thresholds;
+  while (infile >> data)
   {
-    std::cout << "loading " << path << std::endl;
-    detectors.push_back(readLinemod(path));
-    std::cout <<"Loaded " << path.c_str() <<" with " << detectors[i]->numClasses() << " classes and "<< detectors[i]->numTemplates() << " templates" << std::endl;
+    std::cout << "loading " << data << std::endl;
+    detectors.push_back(readLinemod(data));
+    infile >> thresh;
+    thresholds.push_back(thresh);
+    std::cout << "with thresh " << thresh << std::endl;
+    std::cout <<"Loaded " << data.c_str() <<" with " << detectors[i]->numClasses() << " classes and "<< detectors[i]->numTemplates() << " templates" << std::endl;
     i++;
   }
 
@@ -89,6 +103,12 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
   double matching_time;
   struct timespec begin, end;
 
+  // Encoder and data
+  EncDec encoder(false,640,480,0,0);
+  cv::Mat large(480,640*2,CV_8UC3);
+
+
+
   // Linemod variables
   std::vector<cv::Mat> sources;
   cv::Mat display;
@@ -104,6 +124,28 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
       std::cout << "failed to fetch data from the kinect\n";
       break;
     }
+/*
+    cv::Mat lab_image;
+    cv::cvtColor(color, lab_image, CV_BGR2Lab);
+    
+    // Extract the L channel
+    std::vector<cv::Mat> lab_planes(3);
+    cv::split(lab_image, lab_planes);  // now we have the L image in lab_planes[0]
+
+    // apply the CLAHE algorithm to the L channel
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+    clahe->setClipLimit(4);
+    cv::Mat dst;
+    clahe->apply(lab_planes[0], dst);
+
+    // Merge the the color planes back into an Lab image
+    dst.copyTo(lab_planes[0]);
+    cv::merge(lab_planes, lab_image);
+
+   // convert back to RGB
+   cv::Mat image_clahe;
+   cv::cvtColor(lab_image, color, CV_Lab2BGR);
+  */
     sources.push_back(color);
     sources.push_back(depth);
     display = color.clone();
@@ -116,7 +158,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
     std::vector<std::string> class_ids;
 
     // Lambda function to match the tamplates
-    auto myFunc = [=, &matches_vector, &websocket, &detectors, &class_ids, &results](unsigned int i) {
+    auto myFunc = [=, &matches_vector, &websocket, &detectors, &class_ids, &results, &thresholds](unsigned int i) {
       int num_classes = detectors[i]->numClasses();        
       int classes_visited = 0;
       std::vector<cv::Mat> quantized_images;
@@ -132,7 +174,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
         {
           ++classes_visited;
 
-          if(m.similarity >= 88.0 )
+          if(m.similarity >= thresholds[i] )
           {
             // mutex
             //results
@@ -212,6 +254,24 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
     // Display color and depth
     cv::imshow("adjMap", adjMap);
     cv::imshow("color", display);
+
+    // Store streams
+    const unsigned char * pp = (const unsigned char*)display.data;
+    encoder.step(pp,(uint16_t*)depth.data);
+
+    // stich 
+    cv::Rect roirgb( cv::Point( 0, 0 ), display.size());
+    cv::Mat  destinationROI = large( roirgb);
+    display.copyTo( destinationROI );
+
+    cv::Rect roidepth( cv::Point( 640, 0 ), adjMap.size());
+    destinationROI = large( roidepth);
+    adjMap.copyTo( destinationROI );
+
+    rgb_buffer_compressedx_.clear();
+    cv::imencode(".jpg",large,rgb_buffer_compressedx_);
+    onfvideojpeg.write((char*)&rgb_buffer_compressedx_[0],rgb_buffer_compressedx_.size());
+
 
     // Check if any key is pressed and in case process input
     char key = (char)cvWaitKey(20);

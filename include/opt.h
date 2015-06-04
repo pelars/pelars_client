@@ -14,3 +14,4 @@ void asiothreadfx();
 // Calculate a time interval
 double deltats(const struct timespec & a, const struct timespec & b);
 
+const std::string currentDateTime();

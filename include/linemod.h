@@ -8,6 +8,7 @@
 #include "alttime.h"
 #include "ompparallelFor.h"
 #include <json/json.h>
+#include "encdec.hpp"
 
 extern bool to_stop;
 
