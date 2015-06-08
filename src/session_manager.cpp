@@ -45,7 +45,7 @@ int SessionManager::getNewSession()
 		Json::Value root;
 		Json::Reader reader;
 		parsed_success = reader.parse(session_manager_response_, root, false);
-		session_ = root["session_id"].asInt();
+		session_ = root["id"].asInt();
 	}
 	catch (std::exception& e){
 		// Generic error during the request
