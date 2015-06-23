@@ -5,7 +5,7 @@ SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint)
 {	
 	srand (time(NULL));
 	std::cout << "parsing the input data" << std::endl;
-    tinyxml2::XMLError eResult =  data_.LoadFile( "../personal.xml" );
+    tinyxml2::XMLError eResult =  data_.LoadFile( "../../data/personal.xml" );
     if(eResult != 0){
     	std::cout << "error parsing personal.xml or file not present in /data/" << std::endl;
     	to_stop = true;
@@ -69,7 +69,7 @@ int SessionManager::getNewSession()
 }
 
 void SessionManager::createUser(){
-
+	std::cout << "creating user" <<std::endl;
 	// Creating the new user
     Json::Value root;
     Json::StyledWriter writer;
@@ -95,10 +95,6 @@ void SessionManager::createUser(){
 		std::string message = root["message"].asString();
 		if(message.find(std::string("User already present")) != std::string::npos)
 			std::cout << "got response from user creator " << session_manager_response <<std::endl;
-
-
-
-
 	}
 	catch (std::exception& e){
 		// Generic error during the request
