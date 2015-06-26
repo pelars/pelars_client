@@ -5,16 +5,14 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 set(CMAKE_BUILD_TYPE Release) 
-set(LIBWEBSOCKETPP_LIBRARIES cppnetlib-client-connections cppnetlib-server-parsers cppnetlib-uri)
-set(PATHS /usr/local/lib /usr/lib )
 
-
-set(SRC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(CMAKE_PREFIX_PATH  /prefix/)
+set(SRC                ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(INCLUDE            ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
@@ -24,25 +22,61 @@ find_package(OpenSSL REQUIRED)
 find_package(Boost COMPONENTS system filesystem thread random REQUIRED)
 find_package(Freenect REQUIRED)
 find_package(Websocketpp REQUIRED)
+find_package(FFmpeg REQUIRED)
 
-find_library(JSON_LIBRARY NAMES jsoncpp)
-#http://cpp-netlib.org/
-find_library(CPPNET_CLIENT cppnetlib-client-connections ${PATHS} ) 
-find_library(CPPNET_URI cppnetlib-uri)
+find_library(JSON_LIBRARY  NAMES jsoncpp)
+find_library(CPPNET_CLIENT NAMES cppnetlib-client-connections) 
+find_library(CPPNET_PARSER NAMES cppnetlib-server-parsers)
+find_library(CPPNET_URI    NAMES cppnetlib-uri )
+find_library(FREENECT      NAMES freenect )
+
+find_library(TINYXML2 NAMES tinyxml2)
+find_library(X264     NAMES x264) 
+find_library(SWSCALE  NAMES swscale)
+find_library(AVFORMAT NAMES avformat)
+find_library(AVUTIL   NAMES avutil)
+find_library(AVCODEC  NAMES avcodec)
+find_library(AVFILTER NAMES avfilter)
+find_library(AVDEVICE NAMES avdevice)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${INCLUDE})
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${LIBWEBSOCKETS_INCLUDE_DIR})
+include_directories(${x264_INCLUDE_DIRS})
 
-add_executable(sensor_manager ${SRC}/main.cpp ${SRC}/opt.cpp ${SRC}/linemod.cpp ${SRC}/kinect_grabber.cpp ${SRC}/data_writer.cpp ${SRC}/mongoose.cpp)
+add_executable(sensor_manager   ${SRC}/main.cpp 
+								${SRC}/session_manager.cpp 
+								${SRC}/face_detector.cpp ${SRC}/opt.cpp 
+								${SRC}/linemod.cpp 
+								${SRC}/kinect_grabber.cpp 
+								${SRC}/data_writer.cpp 
+								${SRC}/mongoose.cpp 
+								${SRC}/x264decoder.cpp 
+								${SRC}/x264encoder.cpp 
+								${SRC}/xn16zdec.cpp)
+
 add_executable(freenect-camshare ${SRC}/camshare.cpp)
 
-link_libraries(LIBWEBSOCKETS_LIBRARY_DIR)
+target_link_libraries(sensor_manager 	${OpenCV_LIBS} 
+										${TINYXML2} 
+										${Boost_LIBRARIES} 
+										${JSON_LIBRARY}
+										${CPPNET_CLIENT} 
+										${CPPNET_PARSER}
+										${CPPNET_URI}
+										${OPENSSL_LIBRARIES} 
+										${ZMQ_LIBRARY} 
+										${X264} 
+										${SWSCALE} 
+										${AVFORMAT}
+										${AVUTIL} 
+										${AVCODEC} 
+										${AVFILTER} 
+										${AVDEVICE})
 
-target_link_libraries(sensor_manager ${OpenCV_LIBS} ${Boost_LIBRARIES} ${JSON_LIBRARY} ${LIBWEBSOCKETPP_LIBRARIES} ${OPENSSL_LIBRARIES})
 if(UNIX AND NOT APPLE)
-    target_link_libraries(freenect-camshare freenect rt)
+    target_link_libraries(freenect-camshare ${FREENECT} rt ) 
 else()
-	target_link_libraries(freenect-camshare freenect)
+   target_link_libraries(freenect-camshare ${FREENECT})
 endif()
+
