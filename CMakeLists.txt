@@ -22,7 +22,7 @@ find_package(OpenSSL REQUIRED)
 find_package(Boost COMPONENTS system filesystem thread random REQUIRED)
 find_package(Freenect REQUIRED)
 find_package(Websocketpp REQUIRED)
-find_package(FFmpeg REQUIRED)
+#find_package(FFmpeg REQUIRED)
 
 find_library(JSON_LIBRARY  NAMES jsoncpp)
 find_library(CPPNET_CLIENT NAMES cppnetlib-client-connections) 
@@ -72,10 +72,11 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${AVUTIL} 
 										${AVCODEC} 
 										${AVFILTER} 
-										${AVDEVICE})
+										${AVDEVICE}
+                                                                                rt )
 
 if(UNIX AND NOT APPLE)
-    target_link_libraries(freenect-camshare ${FREENECT} rt ) 
+    target_link_libraries(freenect-camshare ${FREENECT} rt) 
 else()
    target_link_libraries(freenect-camshare ${FREENECT})
 endif()
