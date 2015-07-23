@@ -20,6 +20,13 @@ int main(int argc, char * argv[])
     return -1;
   }
 
+  bool face_cpu = false;
+
+  if(argc == 3)
+    if(argv[2] == "cpu")
+      face_cpu = true;
+
+
   // Check if the input template list file is correct
   std::ifstream infile(argv[1]);
   if(!infile)
@@ -44,6 +51,8 @@ int main(int argc, char * argv[])
   // Check the endpoint string and connect to the collector
   // TODO if connection fails exit
   std::string end_point = "http://pelars.sssup.it:8080/pelars2/";
+  //std::string end_point = "http://pelars.sssup.it:8080/pelars2/";
+
   end_point = end_point.back() == '/' ? end_point : end_point + "/";
   
   std::cout << "WebServer endpoint : " << end_point << std::endl;
@@ -55,22 +64,27 @@ int main(int argc, char * argv[])
 
   //Creating a Session Manager and getting a newsession ID
   SessionManager sm(end_point);
-  int session = sm.getNewSession();
+  int session = sm.getNewSession();     
 
   // Websocket manager
   DataWriter collector(end_point + "collector", session);
 
   // Creating a local mongoose server for web debug
-  std::cout << "opening moongoose for debug on port 8081" << std::endl;
+  std::cout << "Opening moongoose for debug on port 8081" << std::endl;
   struct mg_server * webserver;
   webserver = mg_create_server((void *) "1", ev_handler);
   mg_set_option(webserver, "listening_port", "8081");
   std::thread mg_thread(serve, webserver);
-  std::cout << "moongoose ready" << std::endl;
+  std::cout << "\tMoongoose ready" << std::endl;
 
   // Starting the linemod thread
   thread_list[0] = std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session);
-  thread_list[1] = std::thread(detectFaces, std::ref(collector), session);
+  if(face_cpu){
+    std::cout << "USING CPU" << std::endl;
+    thread_list[1] = std::thread(detectFacesCPU, std::ref(collector), session);
+  }
+  else
+    thread_list[1] = std::thread(detectFaces, std::ref(collector), session);
 
   // Wait for the termination of all threads
   for(auto &thread : thread_list)

@@ -11,7 +11,7 @@ KinectManagerExchange::KinectManagerExchange(): shm_obj_(boost::interprocess::op
 	boost::interprocess::mapped_region r(shm_obj_, boost::interprocess::read_write);
 	r.swap(region_);
 	common_ = (unsigned char *)region_.get_address();
-	std::cout << "shared pointer is " << region_.get_address() << std::endl;
+	std::cout << "Shared pointer for kinect data is " << region_.get_address() << std::endl;
 }
 
 void KinectManagerExchange::stop() 

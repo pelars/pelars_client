@@ -3,6 +3,7 @@
 #include <string>
 #include <json/json.h>
 #include "tinyxml2.h"
+#include <fstream>
 
 
 extern bool to_stop;
@@ -22,10 +23,13 @@ public:
 
 private:
 
-	int session_;
+	int session_, user_id_;
 	boost::network::http::client client_;
 	boost::network::http::client::response response_;
 	std::string endpoint_, session_manager_response_;
-	std::stringstream string_stream_;
 	tinyxml2::XMLDocument data_;
+	Json::Value root_;
+	Json::Reader reader_;
+	Json::StyledWriter writer_;
+
 };
