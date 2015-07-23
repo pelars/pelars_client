@@ -19,14 +19,9 @@ void detectFaces(DataWriter & websocket, int session)
 
 	bool to_stop_ = false;
 
-	if( !face_cascade_.load( face_cascade_name_ ) )
+	if( !cascade_gpu_.load( face_cascade_name_gpu_ ) )
 	{ 
-		std::cout << "--(!)Error loading " << face_cascade_name_ << std::endl; 
-		to_stop_ = true;
-	}
-	if( !cascade_gpu_.load( face_cascade_name_ ) )
-	{ 
-		std::cout << "--(!)Error loading " << face_cascade_name_ << std::endl; 
+		std::cout << "--(!)Error loading " << face_cascade_name_gpu_ << std::endl; 
 		to_stop_ = true;
 	}
 	cv::namedWindow("face");
@@ -51,7 +46,7 @@ void detectFaces(DataWriter & websocket, int session)
 
 	    cascade_gpu_.visualizeInPlace = false;
 	    cascade_gpu_.findLargestObject = findLargestObject_;
-	    detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, cv::Size(tmp.cols/5,tmp.rows/5), cv::Size(tmp.cols/3,tmp.rows/3), 1.05, (filterRects_ || findLargestObject_) ? 4 : 0
+	    detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, cv::Size(tmp.cols,tmp.rows), cv::Size(), 1.05, (filterRects_ || findLargestObject_) ? 4 : 0
 	    											);
 	    //detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, 1.2,(filterRects_ || findLargestObject_) ? 4 : 0, cv::Size(tmp.cols/4,tmp.rows/4));
 
