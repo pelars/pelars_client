@@ -4,7 +4,8 @@
 #include "linemod.h"
 #include "session_manager.h"
 #include "face_detector.h"
-#include <thread>
+#include "sse_handler.h"
+
 
 // To stop all the threads if one receives a stop signal
 bool to_stop = false;
@@ -20,13 +21,6 @@ int main(int argc, char * argv[])
     return -1;
   }
 
-  bool face_cpu = false;
-
-  if(argc == 3)
-    if(argv[2] == "cpu")
-      face_cpu = true;
-
-
   // Check if the input template list file is correct
   std::ifstream infile(argv[1]);
   if(!infile)
@@ -36,7 +30,7 @@ int main(int argc, char * argv[])
   }
 
   // Standard vector containing the different threads
-  std::vector<std::thread> thread_list(2);
+  std::vector<std::thread> thread_list(3);
 
   // Keep aliver
   std::thread ws_writer(asiothreadfx);
@@ -79,12 +73,8 @@ int main(int argc, char * argv[])
 
   // Starting the linemod thread
   thread_list[0] = std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session);
-  if(face_cpu){
-    std::cout << "USING CPU" << std::endl;
-    thread_list[1] = std::thread(detectFacesCPU, std::ref(collector), session);
-  }
-  else
-    thread_list[1] = std::thread(detectFaces, std::ref(collector), session);
+  thread_list[1] = std::thread(detectFaces, std::ref(collector), session);
+  thread_list[2] = std::thread(sse_handler);
 
   // Wait for the termination of all threads
   for(auto &thread : thread_list)

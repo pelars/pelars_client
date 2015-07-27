@@ -4,6 +4,7 @@
 #include <json/json.h>
 #include "tinyxml2.h"
 #include <fstream>
+#include <thread>
 
 
 extern bool to_stop;
