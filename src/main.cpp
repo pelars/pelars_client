@@ -44,7 +44,7 @@ int main(int argc, char * argv[])
 
   // Check the endpoint string and connect to the collector
   // TODO if connection fails exit
-  std::string end_point = "http://pelars.sssup.it:8080/pelars/";
+  std::string end_point = "http://10.100.35.191:8080/pelars/";
   //std::string end_point = "http://pelars.sssup.it:8080/pelars2/";
 
   end_point = end_point.back() == '/' ? end_point : end_point + "/";
