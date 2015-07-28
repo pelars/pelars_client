@@ -12,6 +12,11 @@
 #include <boost/algorithm/string.hpp>
 #include "data_writer.h"
 #include "opt.h"
+#include "alttime.h"
+
+extern bool to_stop;
+extern bool online;
+extern 
 
 void sse_handler(DataWriter & websocket);
 
@@ -23,6 +28,8 @@ struct encapsule{
 	}
 	void addData(std::string data){
 		root_["obj"]["data"] = data;
+	}
+	void prepareData(){
 		to_send_ = writer_.write(root_);
 	}
 	void send(){
@@ -30,6 +37,9 @@ struct encapsule{
 	}
 	void localSend(){
 		websocket_.writeLocal(to_send_);
+	}
+	void addTime(){
+		root_["obj"]["time"] = deltats(orwl_gettime(), start);
 	}
 
 	DataWriter & websocket_;

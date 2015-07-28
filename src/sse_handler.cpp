@@ -1,9 +1,6 @@
 
 #include "sse_handler.h"
 
-extern bool to_stop;
-extern bool online;
-
 size_t write_data(void *ptr, size_t size, size_t nmemb, encapsule * enc) {
     //std::cout << "received " << enc->name_ << " " << std::string((char*)ptr, nmemb) << std::endl;
     enc->body_.append((char*)ptr, nmemb);
@@ -15,7 +12,9 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, encapsule * enc) {
 			std::size_t tmp = strs[j].find("{");
 			if(tmp != std::string::npos){
 				strs[j].erase(0, tmp);
+				enc->addTime();
 				enc->addData(strs[j]);
+				enc->prepareData();
 				//std::cout << "sending " << enc->to_send_ << std::endl;
 				if(online) 
 	          		io.post( [&enc]() {
