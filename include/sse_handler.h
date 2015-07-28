@@ -8,19 +8,24 @@
 #include <fstream>
 #include <vector>
 #include <thread>
+#include "data_writer.h"
 
-void sse_handler();
+void sse_handler(DataWriter & websocket);
 
 class Http
 {
 	CURLM* multi_handle; 
 	int handle_count;
-	CURL* curl = NULL;
+	FILE * fp;
+	DataWriter & websocket_;
 
 
 	public:
-	Http();
+
+	Http(DataWriter & websocket);
 	~Http();
 	void update();
-	void addRequest(const char* uri, std::string token);
+	void addRequest(const char* uri, std::string token, std::string * body);
+	std::vector<std::string> body_vector_;
+
 };

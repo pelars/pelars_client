@@ -44,7 +44,7 @@ int main(int argc, char * argv[])
 
   // Check the endpoint string and connect to the collector
   // TODO if connection fails exit
-  std::string end_point = "http://pelars.sssup.it:8080/pelars2/";
+  std::string end_point = "http://pelars.sssup.it:8080/pelars/";
   //std::string end_point = "http://pelars.sssup.it:8080/pelars2/";
 
   end_point = end_point.back() == '/' ? end_point : end_point + "/";
@@ -74,7 +74,7 @@ int main(int argc, char * argv[])
   // Starting the linemod thread
   thread_list[0] = std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session);
   thread_list[1] = std::thread(detectFaces, std::ref(collector), session);
-  thread_list[2] = std::thread(sse_handler);
+  thread_list[2] = std::thread(sse_handler, std::ref(collector));
 
   // Wait for the termination of all threads
   for(auto &thread : thread_list)

@@ -36,6 +36,7 @@ int SessionManager::getNewSession()
 		boost::network::http::client::request endpoint(endpoint_ + std::string("session"));
 		response_ = client_.put(endpoint, out_string);
 		session_manager_response_ = response_.body();
+		//std::cout << session_manager_response_ << std::endl;
 
 		// Read the response and parse the json message to get the session id
 		session_manager_response_.erase(std::remove(session_manager_response_.begin(), session_manager_response_.end(), '\n'), session_manager_response_.end());
