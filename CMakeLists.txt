@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 set(CMAKE_BUILD_TYPE Release) 
 
-set(CMAKE_PREFIX_PATH)
+set(CMAKE_PREFIX_PATH /prefix/)
 set(SRC                ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INCLUDE            ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -38,8 +38,8 @@ find_library(AVUTIL   NAMES avutil)
 find_library(AVCODEC  NAMES avcodec)
 find_library(AVFILTER NAMES avfilter)
 find_library(AVDEVICE NAMES avdevice)
-find_library(CURLPP NAME curlpp)
 find_library(CURL NAME curl)
+find_library(ARUCO NAME aruco)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${INCLUDE})
@@ -56,7 +56,8 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/x264decoder.cpp 
 								${SRC}/x264encoder.cpp
 								${SRC}/sse_handler.cpp 
-								${SRC}/xn16zdec.cpp)
+								${SRC}/xn16zdec.cpp
+								${SRC}/hand_detector.cpp)
 
 add_executable(freenect-camshare ${SRC}/camshare.cpp)
 
@@ -76,8 +77,8 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${AVCODEC} 
 										${AVFILTER} 
 										${AVDEVICE}
-										${CURLPP}
 										${CURL}
+										${ARUCO}
                                         rt )
 
 

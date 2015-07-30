@@ -55,7 +55,7 @@ void video_cb(freenect_device* dev, void* data, uint32_t timestamp)
 {
 	if(common)
 	{
-*(int*)common = frame++;
+		*(int*)common = frame++;
 		memcpy(common + 4, data, basesize * 3);
 	}
 	//printf("Received video frame at %d\n", timestamp);

@@ -1,7 +1,7 @@
 #include "face_detector.h"
 
 
-void detectFaces(DataWriter & websocket, int session)
+void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session)
 {
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
@@ -15,7 +15,7 @@ void detectFaces(DataWriter & websocket, int session)
 	cv::gpu::CascadeClassifier_GPU cascade_gpu_;
 	bool findLargestObject_ = false;
     bool filterRects_ = true;
-    cv::VideoCapture capture(0);
+    
 
 	bool to_stop_ = false;
 
@@ -71,7 +71,7 @@ void detectFaces(DataWriter & websocket, int session)
 
 	        // Json message
 	        root["obj"]["type"] = "face";
-	        root["obj"]["session"] = session;
+	        //root["obj"]["session"] = session;
 	        root["obj"]["id"] = i;
 	        root["obj"]["x"] = faces[i].x; 
 	        root["obj"]["x1"] = faces[i].x + faces[i].width;

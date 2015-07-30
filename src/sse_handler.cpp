@@ -63,7 +63,7 @@ void Http::addRequest(const char* uri, const std::string token, encapsule * enc)
 	curl_multi_add_handle(multi_handle, curl);
 }
 
-void sse_handler(DataWriter & websocket){
+void sseHandler(DataWriter & websocket, int session){
 
 	Http http(websocket);
 
@@ -77,7 +77,7 @@ void sse_handler(DataWriter & websocket){
 	  	std::string name, url, token;
 	  	while(infile >> name >> url >> token){
 	 	  	std::cout << "Adding " << name << " url " << url << " token " << token << std::endl;
-	 	  	http.enc_vector_.push_back(encapsule(websocket, name));
+	 	  	http.enc_vector_.push_back(encapsule(websocket, name, session));
 			http.addRequest(url.c_str(), token, &(http.enc_vector_.back()));
 	  	}
   	}

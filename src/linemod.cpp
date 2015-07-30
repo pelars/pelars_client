@@ -116,13 +116,12 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
   double max;
 
   //Main loop. Executes until 'q' is pressed or there is an error with the kinect acquisition.
-  for(;;)
-  {
+  while(!to_stop)  {
     // Acquire depth and color images from the kinect and prepare them for linemod
     if(!kme.get(color, depth))
     {
       std::cout << "failed to fetch data from the kinect\n";
-      break;
+      to_stop = true;
     }
 /*
     cv::Mat lab_image;
@@ -221,7 +220,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
 
         // Json message
         root["obj"]["type"] = "object";
-        root["obj"]["session"] = session;
+        //root["obj"]["session"] = session;
         root["obj"]["id"] = i;
         root["obj"]["x"] = m.x; // (m.x - center_x_depth) * dz / focal_x_depth;
         root["obj"]["y"] = m.y; // (m.y - center_y_depth) * dz / focal_y_depth;

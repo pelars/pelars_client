@@ -1,6 +1,6 @@
 #include "data_writer.h"
 
-DataWriter::DataWriter(const std::string & uri, const int session): uri_(uri), m_open_(false), m_done_(false)
+DataWriter::DataWriter(const std::string & uri, const int session): uri_(uri+std::string("/")+std::to_string(session)), m_open_(false), m_done_(false)
 {
   m_client_.clear_access_channels(websocketpp::log::alevel::all);
   m_client_.set_access_channels(websocketpp::log::alevel::connect);

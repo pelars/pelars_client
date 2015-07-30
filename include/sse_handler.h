@@ -16,15 +16,15 @@
 
 extern bool to_stop;
 extern bool online;
-extern 
 
-void sse_handler(DataWriter & websocket);
+void sseHandler(DataWriter & websocket, int session);
 
 struct encapsule{
 
-	encapsule(DataWriter & websocket, std::string name): websocket_(websocket), name_(name){
+	encapsule(DataWriter & websocket, std::string name, int session): websocket_(websocket), name_(name){
 		root_["obj"]["type"] = "particle";
 		root_["obj"]["name"] = name;
+		//root_["obj"]["session"] = session;
 	}
 	void addData(std::string data){
 		root_["obj"]["data"] = data;

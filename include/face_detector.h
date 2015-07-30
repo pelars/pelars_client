@@ -4,7 +4,6 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/core/core.hpp>        
 #include <opencv2/features2d/features2d.hpp>
-
 #include <data_writer.h>
 #include <boost/network/protocol/http/client.hpp>
 #include "kinect_grabber.h"
@@ -16,5 +15,5 @@
 
 extern bool to_stop;
 
-void detectFaces(DataWriter & websocket, int session);
+void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session);
 void detectFacesCPU(DataWriter & websocket, int session);

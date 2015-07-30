@@ -5,6 +5,7 @@
 #include "session_manager.h"
 #include "face_detector.h"
 #include "sse_handler.h"
+#include "hand_detector.h"
 
 
 // To stop all the threads if one receives a stop signal
@@ -30,7 +31,7 @@ int main(int argc, char * argv[])
   }
 
   // Standard vector containing the different threads
-  std::vector<std::thread> thread_list(3);
+  std::vector<std::thread> thread_list(4);
 
   // Keep aliver
   std::thread ws_writer(asiothreadfx);
@@ -42,10 +43,13 @@ int main(int argc, char * argv[])
   KinectManagerExchange kme;
   kme.start();
 
+  // Camera capture
+  cv::VideoCapture capture(0);
+
   // Check the endpoint string and connect to the collector
   // TODO if connection fails exit
   std::string end_point = "http://10.100.35.191:8080/pelars/";
-  //std::string end_point = "http://pelars.sssup.it:8080/pelars2/";
+  //std::string end_point = "http://10.100.35.191:8080/pelars/";
 
   end_point = end_point.back() == '/' ? end_point : end_point + "/";
   
@@ -64,17 +68,20 @@ int main(int argc, char * argv[])
   DataWriter collector(end_point + "collector", session);
 
   // Creating a local mongoose server for web debug
+  /*
   std::cout << "Opening moongoose for debug on port 8081" << std::endl;
   struct mg_server * webserver;
   webserver = mg_create_server((void *) "1", ev_handler);
   mg_set_option(webserver, "listening_port", "8081");
   std::thread mg_thread(serve, webserver);
   std::cout << "\tMoongoose ready" << std::endl;
+  */
 
   // Starting the linemod thread
   thread_list[0] = std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session);
-  thread_list[1] = std::thread(detectFaces, std::ref(collector), session);
-  thread_list[2] = std::thread(sse_handler, std::ref(collector));
+  thread_list[1] = std::thread(detectFaces, std::ref(collector), std::ref(capture), session);
+  thread_list[2] = std::thread(sseHandler, std::ref(collector), session);
+  thread_list[3] = std::thread(handDetector, std::ref(kme), std::ref(collector), std::ref(capture), session);
 
   // Wait for the termination of all threads
   for(auto &thread : thread_list)
@@ -97,9 +104,9 @@ int main(int argc, char * argv[])
   collector.stop();
   std::cout << "Connection to Collector closed" << std::endl;
   // Stopping mongoose
-  mg_thread_stop = true;
-  mg_thread.join();
-  std::cout << "Mongoose stopped" << std::endl;
+  //mg_thread_stop = true;
+  //mg_thread.join();
+  //std::cout << "Mongoose stopped" << std::endl;
   // Stopped io service 
   io.stop();
   // Stopping Asio aliver
