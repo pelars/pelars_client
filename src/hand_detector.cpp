@@ -10,45 +10,51 @@ void handDetector(KinectManagerExchange & kme, DataWriter & websocket, cv::Video
     sleep(1);
     cv::namedWindow("hands");
 
+    Json::Value root;
+    Json::StyledWriter writer;
+    float x, y, z;
+
 	while(!to_stop){
-		/*
+		//kinect
+		
 		if(!kme.get(color, depth)){
 	      std::cout << "failed to fetch data from the kinect\n";
 	      to_stop = true;
 	      break;
-	    }*/
-	    capture >> color;
+	    }
+	   	//capture >> color;
 	    //std::cout << color.cols << "x" << color.rows << std::endl;
 	    //MDetector.detect(color, markers, cameraMatrix_, distCoeffs_, 0.035, true);
-	    
+
+
+	    //ADD KINECT PARAMETERS TO GET WORLD COORDINATES
 	    MDetector.detect(color, markers);
 	    if(markers.size() > 0){
-   			for(auto &m : markers){
-				m.draw(color, cv::Scalar(0,0,255),2);
+   			for(int i = 0; i < markers.size(); ++i){
+				markers[i].draw(color, cv::Scalar(0,0,255),2);
+				x = markers[i][0].x;
+				y = markers[i][0].y;
+				z = depth.at<short>((int)y, (int)x);
+				root["obj"]["type"] = "hand";
+		        root["obj"]["id"] = markers[i].id;
+		        root["obj"]["x"] = x;
+		        root["obj"]["y"] = y;
+		        root["obj"]["z"] = (float)z/1000;
+		        root["obj"]["time"] = deltats(orwl_gettime(), start);
+		        //Send message
+		        std::string out_string = writer.write(root);
+		        std::cout << "sending " << out_string << std::endl;
+		        if(online)
+		          io.post( [&websocket, out_string]() {
+		               websocket.writeData(out_string);
+		           });
+		        
+		        websocket.writeLocal(out_string);
 				
-				cv::waitKey(1);//wait for key to be pressed
 
-   			}
-			
-			
-   			/*
-			cv::Rodrigues(markers[0].Rvec, markers[0].Rvec);
-			model_view_[0] = markers[0].Rvec.at<float>(0,0);
-			model_view_[1] = markers[0].Rvec.at<float>(0,1);
-			model_view_[2] = markers[0].Rvec.at<float>(0,2);
-			model_view_[4] = markers[0].Rvec.at<float>(1,0);
-			model_view_[5] = markers[0].Rvec.at<float>(1,1);
-			model_view_[6] = markers[0].Rvec.at<float>(1,2);
-			model_view_[8] = markers[0].Rvec.at<float>(2,0);
-			model_view_[9] = markers[0].Rvec.at<float>(2,1);
-			model_view_[10] = markers[0].Rvec.at<float>(2,2);
-
-			model_view_[12] = 0;
-			model_view_[13] = 0;
-			model_view_[14] = 0;
-			model_view_[15] = 1;*/
-			
+   			}	
     	}
+    	cv::waitKey(1);//wait for key to be pressed
     	cv::imshow("hands", color);
 	}
 }

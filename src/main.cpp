@@ -18,7 +18,7 @@ int main(int argc, char * argv[])
   // Check correct number of input arguments
   if(argc < 2)
   {
-    std::cout << "use template file list and the websocket endpoint as input parameter" << std::endl;
+    std::cout << "use template file list" << std::endl;
     return -1;
   }
 
@@ -33,6 +33,19 @@ int main(int argc, char * argv[])
   // Standard vector containing the different threads
   std::vector<std::thread> thread_list(4);
 
+  // Camera capture for face detection
+  cv::VideoCapture capture_face(0);
+  if(!capture_face.isOpened()){
+    std::cout << "Impossible to read from the webcam" << std::endl;
+    return -1;
+  }
+  // Camera capture for hand detection
+  cv::VideoCapture capture_hand(2);
+  if(!capture_hand.isOpened()){
+    std::cout << "Impossible to read from the webcam" << std::endl;
+    return -1;
+  }
+
   // Keep aliver
   std::thread ws_writer(asiothreadfx);
 
@@ -40,11 +53,8 @@ int main(int argc, char * argv[])
   start = orwl_gettime();
 
   // Kinect Frame acquisition
-  KinectManagerExchange kme;
-  kme.start();
-
-  // Camera capture
-  cv::VideoCapture capture(0);
+  KinectManagerExchange kinect_manager;
+  kinect_manager.start();
 
   // Check the endpoint string and connect to the collector
   // TODO if connection fails exit
@@ -52,17 +62,18 @@ int main(int argc, char * argv[])
   //std::string end_point = "http://10.100.35.191:8080/pelars/";
 
   end_point = end_point.back() == '/' ? end_point : end_point + "/";
-  
-  std::cout << "WebServer endpoint : " << end_point << std::endl;
-  std::cout << "Collector endpoint : " << end_point + "collector" << std::endl;
 
-  // Check the endpoint string and connect to the session manager
-  std::string session_endpoint = end_point + "session/";
-  std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;
+  std::cout << "WebServer endpoint : " << end_point << std::endl;
 
   //Creating a Session Manager and getting a newsession ID
   SessionManager sm(end_point);
-  int session = sm.getNewSession();     
+  int session = sm.getNewSession();
+  
+  std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
+
+  // Check the endpoint string and connect to the session manager
+  std::string session_endpoint = end_point + "session/";
+  std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;     
 
   // Websocket manager
   DataWriter collector(end_point + "collector", session);
@@ -78,10 +89,13 @@ int main(int argc, char * argv[])
   */
 
   // Starting the linemod thread
-  thread_list[0] = std::thread(linemodf, std::ref(infile), std::ref(kme), std::ref(collector), session);
-  thread_list[1] = std::thread(detectFaces, std::ref(collector), std::ref(capture), session);
+  thread_list[0] = std::thread(linemodf, std::ref(infile), std::ref(kinect_manager), std::ref(collector), session);
+  // Starting the face detection thread
+  thread_list[1] = std::thread(detectFaces, std::ref(collector), std::ref(capture_face), session);
+  // Starting the particle.io thread
   thread_list[2] = std::thread(sseHandler, std::ref(collector), session);
-  thread_list[3] = std::thread(handDetector, std::ref(kme), std::ref(collector), std::ref(capture), session);
+  // Starting the hand detector
+  thread_list[3] = std::thread(handDetector, std::ref(kinect_manager), std::ref(collector), std::ref(capture_hand), session);
 
   // Wait for the termination of all threads
   for(auto &thread : thread_list)
@@ -99,7 +113,7 @@ int main(int argc, char * argv[])
   // Close session
   sm.closeSession(session);
   // Stopping the kinect grabber
-  kme.stop();
+  kinect_manager.stop();
   // Stopping the websocket
   collector.stop();
   std::cout << "Connection to Collector closed" << std::endl;

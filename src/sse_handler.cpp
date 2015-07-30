@@ -50,7 +50,7 @@ void Http::addRequest(const char* uri, const std::string token, encapsule * enc)
 	curl_easy_setopt(curl, CURLOPT_URL, uri);
 	struct curl_slist * headerlist = NULL;
 
-	std::cout <<(std::string("Authorization: Bearer ") + token).c_str() << std::endl;
+	//std::cout <<(std::string("Authorization: Bearer ") + token).c_str() << std::endl;
 
 	headerlist = curl_slist_append(headerlist,(std::string("Authorization: Bearer ") + token).c_str());
 
