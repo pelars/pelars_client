@@ -104,10 +104,8 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
   struct timespec begin, end;
 
   // Encoder and data
-  EncDec encoder(false,640,480,0,0);
-  cv::Mat large(480,640*2,CV_8UC3);
-
-
+  EncDec encoder(false, 640, 480, 0, 0);
+  cv::Mat large(480, 640 * 2, CV_8UC3);
 
   // Linemod variables
   std::vector<cv::Mat> sources;
@@ -273,9 +271,11 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
 
 
     // Check if any key is pressed and in case process input
-    char key = (char)cvWaitKey(20);
-    if( key == 'q' || to_stop )
-        break;
+    char key = (char)cvWaitKey(1);
+    if( key == 'q' || to_stop ){
+      std::cout << "stop requested by object recognition" << std::endl;
+      break;
+    }
     switch (key)
     {
       case '[':

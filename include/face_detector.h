@@ -16,4 +16,4 @@
 extern bool to_stop;
 
 void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session);
-void detectFacesCPU(DataWriter & websocket, int session);
+//void detectFacesCPU(DataWriter & websocket, int session);

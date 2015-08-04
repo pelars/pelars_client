@@ -19,12 +19,11 @@ extern bool online;
 
 void sseHandler(DataWriter & websocket, int session);
 
-struct encapsule{
+struct Encapsule{
 
-	encapsule(DataWriter & websocket, std::string name, int session): websocket_(websocket), name_(name){
+	Encapsule(DataWriter & websocket, std::string name): websocket_(websocket), name_(name){
 		root_["obj"]["type"] = "particle";
 		root_["obj"]["name"] = name;
-		//root_["obj"]["session"] = session;
 	}
 	void addData(std::string data){
 		root_["obj"]["data"] = data;
@@ -54,15 +53,13 @@ private:
 
 	CURLM* multi_handle; 
 	int handle_count;
-	DataWriter & websocket_;
 
 public:
 
-	Http(DataWriter & websocket);
+	Http();
 	~Http();
 	void update();
-	void addRequest(const char* uri, const std::string token, encapsule * enc);
-	std::vector<encapsule> enc_vector_;
+	void addRequest(const char* uri, const std::string token, Encapsule * enc);
 	std::vector<CURL*> curl_vector_;
 
 };

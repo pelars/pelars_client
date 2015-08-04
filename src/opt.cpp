@@ -1,16 +1,15 @@
 #include "opt.h"
 
-
 void aliver(const boost::system::error_code& /*e*/)
 {
 	
 }
+
 void asiothreadfx()
 {
     boost::asio::deadline_timer t(io, boost::posix_time::seconds(100000));
     t.async_wait(aliver);
     io.run();
-
 }
 
 // Calculate a time interval

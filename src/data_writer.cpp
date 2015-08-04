@@ -36,7 +36,6 @@ DataWriter::writeData(const std::string s)
 void 
 DataWriter::stop()
 {
-  //NECESSARYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY ?
   //online = false;
   std::cout << "stop requested from DataWriter\n";
   m_client_.stop();

@@ -1,12 +1,13 @@
 
 #include "sse_handler.h"
 
-size_t write_data(void *ptr, size_t size, size_t nmemb, encapsule * enc) {
+size_t write_data(void *ptr, size_t size, size_t nmemb, Encapsule * enc) {
     //std::cout << "received " << enc->name_ << " " << std::string((char*)ptr, nmemb) << std::endl;
     enc->body_.append((char*)ptr, nmemb);
     std::vector<std::string> strs;
 	boost::split(strs, enc->body_, boost::is_any_of("\n\n"));
 	int str_size = strs.size();
+	Json::Value root_;
 	if(str_size > 2){
 		for(int j = 0; j < str_size - 1; ++j){
 			std::size_t tmp = strs[j].find("{");
@@ -15,7 +16,6 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, encapsule * enc) {
 				enc->addTime();
 				enc->addData(strs[j]);
 				enc->prepareData();
-				//std::cout << "sending " << enc->to_send_ << std::endl;
 				if(online) 
 	          		io.post( [&enc]() {
 	                	enc->send();
@@ -29,7 +29,7 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, encapsule * enc) {
 }
 
 
-Http::Http(DataWriter & websocket): websocket_(websocket)
+Http::Http()
 {
 	multi_handle = curl_multi_init();
 	handle_count = 0;
@@ -45,7 +45,7 @@ void Http::update()
 	curl_multi_perform(multi_handle, &handle_count);
 }
 
-void Http::addRequest(const char* uri, const std::string token, encapsule * enc){
+void Http::addRequest(const char* uri, const std::string token, Encapsule * enc){
 	CURL * curl = curl_easy_init();
 	curl_easy_setopt(curl, CURLOPT_URL, uri);
 	struct curl_slist * headerlist = NULL;
@@ -65,7 +65,7 @@ void Http::addRequest(const char* uri, const std::string token, encapsule * enc)
 
 void sseHandler(DataWriter & websocket, int session){
 
-	Http http(websocket);
+	Http http;
 
 	std::ifstream infile("../../data/sse.txt");
 
@@ -73,16 +73,14 @@ void sseHandler(DataWriter & websocket, int session){
   	{
     	std::cout << "cannot open sse.txt file in \"../../data/sse.txt\"" << std::endl;
   	}else{
-
 	  	std::string name, url, token;
 	  	while(infile >> name >> url >> token){
 	 	  	std::cout << "Adding " << name << " url " << url << " token " << token << std::endl;
-	 	  	http.enc_vector_.push_back(encapsule(websocket, name, session));
-			http.addRequest(url.c_str(), token, &(http.enc_vector_.back()));
+			http.addRequest(url.c_str(), token, new Encapsule(websocket, name));
 	  	}
   	}
-
-  	while(!to_stop)
+  	while(!to_stop){
   		http.update();
+  	}
 }
 

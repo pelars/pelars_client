@@ -5,7 +5,7 @@ void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session
 {
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
-	std::string face_cascade_name_ = "../../data/haarcascade_frontalface_alt.xml";
+	//std::string face_cascade_name_ = "../../data/haarcascade_frontalface_alt.xml";
 	std::string face_cascade_name_gpu_ = "../../data/haarcascade_frontalface_alt2.xml";
 	cv::CascadeClassifier face_cascade_;
 	cv::Mat color, tmp;
@@ -15,18 +15,15 @@ void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session
 	cv::gpu::CascadeClassifier_GPU cascade_gpu_;
 	bool findLargestObject_ = false;
     bool filterRects_ = true;
-    
 
-	bool to_stop_ = false;
-
-	if( !cascade_gpu_.load( face_cascade_name_gpu_ ) )
+	if(!cascade_gpu_.load( face_cascade_name_gpu_ ) )
 	{ 
 		std::cout << "--(!)Error loading " << face_cascade_name_gpu_ << std::endl; 
-		to_stop_ = true;
+		to_stop = true;
 	}
 	cv::namedWindow("face");
 
-	while(!to_stop_)
+	while(!to_stop)
 	{	
 
 	    capture >> color;
@@ -63,7 +60,6 @@ void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session
 
 		     // Preapare JSON message to send to the Collector
 	        Json::Value root;
-	        Json::Value pos;
 	        Json::StyledWriter writer;
 
 	        //Elapsed time from process start
@@ -97,15 +93,14 @@ void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session
 	    facesBuf_gpu.release();
 
 	    int c = cv::waitKey(1);
-		if( (char)c == 'q' ) {
-			to_stop_ = true;
+		if((char)c == 'q' ) {
+			to_stop = true;
+			std::cout << "stop requested by face detector" << std::endl;
 		}
-	}
-	
-	to_stop = true;
+	}	
 }
 
-
+/*
 void detectFacesCPU(DataWriter & websocket, int session)
 {
 
@@ -188,4 +183,4 @@ void detectFacesCPU(DataWriter & websocket, int session)
 	}
 	
 	to_stop = true;
-}
+}*/

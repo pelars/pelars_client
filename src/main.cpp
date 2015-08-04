@@ -11,6 +11,7 @@
 // To stop all the threads if one receives a stop signal
 bool to_stop = false;
 bool online = true;
+// Starting time
 const std::string currentDateTimeNow = currentDateTime();
 
 int main(int argc, char * argv[])
@@ -30,9 +31,6 @@ int main(int argc, char * argv[])
     return -1;
   }
 
-  // Standard vector containing the different threads
-  std::vector<std::thread> thread_list(4);
-
   // Camera capture for face detection
   cv::VideoCapture capture_face(0);
   if(!capture_face.isOpened()){
@@ -40,7 +38,7 @@ int main(int argc, char * argv[])
     return -1;
   }
   // Camera capture for hand detection
-  cv::VideoCapture capture_hand(2);
+  cv::VideoCapture capture_hand(1);
   if(!capture_hand.isOpened()){
     std::cout << "Impossible to read from the webcam" << std::endl;
     return -1;
@@ -57,8 +55,7 @@ int main(int argc, char * argv[])
   kinect_manager.start();
 
   // Check the endpoint string and connect to the collector
-  // TODO if connection fails exit
-  std::string end_point = "http://10.100.35.191:8080/pelars/";
+  std::string end_point = "http://pelars.sssup.it:8080/pelars/";
   //std::string end_point = "http://10.100.35.191:8080/pelars/";
 
   end_point = end_point.back() == '/' ? end_point : end_point + "/";
@@ -87,6 +84,9 @@ int main(int argc, char * argv[])
   std::thread mg_thread(serve, webserver);
   std::cout << "\tMoongoose ready" << std::endl;
   */
+
+  // Standard vector containing the different threads
+  std::vector<std::thread> thread_list(4);
 
   // Starting the linemod thread
   thread_list[0] = std::thread(linemodf, std::ref(infile), std::ref(kinect_manager), std::ref(collector), session);

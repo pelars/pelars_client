@@ -48,7 +48,7 @@ include_directories(${x264_INCLUDE_DIRS})
 
 add_executable(sensor_manager   ${SRC}/main.cpp 
 								${SRC}/session_manager.cpp 
-								${SRC}/face_detector.cpp ${SRC}/opt.cpp 
+								${SRC}/face_detector.cpp
 								${SRC}/linemod.cpp 
 								${SRC}/kinect_grabber.cpp 
 								${SRC}/data_writer.cpp 
@@ -57,7 +57,8 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/x264encoder.cpp
 								${SRC}/sse_handler.cpp 
 								${SRC}/xn16zdec.cpp
-								${SRC}/hand_detector.cpp)
+								${SRC}/hand_detector.cpp
+								${SRC}/opt.cpp)
 
 add_executable(freenect-camshare ${SRC}/camshare.cpp)
 
