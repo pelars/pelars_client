@@ -16,12 +16,15 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
+
 find_package(OpenCV REQUIRED)
 find_package(USB REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Boost COMPONENTS system filesystem thread random REQUIRED)
 find_package(Freenect REQUIRED)
 find_package(Websocketpp REQUIRED)
+find_package(PkgConfig REQUIRED)
 #find_package(FFmpeg REQUIRED)
 
 find_library(JSON_LIBRARY  NAMES jsoncpp)
@@ -38,13 +41,24 @@ find_library(AVUTIL   NAMES avutil)
 find_library(AVCODEC  NAMES avcodec)
 find_library(AVFILTER NAMES avfilter)
 find_library(AVDEVICE NAMES avdevice)
-find_library(CURL NAME curl)
-find_library(ARUCO NAME aruco)
+find_library(CURL NAMES curl)
+find_library(ARUCO NAMES aruco)
+find_library(GSTREAMER NAMES gstreamer-1.0)
+find_library(GSTREAMER_O NAMES gobject-2.0)
+find_library(GSTREAMER_A NAMES gstapp-1.0)
+find_library(GLIB NAMES glib-2.0)
+
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${INCLUDE})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${x264_INCLUDE_DIRS})
+
+# Set CMAKE_C_FLAGS variable with info from pkg-util
+execute_process(COMMAND pkg-config --cflags gstreamer-1.0
+                OUTPUT_VARIABLE CMAKE_C_FLAGS)
+string(REPLACE "\n" "" CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+message("CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
 
 add_executable(sensor_manager   ${SRC}/main.cpp 
 								${SRC}/session_manager.cpp 
@@ -80,7 +94,13 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${AVDEVICE}
 										${CURL}
 										${ARUCO}
+										${GSTREAMER}
+										${GSTREAMER_O}
+										${GSTREAMER_A}
+										${GLIB}																
                                         rt )
+
+set_target_properties(sensor_manager PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS})                                        
 
 
 target_link_libraries(freenect-camshare ${FREENECT} rt) 

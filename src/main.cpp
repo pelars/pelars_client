@@ -32,17 +32,19 @@ int main(int argc, char * argv[])
   }
 
   // Camera capture for face detection
-  cv::VideoCapture capture_face(0);
+  cv::VideoCapture capture_face(1);
   if(!capture_face.isOpened()){
     std::cout << "Impossible to read from the webcam" << std::endl;
     return -1;
   }
-  // Camera capture for hand detection
-  cv::VideoCapture capture_hand(1);
+  
+ /* // Camera capture for hand detection
+  cv::VideoCapture capture_hand(0);
   if(!capture_hand.isOpened()){
     std::cout << "Impossible to read from the webcam" << std::endl;
     return -1;
   }
+*/  
 
   // Keep aliver
   std::thread ws_writer(asiothreadfx);
@@ -95,7 +97,7 @@ int main(int argc, char * argv[])
   // Starting the particle.io thread
   thread_list[2] = std::thread(sseHandler, std::ref(collector), session);
   // Starting the hand detector
-  thread_list[3] = std::thread(handDetector, std::ref(kinect_manager), std::ref(collector), std::ref(capture_hand), session);
+  thread_list[3] = std::thread(handDetector, std::ref(kinect_manager), std::ref(collector), session);
 
   // Wait for the termination of all threads
   for(auto &thread : thread_list)
