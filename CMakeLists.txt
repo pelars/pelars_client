@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 set(CMAKE_BUILD_TYPE Release) 
 
-set(CMAKE_PREFIX_PATH /prefix/)
+#set(CMAKE_PREFIX_PATH /prefix/)
 set(SRC                ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INCLUDE            ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -20,16 +20,13 @@ find_package(OpenCV REQUIRED)
 find_package(USB REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Boost COMPONENTS system filesystem thread random REQUIRED)
-find_package(Freenect REQUIRED)
-find_package(Websocketpp REQUIRED)
-#find_package(FFmpeg REQUIRED)
 
+if(OLD_APPROACH)
 find_library(JSON_LIBRARY  NAMES jsoncpp)
 find_library(CPPNET_CLIENT NAMES cppnetlib-client-connections) 
 find_library(CPPNET_PARSER NAMES cppnetlib-server-parsers)
 find_library(CPPNET_URI    NAMES cppnetlib-uri )
 find_library(FREENECT      NAMES freenect )
-
 find_library(TINYXML2 NAMES tinyxml2)
 find_library(X264     NAMES x264) 
 find_library(SWSCALE  NAMES swscale)
@@ -45,6 +42,33 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${INCLUDE})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${x264_INCLUDE_DIRS})
+else()
+
+find_package(Gstreamer-1.0 REQUIRED)
+find_package(Freenect REQUIRED)
+find_package(Websocketpp REQUIRED)
+find_package(FFmpeg REQUIRED)
+find_package(TinyXML2 REQUIRED)
+find_package(JsonCpp REQUIRED)
+find_package(Freenect REQUIRED)
+find_package(x264 REQUIRED)
+find_package(CPP-NETLIB REQUIRED)
+find_package(CURL REQUIRED)
+find_package(Aruco REQUIRED)
+
+set(CPPNET_CLIENT ${CPPNETLIB_LIBRARIES})
+set(CPPNET_PARSER ${CPPNETLIB_LIBRARIES})
+set(CPPNET_URI ${CPPNETLIB_LIBRARIES})
+set(FREENECT ${Freenect_LIBRARY})
+set(ARUCO ${ARUCO_LIBRARIES})
+set(CURL ${CURL_LIBRARIES})
+set(AVFILTER ${FFMPEG_LIBRARIES})
+set(JSON_LIBRARY ${JSONCPP_LIBRARY})
+set(X264 ${X264_LIBRARIES})
+set(TINYXML2 ${TINYXML2_LIBRARY})
+endif()
+
+set(LINUXEXTRA rt)
 
 add_executable(sensor_manager   ${SRC}/main.cpp 
 								${SRC}/session_manager.cpp 
@@ -80,7 +104,7 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${AVDEVICE}
 										${CURL}
 										${ARUCO}
-                                        rt )
+                                        ${LINUXEXTRA} )
 
 
 target_link_libraries(freenect-camshare ${FREENECT} rt) 
