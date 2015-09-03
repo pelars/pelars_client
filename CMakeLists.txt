@@ -52,7 +52,6 @@ find_library(GLIB            NAMES glib-2.0)
 set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
 
 include_directories(${OpenCV_INCLUDE_DIRS})
-include_directories(${INCLUDE})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${x264_INCLUDE_DIRS})
 else()
@@ -80,8 +79,14 @@ set(JSON_LIBRARY ${JSONCPP_LIBRARY})
 set(X264 ${X264_LIBRARIES})
 set(TINYXML2 ${TINYXML2_LIBRARY})
 set(GSTREAMER_ALL ${GSTREAMER_LIBRARY})
+
+include_directories(${JSONCPP_INCLUDE_DIR})
+include_directories(${FFMPEG_INCLUDE_DIRS})
+include_directories(${GSTREAMER_INCLUDE_DIRS})
+message(FFMPEG ${FFMPEG_INCLUDE_DIRS})
 endif()
 
+include_directories(${INCLUDE})
 set(LINUXEXTRA rt)
 
 
