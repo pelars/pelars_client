@@ -12,8 +12,11 @@
 #include <json/json.h>
 #include "alttime.h"
 #include <vector>
+#include <ctime>
+#include "gstreamer_grabber.h"
 
 extern bool to_stop;
+extern bool visualization;
 
 void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session);
 //void detectFacesCPU(DataWriter & websocket, int session);

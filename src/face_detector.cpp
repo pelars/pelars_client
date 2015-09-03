@@ -16,16 +16,20 @@ void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session
 	bool findLargestObject_ = false;
     bool filterRects_ = true;
 
-	if(!cascade_gpu_.load( face_cascade_name_gpu_ ) )
+	if(!cascade_gpu_.load( face_cascade_name_gpu_ ))
 	{ 
 		std::cout << "--(!)Error loading " << face_cascade_name_gpu_ << std::endl; 
 		to_stop = true;
 	}
+	if(visualization)
 	cv::namedWindow("face");
+
+	clock_t begin_time = clock();
+
+    double elapsed_time = 0.0;
 
 	while(!to_stop)
 	{	
-
 	    capture >> color;
 
 		cvtColor(color, tmp, CV_BGR2GRAY); 
@@ -53,6 +57,8 @@ void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session
 
 	    //std::cout << "found " << detections_num << " faces " << std::endl;
 
+
+
 	    for( int i = 0; i < detections_num; ++i )
 	  	{
 		    cv::Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
@@ -64,7 +70,11 @@ void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session
 
 	        //Elapsed time from process start
 	        elapsed = deltats(orwl_gettime(), start);
+	        elapsed_time = elapsed_time + double(clock() - begin_time) / CLOCKS_PER_SEC;
 
+	        if (elapsed_time > 100.0) {
+	        	elapsed_time = 0.0;
+	        	begin_time = clock();
 	        // Json message
 	        root["obj"]["type"] = "face";
 	        //root["obj"]["session"] = session;
@@ -78,15 +88,19 @@ void detectFaces(DataWriter & websocket, cv::VideoCapture & capture, int session
 	        //Send message
 	        std::string out_string = writer.write(root);
 	        //std::cout << "sending " << out_string << std::endl;
-	        if(online)
+	        if(online){
+	        	//std::cout << "Face detector posting data to the server\n " << std::flush;
           		io.post( [&websocket, out_string]() {
                 websocket.writeData(out_string);
                 });
-            
-            websocket.writeLocal(out_string);    
+            }
+            websocket.writeLocal(out_string);  
+           // std::cout << "posting to the server face \n" << std::flush;  
 	  	}
+	  }
 
 		//-- Show what you got
+	  if(visualization)
 		cv::imshow( "face", color );
 
 	    gray_gpu.release();

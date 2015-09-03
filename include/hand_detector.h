@@ -11,51 +11,11 @@
 #include <json/json.h>
 #include <aruco/aruco.h>
 #include <aruco/cvdrawingutils.h>
-#include <gst/gst.h> 
-#include <gst/app/gstappsink.h>
-#include <glib.h>
+#include "gstreamer_grabber.h"
+#include <ctime>
 
 extern bool to_stop;
 extern bool online;
+extern bool visualization;
 
-typedef struct _CustomData
-{
-    GstElement *appsink;
-    GstElement *colorSpace1,*colorSpace2;    
-    GstElement *pipeline;
-    GstElement *vsource_capsfilter, *cspappsink_capsfilter;
-    GstElement *bin_capture;
-    GstElement *video_source;     
-    GstElement *parser;
-    GstElement *decoder;
-    GstCaps *srcdeinterlace_caps;
-    GstCaps*cspappsink_caps;    
-    GstBus *bus;
-    GstMessage *msg;        
-}gstData;
-
-template <typename T> string toString(T t);
-
-void create_pipeline(gstData *data);
-
-gboolean init_video_capture(gstData *data);
-
-void delete_pipeline(gstData *data);
-
-gboolean add_bin_capture_to_pipe(gstData *data);
-
-gboolean remove_bin_capture_from_pipe(gstData *data);
-
-gboolean start_capture_pipe(gstData *data);
-
-gboolean stop_capture_pipe(gstData *data);
-
-gboolean deinit_video_live(gstData *data);
-
-gboolean check_bus_cb(gstData *data);
-
-void get_pipeline_bus(gstData *data);
-
-void xx(const char * p);
-
-void handDetector(KinectManagerExchange & kme, DataWriter & websocket, int session);
+void handDetector(DataWriter & websocket, int session);
