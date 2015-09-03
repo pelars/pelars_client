@@ -1,9 +1,0 @@
-<Root>
-	<name>test_name</name>
-	<email>test_email4@test.com</email>
-	<affiliation>test_affiliation</affiliation>
-	<institution_name>test_institution</institution_name>
-	<institution_address>test_address</institution_address>
-	<namespace>test_country_name</namespace>
-	<password>test_password</password>
-</Root>
