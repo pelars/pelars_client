@@ -39,7 +39,7 @@ cv::Ptr<cv::linemod::Detector> readLinemod(const std::string& filename)
   return detector;
 }
 
-int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & websocket, int session)
+int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & websocket, int session)
 {
   // Some matching parameters for linemod
   short matching_threshold = 85;
@@ -59,6 +59,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
   const double center_y_depth = 2.4273913761751615e+02;
 
   // Initialize an OpenCV window
+  if(visualization)
   cv::namedWindow("color");
 
   // Initialize LINEMOD data structures
@@ -113,10 +114,15 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
   double min;
   double max;
 
+
+  clock_t begin_time = clock();
+
+  float elapsed_time = 0.0;
+
   //Main loop. Executes until 'q' is pressed or there is an error with the kinect acquisition.
   while(!to_stop)  {
     // Acquire depth and color images from the kinect and prepare them for linemod
-    if(!kme.get(color, depth))
+    if(!kme->get(color, depth))
     {
       std::cout << "failed to fetch data from the kinect\n";
       to_stop = true;
@@ -210,30 +216,41 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
         //Elapsed time from process start
         elapsed = deltats(results[i][j].end, start);
 
-        // Template data
-        int dz = depth.at<uint16_t>(m.y,m.x);
-        pos[0] = (m.x - center_x_depth) * dz / focal_x_depth;
-        pos[1] = (m.x - center_x_depth) * dz / focal_x_depth;
-        pos[2] = dz;
+        elapsed_time = elapsed_time + float(clock() - begin_time) / CLOCKS_PER_SEC;
+        if(elapsed_time > 100.0)
+        {
 
-        // Json message
-        root["obj"]["type"] = "object";
-        //root["obj"]["session"] = session;
-        root["obj"]["id"] = i;
-        root["obj"]["x"] = m.x; // (m.x - center_x_depth) * dz / focal_x_depth;
-        root["obj"]["y"] = m.y; // (m.y - center_y_depth) * dz / focal_y_depth;
-        root["obj"]["z"] = dz;
-        root["obj"]["pos"] = pos; // maybe not and one at level of ...
-        root["obj"]["time"] = elapsed; // session relative
+          elapsed_time = 0.0;
+          begin_time = clock();
 
-        //Send message
-        std::string out_string = writer.write(root);
-        if(online)
-          io.post( [&websocket, out_string]() {
+          // Template data
+          int dz = depth.at<uint16_t>(m.y,m.x);
+          pos[0] = (m.x - center_x_depth) * dz / focal_x_depth;
+          pos[1] = (m.x - center_x_depth) * dz / focal_x_depth;
+          pos[2] = dz;
+
+          // Json message
+          root["obj"]["type"] = "object";
+          //root["obj"]["session"] = session;
+          root["obj"]["id"] = i;
+          root["obj"]["x"] = m.x; // (m.x - center_x_depth) * dz / focal_x_depth;
+          root["obj"]["y"] = m.y; // (m.y - center_y_depth) * dz / focal_y_depth;
+          root["obj"]["z"] = dz;
+          root["obj"]["pos"] = pos; // maybe not and one at level of ...
+          root["obj"]["time"] = elapsed; // session relative
+
+          //Send message
+          std::string out_string = writer.write(root);
+          if(online)
+          {
+            std::cout << "Object detector posting data to the server\n " << std::flush;
+            io.post( [&websocket, out_string]() {
                websocket.writeData(out_string);
            });
-        
-        websocket.writeLocal(out_string);    
+          }
+
+          websocket.writeLocal(out_string);    
+        }
       }
     }
 
@@ -249,8 +266,11 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
     depth.convertTo(adjMap, CV_8UC1, 255 / (max - min), -min); 
 
     // Display color and depth
+    if(visualization)
+    {
     cv::imshow("adjMap", adjMap);
     cv::imshow("color", display);
+    }
 
     // Store streams
     const unsigned char * pp = (const unsigned char*)display.data;
@@ -272,8 +292,10 @@ int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & w
 
     // Check if any key is pressed and in case process input
     char key = (char)cvWaitKey(1);
-    if( key == 'q' || to_stop ){
+    if( key == 'q')
+    {
       std::cout << "stop requested by object recognition" << std::endl;
+      to_stop = true;
       break;
     }
     switch (key)

@@ -18,6 +18,7 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, Encapsule * enc) {
 				enc->prepareData();
 				if(online) 
 	          		io.post( [&enc]() {
+	          			std::cout << "SENDING" << std::endl;
 	                	enc->send();
 	                });
 		        enc->localSend();
@@ -81,6 +82,7 @@ void sseHandler(DataWriter & websocket, int session){
   	}
   	while(!to_stop){
   		http.update();
+  		//std::cout << "to_stop " << to_stop <<"\n" << std::flush;
   	}
 }
 

@@ -11,8 +11,11 @@
 #include <json/json.h>
 #include <aruco/aruco.h>
 #include <aruco/cvdrawingutils.h>
+#include "gstreamer_grabber.h"
+#include <ctime>
 
 extern bool to_stop;
 extern bool online;
+extern bool visualization;
 
-void handDetector(KinectManagerExchange & kme, DataWriter & websocket, cv::VideoCapture & capture, int session);
+void handDetector(DataWriter & websocket, int session);

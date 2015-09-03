@@ -11,7 +11,7 @@
 #include "encdec.hpp"
 
 extern bool to_stop;
-
+extern bool visualization;
 
 // Draw the Linemod results
 void drawResponse(const std::vector<cv::linemod::Template>& templates,
@@ -28,4 +28,4 @@ struct result_t
 };
 
 
-int linemodf(std::ifstream & infile, KinectManagerExchange & kme, DataWriter & websocket, int session);
+int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & websocket, int session);

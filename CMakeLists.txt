@@ -16,27 +16,40 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
+
 find_package(OpenCV REQUIRED)
 find_package(USB REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Boost COMPONENTS system filesystem thread random REQUIRED)
+find_package(Freenect REQUIRED)
+find_package(Websocketpp REQUIRED)
+find_package(PkgConfig REQUIRED)
+#find_package(FFmpeg REQUIRED)
 
 if(OLD_APPROACH)
 find_library(JSON_LIBRARY  NAMES jsoncpp)
 find_library(CPPNET_CLIENT NAMES cppnetlib-client-connections) 
 find_library(CPPNET_PARSER NAMES cppnetlib-server-parsers)
 find_library(CPPNET_URI    NAMES cppnetlib-uri )
-find_library(FREENECT      NAMES freenect )
-find_library(TINYXML2 NAMES tinyxml2)
-find_library(X264     NAMES x264) 
-find_library(SWSCALE  NAMES swscale)
-find_library(AVFORMAT NAMES avformat)
-find_library(AVUTIL   NAMES avutil)
-find_library(AVCODEC  NAMES avcodec)
-find_library(AVFILTER NAMES avfilter)
-find_library(AVDEVICE NAMES avdevice)
-find_library(CURL NAME curl)
-find_library(ARUCO NAME aruco)
+
+find_library(FREENECT      NAMES freenect)
+find_library(TINYXML2        NAMES tinyxml2)
+find_library(X264            NAMES x264) 
+find_library(SWSCALE         NAMES swscale)
+find_library(AVFORMAT        NAMES avformat)
+find_library(AVUTIL          NAMES avutil)
+find_library(AVCODEC         NAMES avcodec)
+find_library(AVFILTER        NAMES avfilter)
+find_library(AVDEVICE        NAMES avdevice)
+find_library(CURL            NAMES curl)
+find_library(ARUCO           NAMES aruco)
+find_library(GSTREAMER       NAMES gstreamer-1.0)
+find_library(GSTREAMER_O     NAMES gobject-2.0)
+find_library(GSTREAMER_A     NAMES gstapp-1.0)
+find_library(GLIB            NAMES glib-2.0)
+
+set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${INCLUDE})
@@ -59,16 +72,24 @@ find_package(Aruco REQUIRED)
 set(CPPNET_CLIENT ${CPPNETLIB_LIBRARIES})
 set(CPPNET_PARSER ${CPPNETLIB_LIBRARIES})
 set(CPPNET_URI ${CPPNETLIB_LIBRARIES})
-set(FREENECT ${Freenect_LIBRARY})
+set(FREENECT ${FREENECT_LIBRARIES})
 set(ARUCO ${ARUCO_LIBRARIES})
 set(CURL ${CURL_LIBRARIES})
 set(AVFILTER ${FFMPEG_LIBRARIES})
 set(JSON_LIBRARY ${JSONCPP_LIBRARY})
 set(X264 ${X264_LIBRARIES})
 set(TINYXML2 ${TINYXML2_LIBRARY})
+set(GSTREAMER_ALL ${GSTREAMER_LIBRARY})
 endif()
 
 set(LINUXEXTRA rt)
+
+
+# Set CMAKE_C_FLAGS variable with info from pkg-util
+execute_process(COMMAND pkg-config --cflags gstreamer-1.0
+                OUTPUT_VARIABLE CMAKE_C_FLAGS)
+string(REPLACE "\n" "" CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+message("CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
 
 add_executable(sensor_manager   ${SRC}/main.cpp 
 								${SRC}/session_manager.cpp 
@@ -82,7 +103,9 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/sse_handler.cpp 
 								${SRC}/xn16zdec.cpp
 								${SRC}/hand_detector.cpp
-								${SRC}/opt.cpp)
+								${SRC}/gstreamer_grabber.cpp
+								${SRC}/opt.cpp
+								${SRC}/key_logger.cpp)
 
 add_executable(freenect-camshare ${SRC}/camshare.cpp)
 
@@ -104,9 +127,11 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${AVDEVICE}
 										${CURL}
 										${ARUCO}
-                                        ${LINUXEXTRA} )
+                                       						 ${LINUXEXTRA} 
+										${GSTREAMER_ALL}
+)
 
-
+set_target_properties(sensor_manager PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS})                                        
 target_link_libraries(freenect-camshare ${FREENECT} rt) 
 
 
