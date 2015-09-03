@@ -31,22 +31,22 @@ find_library(JSON_LIBRARY  NAMES jsoncpp)
 find_library(CPPNET_CLIENT NAMES cppnetlib-client-connections) 
 find_library(CPPNET_PARSER NAMES cppnetlib-server-parsers)
 find_library(CPPNET_URI    NAMES cppnetlib-uri )
-find_library(FREENECT      NAMES freenect )
+find_library(FREENECT      NAMES freenect)
 
-find_library(TINYXML2 NAMES tinyxml2)
-find_library(X264     NAMES x264) 
-find_library(SWSCALE  NAMES swscale)
-find_library(AVFORMAT NAMES avformat)
-find_library(AVUTIL   NAMES avutil)
-find_library(AVCODEC  NAMES avcodec)
-find_library(AVFILTER NAMES avfilter)
-find_library(AVDEVICE NAMES avdevice)
-find_library(CURL NAMES curl)
-find_library(ARUCO NAMES aruco)
-find_library(GSTREAMER NAMES gstreamer-1.0)
-find_library(GSTREAMER_O NAMES gobject-2.0)
-find_library(GSTREAMER_A NAMES gstapp-1.0)
-find_library(GLIB NAMES glib-2.0)
+find_library(TINYXML2        NAMES tinyxml2)
+find_library(X264            NAMES x264) 
+find_library(SWSCALE         NAMES swscale)
+find_library(AVFORMAT        NAMES avformat)
+find_library(AVUTIL          NAMES avutil)
+find_library(AVCODEC         NAMES avcodec)
+find_library(AVFILTER        NAMES avfilter)
+find_library(AVDEVICE        NAMES avdevice)
+find_library(CURL            NAMES curl)
+find_library(ARUCO           NAMES aruco)
+find_library(GSTREAMER       NAMES gstreamer-1.0)
+find_library(GSTREAMER_O     NAMES gobject-2.0)
+find_library(GSTREAMER_A     NAMES gstapp-1.0)
+find_library(GLIB            NAMES glib-2.0)
 
 
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -72,7 +72,9 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/sse_handler.cpp 
 								${SRC}/xn16zdec.cpp
 								${SRC}/hand_detector.cpp
-								${SRC}/opt.cpp)
+								${SRC}/gstreamer_grabber.cpp
+								${SRC}/opt.cpp
+								${SRC}/key_logger.cpp)
 
 add_executable(freenect-camshare ${SRC}/camshare.cpp)
 
@@ -101,8 +103,6 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
                                         rt )
 
 set_target_properties(sensor_manager PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS})                                        
-
-
 target_link_libraries(freenect-camshare ${FREENECT} rt) 
 
 
