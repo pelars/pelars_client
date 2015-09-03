@@ -1,2 +1,0 @@
-push_button https://api.particle.io/v1/events/buttonpress cd1e06fe5c9ee77f8f2b49b164c4d6ac799b8560
-helper https://api.particle.io/v1/events/helpus cd1e06fe5c9ee77f8f2b49b164c4d6ac799b8560
