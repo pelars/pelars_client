@@ -56,7 +56,12 @@ include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${x264_INCLUDE_DIRS})
 else()
 
-find_package(Gstreamer-1.0 REQUIRED)
+find_library(GSTREAMER       NAMES gstreamer-1.0)
+find_library(GSTREAMER_O     NAMES gobject-2.0)
+find_library(GSTREAMER_A     NAMES gstapp-1.0)
+find_library(GLIB            NAMES glib-2.0)
+
+#find_package(Gstreamer-1.0 REQUIRED)
 find_package(Freenect REQUIRED)
 find_package(Websocketpp REQUIRED)
 find_package(FFmpeg REQUIRED)
@@ -78,7 +83,9 @@ set(AVFILTER ${FFMPEG_LIBRARIES})
 set(JSON_LIBRARY ${JSONCPP_LIBRARY})
 set(X264 ${X264_LIBRARIES})
 set(TINYXML2 ${TINYXML2_LIBRARY})
-set(GSTREAMER_ALL ${GSTREAMER_LIBRARY})
+
+set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
+
 
 include_directories(${JSONCPP_INCLUDE_DIR})
 include_directories(${FFMPEG_INCLUDE_DIRS})
