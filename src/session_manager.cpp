@@ -4,7 +4,7 @@
 SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint)
 {	
 	std::cout << "Parsing the input data" << std::endl;
-    tinyxml2::XMLError eResult =  data_.LoadFile( "../../data/personal.xml" );
+   auto eResult =  data_.LoadFile( "../../data/personal.xml" );
     if(eResult != 0){
     	std::cout << "\tError parsing personal.xml or file not present in /data/" << std::endl;
     	to_stop = true;
