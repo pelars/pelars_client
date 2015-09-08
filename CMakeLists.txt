@@ -68,7 +68,7 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/linemod.cpp 
 								${SRC}/kinect_grabber.cpp 
 								${SRC}/data_writer.cpp 
-								${SRC}/mongoose.cpp 
+								#${SRC}/mongoose.cpp 
 								${SRC}/x264decoder.cpp 
 								${SRC}/x264encoder.cpp
 								${SRC}/sse_handler.cpp 
