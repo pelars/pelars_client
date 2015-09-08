@@ -24,8 +24,6 @@ void sig_handler(int signum)
     printf("Received signal %d\n", signum);
 }
 
-
-
 int main(int argc, char * argv[])
 {
   signal(SIGHUP, sig_handler);
@@ -118,10 +116,8 @@ int main(int argc, char * argv[])
     thread_list.push_back(std::thread(handDetector, std::ref(collector), session));
   // Starting the key logger
   if(arguments.keylog)
-  {
     thread_list.push_back(std::thread(keyLogger, std::ref(collector), session, std::ref(io)));
-  }
-
+  
   //If there are no windows wait for Esc to be pressed
   if(!visualization && !special){
     std::string str = "";
@@ -133,7 +129,6 @@ int main(int argc, char * argv[])
     }
     to_stop = true;
   }
-
  
   // Wait for the termination of all threads
   for(auto &thread : thread_list)
@@ -167,6 +162,4 @@ int main(int argc, char * argv[])
   std::cout << "IO stopped" << std::endl; 
 
   return 0;
-
-  
 }

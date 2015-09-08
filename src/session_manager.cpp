@@ -3,7 +3,6 @@
 
 SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint)
 {	
-	//srand (time(NULL));
 	std::cout << "Parsing the input data" << std::endl;
     tinyxml2::XMLError eResult =  data_.LoadFile( "../../data/personal.xml" );
     if(eResult != 0){
@@ -14,7 +13,6 @@ SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint)
 
    createUser();
 }	
-
 
 int SessionManager::getNewSession()
 {
@@ -89,14 +87,13 @@ void SessionManager::createUser(){
 		bool parsedSuccess = reader_.parse(session_manager_response_, root_);
 		user_id_ = root_["id"].asInt();
 
-		if(root_["message"].asString().find(std::string("User already present")) != std::string::npos)
+		if(root_["message"].asString().find(std::string("User already present")) == std::string::npos)
 			std::cout << "\tGot response " << session_manager_response_;
 	}
 	catch (std::exception& e){
 		// Generic error during the request
 		std::cout << "\tError during the user creation: " << e.what()  <<std::endl;
 	}
-
 }
 
 void SessionManager::closeSession(int session)

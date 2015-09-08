@@ -14,7 +14,6 @@ GstreamerGrabber::GstreamerGrabber()
     	   return;
         //std::cout << "Start" << std::endl;
     }
-
 }
 
 GstreamerGrabber::~GstreamerGrabber()
@@ -77,9 +76,7 @@ gboolean GstreamerGrabber::initVideoCapture()
     gst_caps_unref(this->cspappsink_caps);        
 
    // g_object_set (filesink, "location", "/i/do/not/exist", NULL);
-            
-     
-
+        
     this->bin_capture = gst_bin_new ("bin_capture");        
      
     gst_bin_add_many (GST_BIN (this->bin_capture), this->video_source, this->vsource_capsfilter,this->parser/*this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2*/,this->decoder, this->appsink, NULL);
@@ -205,7 +202,7 @@ void GstreamerGrabber::getPipelineBus()
     gst_message_unref (this->msg);
 }
 
-void GstreamerGrabber::capture(IplImage *frame)
+void GstreamerGrabber::capture(IplImage * frame)
 {
 	GstSample * sample = gst_app_sink_pull_sample((GstAppSink*)this->appsink);
       
@@ -216,6 +213,17 @@ void GstreamerGrabber::capture(IplImage *frame)
 
 	gst_buffer_extract(gstImageBuffer,0,frame->imageData,frame->imageSize);
 	gst_buffer_unref(gstImageBuffer);
+}
 
+void GstreamerGrabber::operator >>(IplImage * frame){
 
+    GstSample * sample = gst_app_sink_pull_sample((GstAppSink*)this->appsink);
+      
+    GstBuffer*  gstImageBuffer = gst_sample_get_buffer(sample); 
+
+    GstCaps * c = gst_sample_get_caps(sample);
+    GST_WARNING ("caps are %" GST_PTR_FORMAT, c);
+    
+    gst_buffer_extract(gstImageBuffer,0,frame->imageData,frame->imageSize);
+    gst_buffer_unref(gstImageBuffer);
 }

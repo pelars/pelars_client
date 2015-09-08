@@ -21,18 +21,23 @@ void handDetector(DataWriter & websocket, int session)
   float x, y, z;
 
   GstreamerGrabber gs_grabber;
+  //GstreamerGrabber2 gs_grabber2("/dev/video0", 1920, 1080, true, true);
 
-  IplImage *frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 1); //TODO 
+  IplImage * frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 1); //TODO 
 
   clock_t begin_time = clock();
 
   float elapsed = 0.0;
   z = 0.0f;  //TODO fix when we have depth
 
+  cv::Mat color;
+
   while(!to_stop)
   {
-    gs_grabber.capture(frame); 
 
+    gs_grabber >> frame; 
+    
+    //gs_grabber2.capture(frame);
     cv::Mat color(frame); 
 
     MDetector.detect(color, markers);
