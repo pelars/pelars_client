@@ -28,6 +28,8 @@ MACRO(FFMPEG_FIND varname shortname headername)
     # so try to find header in include directory
     FIND_PATH(FFMPEG_${varname}_INCLUDE_DIRS ${headername}
         HINTS
+        ${CMAKE_PREFIX_PATH}/include
+        ${CMAKE_PREFIX_PATH}
         ${FFMPEG_ROOT}/include
         $ENV{FFMPEG_DIR}/include
         $ENV{OSGDIR}/include
@@ -51,6 +53,8 @@ MACRO(FFMPEG_FIND varname shortname headername)
     IF(NOT FFMPEG_${varname}_INCLUDE_DIRS)
         FIND_PATH(FFMPEG_${varname}_INCLUDE_DIRS lib${shortname}/${headername}
             HINTS
+            ${CMAKE_PREFIX_PATH}/include
+            ${CMAKE_PREFIX_PATH}
             ${FFMPEG_ROOT}/include
             $ENV{FFMPEG_DIR}/include
             $ENV{OSGDIR}/include
@@ -73,6 +77,8 @@ MACRO(FFMPEG_FIND varname shortname headername)
     FIND_LIBRARY(FFMPEG_${varname}_LIBRARIES
         NAMES ${shortname}
         HINTS
+        ${CMAKE_PREFIX_PATH}/lib
+        ${CMAKE_PREFIX_PATH}
         ${FFMPEG_ROOT}/lib
         $ENV{FFMPEG_DIR}/lib
         $ENV{OSGDIR}/lib
@@ -108,7 +114,7 @@ FFMPEG_FIND(LIBSWSCALE  swscale  swscale.h)  # not sure about the header to look
 
 SET(FFMPEG_FOUND "NO")
 # Note we don't check FFMPEG_LIBSWSCALE_FOUND here, it's optional.
-IF   (FFMPEG_LIBAVFORMAT_FOUND AND FFMPEG_LIBAVDEVICE_FOUND AND FFMPEG_LIBAVCODEC_FOUND AND FFMPEG_LIBAVUTIL_FOUND)
+IF   (FFMPEG_LIBAVFORMAT_FOUND AND FFMPEG_LIBAVDEVICE_FOUND AND FFMPEG_LIBAVCODEC_FOUND AND FFMPEG_LIBAVUTIL_FOUND AND FFMPEG_LIBSWSCALE_FOUND)
 
     SET(FFMPEG_FOUND "YES")
 
@@ -121,7 +127,8 @@ IF   (FFMPEG_LIBAVFORMAT_FOUND AND FFMPEG_LIBAVDEVICE_FOUND AND FFMPEG_LIBAVCODE
         ${FFMPEG_LIBAVFORMAT_LIBRARIES}
         ${FFMPEG_LIBAVDEVICE_LIBRARIES}
         ${FFMPEG_LIBAVCODEC_LIBRARIES}
-        ${FFMPEG_LIBAVUTIL_LIBRARIES})
+        ${FFMPEG_LIBAVUTIL_LIBRARIES}
+        ${FFMPEG_LIBSWSCALE_LIBRARIES})
 
 ELSE (FFMPEG_LIBAVFORMAT_FOUND AND FFMPEG_LIBAVDEVICE_FOUND AND FFMPEG_LIBAVCODEC_FOUND AND FFMPEG_LIBAVUTIL_FOUND)
 

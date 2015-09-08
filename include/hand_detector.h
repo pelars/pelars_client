@@ -11,6 +11,7 @@
 #include <json/json.h>
 #include <aruco/aruco.h>
 #include <aruco/cvdrawingutils.h>
+#include "gstreamer_grabber2.h"
 #include "gstreamer_grabber.h"
 #include <ctime>
 

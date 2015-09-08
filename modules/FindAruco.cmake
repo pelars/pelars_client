@@ -12,7 +12,8 @@ endif(ARUCO_INCLUDE_DIR)
 
 find_path(ARUCO_INCLUDE_DIR
           aruco.h
-          PATHS /usr/local/include/aruco)
+          PATHS /usr/local/include/aruco
+          ${CMAKE_PREFIX_PATH}/include/aruco)
 
 find_library(ARUCO_LIBRARY
              PATHS /usr/local/lib

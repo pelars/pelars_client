@@ -25,7 +25,9 @@ public:
     gboolean deinitVideoLive();
     gboolean checkBusCb();
     void getPipelineBus();
-    void capture(IplImage *frame);
+    void capture(IplImage * frame);
+    void operator >>(IplImage * frame);
+
 
 private:
 

@@ -11,11 +11,14 @@ FIND_PATH(FREENECT_INCLUDE_DIR libfreenect.h
   /usr/local/include
   /usr/local/include/libfreenect
   /usr/include
+  ${CMAKE_PREFIX_PATH}/include/
+  ${CMAKE_PREFIX_PATH}/include/libfreenect/
 )
 
 FIND_LIBRARY(FREENECT_freenect_LIBRARY freenect
   /usr/local/lib
   /usr/lib
+  ${CMAKE_PREFIX_PATH}/lib/libfreenect/
 )
 
 MARK_AS_ADVANCED(
