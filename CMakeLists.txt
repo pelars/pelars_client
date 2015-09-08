@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 set(CMAKE_BUILD_TYPE Release) 
 
-set(CMAKE_PREFIX_PATH /prefix)
+#set(CMAKE_PREFIX_PATH /prefix)
 set(SRC                ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INCLUDE            ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -103,7 +103,7 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
                                         ${LINUXEXTRA} 
 										${GSTREAMER_ALL}
 										${FFMPEG_LIBRARIES}
-)
+										)
 
 target_link_libraries(freenect-camshare ${FREENECT} rt) 
 
