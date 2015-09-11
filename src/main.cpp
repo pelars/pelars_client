@@ -15,6 +15,7 @@ bool to_stop = false;
 bool online = true;
 bool visualization = false;
 struct arguments arguments;
+const char *  MONGOOSE_PORT= "8081";
 // Starting time
 const std::string currentDateTimeNow = currentDateTime();
 
@@ -91,10 +92,11 @@ int main(int argc, char * argv[])
   int session = sm.getNewSession();
 
   // Creating a local mongoose server for web debug
-  std::cout << "creating moongoose on port 8081" << std::endl;
+
+  std::cout << "creating moongoose on port: " << MONGOOSE_PORT << std::endl;
   struct mg_server * webserver;
   webserver = mg_create_server((void *) &session, ev_handler);
-  mg_set_option(webserver, "listening_port", "8081");
+  mg_set_option(webserver, "listening_port", MONGOOSE_PORT);
   std::thread mg_thread(serve, webserver);
   std::cout << "moongoose ready" << std::endl;
   
