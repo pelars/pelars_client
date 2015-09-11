@@ -81,14 +81,6 @@ int main(int argc, char * argv[])
     kinect_manager->start();
   }
 
-  // Creating a local mongoose server for web debug
-  std::cout << "creating moongoose on port 8081" << std::endl;
-  struct mg_server * webserver;
-  webserver = mg_create_server((void *) "1", ev_handler);
-  mg_set_option(webserver, "listening_port", "8081");
-  std::thread mg_thread(serve, webserver);
-  std::cout << "moongoose ready" << std::endl;
-
   // Check the endpoint string and connect to the collector
   std::string end_point = "http://pelars.sssup.it:8080/pelars/";
   end_point = end_point.back() == '/' ? end_point : end_point + "/";
@@ -97,9 +89,16 @@ int main(int argc, char * argv[])
   //Creating a Session Manager and getting a newsession ID
   SessionManager sm(end_point);
   int session = sm.getNewSession();
+
+  // Creating a local mongoose server for web debug
+  std::cout << "creating moongoose on port 8081" << std::endl;
+  struct mg_server * webserver;
+  webserver = mg_create_server((void *) "1", ev_handler, (void*) &session);
+  mg_set_option(webserver, "listening_port", "8081");
+  std::thread mg_thread(serve, webserver);
+  std::cout << "moongoose ready" << std::endl;
   
   std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
-
   // Check the endpoint string and connect to the session manager
   std::string session_endpoint = end_point + "session/";
   std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;     
