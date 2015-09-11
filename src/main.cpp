@@ -93,7 +93,7 @@ int main(int argc, char * argv[])
   // Creating a local mongoose server for web debug
   std::cout << "creating moongoose on port 8081" << std::endl;
   struct mg_server * webserver;
-  webserver = mg_create_server((void *) "1", ev_handler, (void*) &session);
+  webserver = mg_create_server((void *) &session, ev_handler);
   mg_set_option(webserver, "listening_port", "8081");
   std::thread mg_thread(serve, webserver);
   std::cout << "moongoose ready" << std::endl;

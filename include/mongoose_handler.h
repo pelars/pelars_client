@@ -13,13 +13,14 @@ static void * serve(void * server)
 }
 
 // Mongoose event handler (an http request for example)
-static int ev_handler(struct mg_connection * conn, enum mg_event ev, void * session) 
+static int ev_handler(struct mg_connection * conn, enum mg_event ev) 
 {
   //TODO meaningful debug has to be done here
   if (ev == MG_REQUEST) {
+    int * session = (* int)conn->server_param;
     //mg_send_header(conn, "Content-Type", "text/plain");
-    mg_printf_data(conn, "%d", *session);
-    mg_send_data(conn, session, 4);
+    //mg_printf_data(conn, "%d", *session;
+    mg_send_data(conn, *session, 4);
     return MG_TRUE;
   } else if (ev == MG_AUTH) {
     return MG_TRUE;
