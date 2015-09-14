@@ -6,14 +6,14 @@
 bool mg_thread_stop = false;
 
 // Poll the server to check if there are pending requests
-static void * serve(void * server) 
+void * serve(void * server) 
 {
   for (;!mg_thread_stop;) mg_poll_server((struct mg_server *) server, 1000);
   return NULL;
 }
 
 // Mongoose event handler (an http request for example)
-static int ev_handler(struct mg_connection * conn, enum mg_event ev) 
+int ev_handler(struct mg_connection * conn, enum mg_event ev) 
 {
   //TODO meaningful debug has to be done here
   if (ev == MG_REQUEST) {

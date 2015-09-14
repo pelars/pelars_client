@@ -1,6 +1,6 @@
 #include "gstreamer_grabber.h"
 
-GstreamerGrabber::GstreamerGrabber()
+GstreamerGrabber::GstreamerGrabber(int width, int height): height_(height), width_(width)
 {
 	gst_init(NULL, NULL);
     createPipeline();
@@ -59,17 +59,20 @@ gboolean GstreamerGrabber::initVideoCapture()
     gst_app_sink_set_emit_signals((GstAppSink*)this->appsink, true);
     gst_app_sink_set_drop((GstAppSink*)this->appsink, true);
     gst_app_sink_set_max_buffers((GstAppSink*)this->appsink, 1);    
-     
+    char buffer[1024]; 
+    sprintf(buffer,"video/x-h264, width=(int)%d, height=(int)%d, fframerate=30/1",
+                            width_, height_);
     // video/x-h264,width=1920,height=1080,framerate=30/1
-    this->srcdeinterlace_caps = gst_caps_from_string("video/x-h264, width=(int)1920, height=(int)1080, fframerate=30/1");        
+    this->srcdeinterlace_caps = gst_caps_from_string(buffer);        
     if (!this->srcdeinterlace_caps)
         g_printerr("1. Could not create media format string.\n");        
     g_object_set (G_OBJECT (this->vsource_capsfilter), "caps", this->srcdeinterlace_caps, NULL);
     gst_caps_unref(this->srcdeinterlace_caps);        
-     
-     
+    char buffer2[1024]; 
+    sprintf(buffer2,"video/x-raw, format=(string)GRAY8, width=(int)%d, height=(int)%d, framerate=(fraction)30/1",
+                            width_, height_);
 //    this->cspappsink_caps = gst_caps_from_string("video/x-raw, format=(string)BGR, width=(int)1920, height=(int)1080, framerate=(fraction)30/1");        
-    this->cspappsink_caps = gst_caps_from_string("video/x-raw, format=(string)GRAY8, width=(int)1920, height=(int)1080, framerate=(fraction)30/1");        
+    this->cspappsink_caps = gst_caps_from_string(buffer2);        
     if (!this->cspappsink_caps)
         g_printerr("3. Could not create media format string.\n");        
    g_object_set (G_OBJECT (this->cspappsink_capsfilter), "caps", this->cspappsink_caps, NULL);    
@@ -163,15 +166,15 @@ gboolean GstreamerGrabber::checkBusCb()
     GError *err = NULL;                
     gchar *dbg = NULL;   
            
-    g_print("Got message: %s\n", GST_MESSAGE_TYPE_NAME(this->msg));
-    switch(GST_MESSAGE_TYPE (this->msg))
+    g_print("Got message: %s\n", GST_MESSAGE_TYPE_NAME(this->msg_));
+    switch(GST_MESSAGE_TYPE (this->msg_))
     {
         case GST_MESSAGE_EOS:       
             g_print ("END OF STREAM... \n");
             break;
  
         case GST_MESSAGE_ERROR:
-            gst_message_parse_error (this->msg, &err, &dbg);
+            gst_message_parse_error (this->msg_, &err, &dbg);
             if (err)
             {
                 g_printerr ("ERROR: %s\n", err->message);
@@ -185,7 +188,7 @@ gboolean GstreamerGrabber::checkBusCb()
             break;
  
         default:
-            g_printerr ("Unexpected message of type %d", GST_MESSAGE_TYPE (this->msg));
+            g_printerr ("Unexpected message of type %d", GST_MESSAGE_TYPE (this->msg_));
             break;
     }
     return TRUE;
@@ -195,11 +198,11 @@ void GstreamerGrabber::getPipelineBus()
 {
     this->bus = gst_element_get_bus (this->pipeline);
 //    this->msg = gst_bus_poll (this->bus, GST_MESSAGE_EOS | GST_MESSAGE_ERROR, -1);
-    if(GST_MESSAGE_TYPE (this->msg))
+    if(GST_MESSAGE_TYPE (this->msg_))
     {
         checkBusCb();
     }
-    gst_message_unref (this->msg);
+    gst_message_unref (this->msg_);
 }
 
 void GstreamerGrabber::capture(IplImage * frame)

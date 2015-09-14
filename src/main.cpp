@@ -59,7 +59,7 @@ int main(int argc, char * argv[])
     std::cout << "cannot open template list file: " << arguments.template_file << std::endl;
     return -1;
   }
-
+/*
   // Camera capture for face detection
   cv::VideoCapture capture_face(1);
   if(!capture_face.isOpened() && arguments.face)
@@ -67,7 +67,7 @@ int main(int argc, char * argv[])
     std::cout << "Impossible to read from the webcam" << std::endl;
     return -1;
   }
-
+*/
   // Keep aliver
   std::thread ws_writer(asiothreadfx);
 
@@ -116,7 +116,7 @@ int main(int argc, char * argv[])
     thread_list.push_back(std::thread(linemodf, std::ref(infile), kinect_manager, std::ref(collector), session));
   // Starting the face detection thread
   if(arguments.face)
-    thread_list.push_back(std::thread(detectFaces, std::ref(collector), std::ref(capture_face), session));
+    thread_list.push_back(std::thread(detectFaces, std::ref(collector), session));
   // Starting the particle.io thread
   if(arguments.particle)
     thread_list.push_back(std::thread(sseHandler, std::ref(collector), session));

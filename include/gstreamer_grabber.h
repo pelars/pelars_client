@@ -11,7 +11,7 @@ class GstreamerGrabber
 {
 public:
 
-    GstreamerGrabber();
+    GstreamerGrabber(int width, int height);
 
     ~GstreamerGrabber(void);
 
@@ -32,9 +32,9 @@ public:
 private:
 
     GstElement * appsink;
-    GstElement * colorSpace1,*colorSpace2;    
+    GstElement * colorSpace1, * colorSpace2;    
     GstElement * pipeline;
-    GstElement * vsource_capsfilter, *cspappsink_capsfilter;
+    GstElement * vsource_capsfilter, * cspappsink_capsfilter;
     GstElement * bin_capture;
     GstElement * video_source;     
     GstElement * parser;
@@ -43,5 +43,6 @@ private:
     GstCaps * srcdeinterlace_caps;
     GstCaps * cspappsink_caps;    
     GstBus * bus;
-    GstMessage * msg;        
+    GstMessage * msg_;
+    int height_, width_;        
 };
