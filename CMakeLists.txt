@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 set(CMAKE_BUILD_TYPE Release) 
 
-#set(CMAKE_PREFIX_PATH /prefix)
+set(CMAKE_PREFIX_PATH /prefix)
 set(SRC                ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INCLUDE            ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -35,6 +35,10 @@ find_package(CURL REQUIRED)
 find_package(Aruco REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(FFmpeg REQUIRED)
+find_package(PCL 1.7 REQUIRED)
+
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 set(CPPNET_CLIENT ${CPPNETLIB_LIBRARIES})
 set(CPPNET_PARSER ${CPPNETLIB_LIBRARIES})
@@ -53,14 +57,19 @@ find_library(GSTREAMER       NAMES gstreamer-1.0)
 find_library(GSTREAMER_A     NAMES gstapp-1.0)
 find_library(GLIB            NAMES glib-2.0)
 set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
+include_directories(${CMAKE_PREFIX_PATH}/include/libfreenect2/tinythread/)
+include_directories(${GLEWF_INCLUDE_DIRS})
+set(FREENECT2 /home/giacomo/libraries/libfreenect2/examples/protonect/lib/libfreenect2.so)
+find_library(GLFW NAMES glfw)
 
 include_directories(${JSONCPP_INCLUDE_DIR})
 include_directories(${FFMPEG_INCLUDE_DIRS})
 include_directories(${GSTREAMER_INCLUDE_DIRS})
 include_directories(${FREENECT_INCLUDE_DIR})
+include_directories(${PCL_INCLUDE_DIRS})
 include_directories(${INCLUDE})
 
-set(LINUXEXTRA rt)
+set(LINUXEXTRA rt boost_random)
 
 add_executable(sensor_manager   ${SRC}/main.cpp 
 								${SRC}/session_manager.cpp 
@@ -103,6 +112,9 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
                                         ${LINUXEXTRA} 
 										${GSTREAMER_ALL}
 										${FFMPEG_LIBRARIES}
+										${FREENECT2}
+										${GLFW}
+										${PCL_LIBRARIES}
 										)
 
 target_link_libraries(freenect-camshare ${FREENECT} rt) 

@@ -19,7 +19,7 @@ const char *  MONGOOSE_PORT= "8081";
 // Starting time
 const std::string currentDateTimeNow = currentDateTime();
 
-void sig_handler(int signum)
+static void sig_handler(int signum)
 {
     to_stop = true;
     printf("Received signal %d\n", signum);

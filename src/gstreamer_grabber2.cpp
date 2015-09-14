@@ -3,17 +3,17 @@
 GstreamerGrabber2::GstreamerGrabber2(const char * device, const int width, const int height, const bool yuv420, const bool testsrc, const char * command):
 	width_(width), height_(height){
 	gst_init(NULL,NULL);
-   	g_object_set (src_, "device", device, NULL);
    	const char * outformat = yuv420 ? "I420" : "RGB";
    	if(!(command == ""))
    		strcpy(buffer_, command);
 	else
 	   	if(!testsrc)
-			sprintf(buffer_,"v4l2src name=src ! queue ! video/x-h264,width=%d,height=%d,framerate=30/1 ! h264parse ! avdec_h264 ! videoconvert ! video/x-raw,format=%s, width=%d,height=%d ! appsink name=sink",
+			sprintf(buffer_,"v4l2src name=src ! queue ! video/x-h264, width=%d, height=%d, framerate=30/1 ! h264parse ! avdec_h264 ! videoconvert ! video/x-raw,format=%s, width=%d,height=%d ! appsink name=sink",
 		                    width_, height_, outformat, width_, height_);
 		else
 			sprintf(buffer_,"videotestsrc ! video/x-raw,format=%s, width=%d,height=%d ! appsink name=sink", outformat, width_, height_);
 	pipeline_ = gst_parse_launch(buffer_, &error_);
+	g_object_set (src_, "device", device, NULL);
 	if (!pipeline_)
 	{
     	g_print ("Parse error: %s\n", error_->message);

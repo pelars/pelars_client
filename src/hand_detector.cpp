@@ -1,7 +1,5 @@
 #include "hand_detector.h"
 
-
-
 void handDetector(DataWriter & websocket, int session)
 {
 
@@ -20,25 +18,50 @@ void handDetector(DataWriter & websocket, int session)
   Json::StyledWriter writer;
   float x, y, z;
 
-  GstreamerGrabber gs_grabber(1920, 1080, 1);
-  //GstreamerGrabber2 gs_grabber2("/dev/video0", 1920, 1080, true, true);
+  //GstreamerGrabber gs_grabber(1920, 1080, 1);
+  //GstreamerGrabber2 gs_grabber2("/dev/video0", 1920, 1080, true, false);
+  //IplImage * frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 1); //TODO 
 
-  IplImage * frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 1); //TODO 
+  //Kinect2Grabber::Kinect2Grabber<pcl::PointXYZRGB> k2g("../../data/calibration/rgb_calibration.yaml", "../../data/calibration/depth_calibration.yaml", "../../data/calibration/pose_calibration.yaml");
+
+  libfreenect2::Freenect2 freenect2;
+  libfreenect2::Freenect2Device *dev = 0;
+  libfreenect2::PacketPipeline *pipeline = 0;
+  if(freenect2.enumerateDevices() == 0)
+  {
+    std::cout << "no kinect2 connected!" << std::endl;
+    to_stop = true;
+  }
+  std::string serial = freenect2.getDefaultDeviceSerialNumber();
+  //OPENGL
+  //pipeline = new libfreenect2::OpenGLPacketPipeline();
+  //OPENCL
+  pipeline = new libfreenect2::OpenCLPacketPipeline();
+  dev = freenect2.openDevice(serial, pipeline);
+  libfreenect2::SyncMultiFrameListener listener(libfreenect2::Frame::Color);
+  libfreenect2::FrameMap frames;
+  //libfreenect2::Frame undistorted(512, 424, 4), registered(512, 424, 4);
+
+  dev->setColorFrameListener(&listener);
+  dev->setIrAndDepthFrameListener(&listener);
+  dev->start();
 
   clock_t begin_time = clock();
-
   float elapsed = 0.0;
   z = 0.0f;  //TODO fix when we have depth
 
-  cv::Mat color;
+  //cv::Mat color;
 
   while(!to_stop)
   {
+    listener.waitForNewFrame(frames);
+    libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
+    //gs_grabber >> frame; 
+    //cv::Mat color = Kinect2Grabber::CvFrameRgb<pcl::PointXYZRGB>(k2g).data_.clone();
+    cv::Mat color = cv::Mat(rgb->height,rgb->width, CV_8UC3, rgb->data);
 
-    gs_grabber >> frame; 
-    
     //gs_grabber2.capture(frame);
-    cv::Mat color(frame); 
+    //v::Mat color(frame); 
 
     MDetector.detect(color, markers);
 
@@ -77,7 +100,7 @@ void handDetector(DataWriter & websocket, int session)
         }
       }
 
-    if(visualization)
+    if(visualization){
       cv::imshow("hands", color);
       int c = cv::waitKey(1);
       if((char)c == 'q' )
@@ -85,10 +108,16 @@ void handDetector(DataWriter & websocket, int session)
         to_stop = true;
         std::cout << "Stop requested by hand detector" << std::endl;
       }
+    }
+    listener.release(frames);
   }
+  dev->stop();
+  dev->close();
 
-      //Destroy the window
+  //Destroy the window
   cvDestroyWindow("hands");
+  //k2g.shutDown();
+  //sleep(5);
   return;
 }
 
