@@ -163,7 +163,7 @@ int main(int argc, char * argv[])
   // Stopping mongoose
   mg_thread_stop = true;
   mg_thread.join();
-  //std::cout << "Mongoose stopped" << std::endl;
+  std::cout << "Mongoose stopped" << std::endl;
   // Stopped io service 
   io.stop();
   // Stopping Asio aliver
