@@ -17,7 +17,7 @@ void detectFaces(DataWriter & websocket, int session)
     bool filterRects_ = true;
 
  	//GstreamerGrabber2 gs_grabber2("/dev/video0", 1920, 1080, true, true);
- 	GstreamerGrabber gs_grabber(640, 480);
+ 	GstreamerGrabber gs_grabber(640, 480, 0);
     IplImage * frame = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 1); 
 
 	if(!cascade_gpu_.load(face_cascade_name_gpu_))

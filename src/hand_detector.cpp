@@ -20,7 +20,7 @@ void handDetector(DataWriter & websocket, int session)
   Json::StyledWriter writer;
   float x, y, z;
 
-  GstreamerGrabber gs_grabber(1920, 1080);
+  GstreamerGrabber gs_grabber(1920, 1080, 1);
   //GstreamerGrabber2 gs_grabber2("/dev/video0", 1920, 1080, true, true);
 
   IplImage * frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 1); //TODO 

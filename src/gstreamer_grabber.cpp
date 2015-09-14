@@ -1,6 +1,6 @@
 #include "gstreamer_grabber.h"
 
-GstreamerGrabber::GstreamerGrabber(int width, int height): height_(height), width_(width)
+GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id = 0): height_(height), width_(width), device_id_(device_id)
 {
 	gst_init(NULL, NULL);
     createPipeline();
@@ -58,8 +58,8 @@ gboolean GstreamerGrabber::initVideoCapture()
      
     gst_app_sink_set_emit_signals((GstAppSink*)this->appsink, true);
     gst_app_sink_set_drop((GstAppSink*)this->appsink, true);
-    gst_app_sink_set_max_buffers((GstAppSink*)this->appsink, 1);    
-    char buffer[1024]; 
+    gst_app_sink_set_max_buffers((GstAppSink*)this->appsink, 1);
+    char buffer[1024];     
     sprintf(buffer,"video/x-h264, width=(int)%d, height=(int)%d, fframerate=30/1",
                             width_, height_);
     // video/x-h264,width=1920,height=1080,framerate=30/1
@@ -67,17 +67,19 @@ gboolean GstreamerGrabber::initVideoCapture()
     if (!this->srcdeinterlace_caps)
         g_printerr("1. Could not create media format string.\n");        
     g_object_set (G_OBJECT (this->vsource_capsfilter), "caps", this->srcdeinterlace_caps, NULL);
-    gst_caps_unref(this->srcdeinterlace_caps);        
-    char buffer2[1024]; 
-    sprintf(buffer2,"video/x-raw, format=(string)GRAY8, width=(int)%d, height=(int)%d, framerate=(fraction)30/1",
+    gst_caps_unref(this->srcdeinterlace_caps);
+    sprintf(buffer,"video/x-raw, format=(string)GRAY8, width=(int)%d, height=(int)%d, framerate=(fraction)30/1",
                             width_, height_);
 //    this->cspappsink_caps = gst_caps_from_string("video/x-raw, format=(string)BGR, width=(int)1920, height=(int)1080, framerate=(fraction)30/1");        
-    this->cspappsink_caps = gst_caps_from_string(buffer2);        
+    this->cspappsink_caps = gst_caps_from_string(buffer);        
     if (!this->cspappsink_caps)
         g_printerr("3. Could not create media format string.\n");        
    g_object_set (G_OBJECT (this->cspappsink_capsfilter), "caps", this->cspappsink_caps, NULL);    
     gst_caps_unref(this->cspappsink_caps);        
 
+    sprintf(buffer,"/dev/video%d",
+                            device_id_);
+    g_object_set (this->video_source, "device", buffer, NULL);
    // g_object_set (filesink, "location", "/i/do/not/exist", NULL);
         
     this->bin_capture = gst_bin_new ("bin_capture");        

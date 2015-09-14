@@ -11,7 +11,7 @@ class GstreamerGrabber
 {
 public:
 
-    GstreamerGrabber(int width, int height);
+    GstreamerGrabber(int width, int height, int device_id);
 
     ~GstreamerGrabber(void);
 
@@ -44,5 +44,5 @@ private:
     GstCaps * cspappsink_caps;    
     GstBus * bus;
     GstMessage * msg_;
-    int height_, width_;        
+    int height_, width_, device_id_;        
 };
