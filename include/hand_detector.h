@@ -24,5 +24,6 @@
 extern bool to_stop;
 extern bool online;
 extern bool visualization;
+extern bool TURBO_COLOR;
 
 void handDetector(DataWriter & websocket, int session);

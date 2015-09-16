@@ -8,7 +8,7 @@
 #include "opt_parse.h"
 #include "key_logger.h"
 #include <signal.h>
-
+#include "mongoose.h"
 
 // To stop all the threads if one receives a stop signal
 bool to_stop = false;
@@ -92,13 +92,22 @@ int main(int argc, char * argv[])
   int session = sm.getNewSession();
 
   // Creating a local mongoose server for web debug
-
+  /*
   std::cout << "creating moongoose on port: " << MONGOOSE_PORT << std::endl;
   struct mg_server * webserver;
   webserver = mg_create_server((void *) &session, ev_handler);
   mg_set_option(webserver, "listening_port", MONGOOSE_PORT);
   std::thread mg_thread(serve, webserver);
   std::cout << "moongoose ready" << std::endl;
+  
+
+  struct mg_mgr mgr;
+  mg_mgr_init(&mgr, (void *)&session);
+  mg_bind(&mgr, "8081", ev_handler);
+
+  for (;;) {
+    mg_mgr_poll(&mgr, 5000);
+  })*/
   
   std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
   // Check the endpoint string and connect to the session manager
@@ -161,8 +170,9 @@ int main(int argc, char * argv[])
   collector.stop();
   std::cout << "Connection to Collector closed" << std::endl;
   // Stopping mongoose
-  mg_thread_stop = true;
-  mg_thread.join();
+  //mg_thread_stop = true;
+  //mg_thread.join();
+  //mg_mgr_free(&mgr);
   std::cout << "Mongoose stopped" << std::endl;
   // Stopped io service 
   io.stop();

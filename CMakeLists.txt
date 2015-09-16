@@ -37,9 +37,6 @@ find_package(PkgConfig REQUIRED)
 find_package(FFmpeg REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-
 set(CPPNET_CLIENT ${CPPNETLIB_LIBRARIES})
 set(CPPNET_PARSER ${CPPNETLIB_LIBRARIES})
 set(CPPNET_URI ${CPPNETLIB_LIBRARIES})
@@ -56,6 +53,7 @@ find_library(GSTREAMER_O     NAMES gobject-2.0)
 find_library(GSTREAMER       NAMES gstreamer-1.0)
 find_library(GSTREAMER_A     NAMES gstapp-1.0)
 find_library(GLIB            NAMES glib-2.0)
+#find_library(FREENECT2 NAMES freenect2)
 set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
 include_directories(${CMAKE_PREFIX_PATH}/include/libfreenect2/tinythread/)
 include_directories(${GLEWF_INCLUDE_DIRS})
@@ -69,7 +67,10 @@ include_directories(${FREENECT_INCLUDE_DIR})
 include_directories(${PCL_INCLUDE_DIRS})
 include_directories(${INCLUDE})
 
+link_directories(${PCL_LIBRARY_DIRS})
+
 set(LINUXEXTRA rt boost_random)
+add_definitions(${PCL_DEFINITIONS})
 
 add_executable(sensor_manager   ${SRC}/main.cpp 
 								${SRC}/session_manager.cpp 

@@ -34,16 +34,16 @@ void handDetector(DataWriter & websocket, int session)
   }
   std::string serial = freenect2.getDefaultDeviceSerialNumber();
   //OPENGL
-  //pipeline = new libfreenect2::OpenGLPacketPipeline();
+  pipeline = new libfreenect2::OpenGLPacketPipeline();
   //OPENCL
-  pipeline = new libfreenect2::OpenCLPacketPipeline();
+  //pipeline = new libfreenect2::OpenCLPacketPipeline();
   dev = freenect2.openDevice(serial, pipeline);
   libfreenect2::SyncMultiFrameListener listener(libfreenect2::Frame::Color);
   libfreenect2::FrameMap frames;
   //libfreenect2::Frame undistorted(512, 424, 4), registered(512, 424, 4);
 
   dev->setColorFrameListener(&listener);
-  dev->setIrAndDepthFrameListener(&listener);
+  //dev->setIrAndDepthFrameListener(&listener);
   dev->start();
 
   clock_t begin_time = clock();
@@ -51,14 +51,18 @@ void handDetector(DataWriter & websocket, int session)
   z = 0.0f;  //TODO fix when we have depth
 
   //cv::Mat color;
-
+  TURBO_COLOR = false;
   while(!to_stop)
   {
     listener.waitForNewFrame(frames);
     libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
     //gs_grabber >> frame; 
     //cv::Mat color = Kinect2Grabber::CvFrameRgb<pcl::PointXYZRGB>(k2g).data_.clone();
-    cv::Mat color = cv::Mat(rgb->height,rgb->width, CV_8UC3, rgb->data);
+    cv::Mat color;
+    if(TURBO_COLOR)
+      color = cv::Mat(rgb->height,rgb->width, CV_8UC3, rgb->data);
+    else
+      color = cv::Mat(rgb->height,rgb->width, CV_8UC1, rgb->data);
 
     //gs_grabber2.capture(frame);
     //v::Mat color(frame); 

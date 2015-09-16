@@ -1,8 +1,9 @@
 #pragma once
 #include "mongoose.h"
+#include <iostream>
 
 // MONGOOSE SERVER
-
+/*
 bool mg_thread_stop = false;
 
 // Poll the server to check if there are pending requests
@@ -26,5 +27,15 @@ int ev_handler(struct mg_connection * conn, enum mg_event ev)
     return MG_TRUE;
   } else {
     return MG_FALSE;
+  }
+}
+*/
+void ev_handler(struct mg_connection *nc, int ev, void *p) {
+  int * session = (int *)nc->mgr->user_data;
+  std::cout << ev << std::endl;
+  switch (ev) {
+    case 4:
+      mg_printf(nc, "%d", *session);
+      break;
   }
 }
