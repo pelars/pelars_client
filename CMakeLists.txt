@@ -88,6 +88,7 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/opt.cpp
 								${SRC}/key_logger.cpp
 								${SRC}/gstreamer_grabber2.cpp
+								${SRC}/ide_handler.cpp
 								)
 
 add_executable(freenect-camshare ${SRC}/camshare.cpp)

@@ -29,7 +29,6 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, Encapsule * enc) {
     return nmemb;
 }
 
-
 Http::Http()
 {
 	multi_handle = curl_multi_init();

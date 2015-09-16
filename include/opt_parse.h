@@ -23,6 +23,7 @@ static struct argp_option options[] = {
   {"particle",  'p',  0,  0,  "Starts particle recorder"},
   {"keylog",  'k', 0, 0,  "Sends activity data"},
   {"special",  's', 0, 0,  "handles signals"},
+  {"ide",  'i', 0, 0,  "handles ide messages"},
   { 0 }
 };
 
@@ -30,7 +31,7 @@ static struct argp_option options[] = {
 struct arguments
 {
   char *args[1];                /* arg1 & arg2 */
-  bool face, hand, object,visualization,particle,keylog,special;
+  bool face, hand, object, visualization, particle, keylog, special, ide;
   std::string template_file;
 };
 
@@ -65,7 +66,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
     case 's':
       arguments->special = true;
-    break;
+      break;
+    case 'i':
+      arguments->ide = true;
+      break;
 
     case ARGP_KEY_ARG:
         /* Too many arguments. */

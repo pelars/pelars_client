@@ -1,14 +1,4 @@
-#include "mongoose_handler.h"
-#include "kinect_grabber.h"
-#include "linemod.h"
-#include "session_manager.h"
-#include "face_detector.h"
-#include "sse_handler.h"
-#include "hand_detector.h"
-#include "opt_parse.h"
-#include "key_logger.h"
-#include <signal.h>
-#include "mongoose.h"
+#include "all.h"
 
 // To stop all the threads if one receives a stop signal
 bool to_stop = false;
@@ -100,15 +90,10 @@ int main(int argc, char * argv[])
   std::thread mg_thread(serve, webserver);
   std::cout << "moongoose ready" << std::endl;
   
+*/
 
-  struct mg_mgr mgr;
-  mg_mgr_init(&mgr, (void *)&session);
-  mg_bind(&mgr, "8081", ev_handler);
+  std::cout << "Mongoose websocket started on port 8081" << std::endl;
 
-  for (;;) {
-    mg_mgr_poll(&mgr, 5000);
-  })*/
-  
   std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
   // Check the endpoint string and connect to the session manager
   std::string session_endpoint = end_point + "session/";
@@ -116,6 +101,15 @@ int main(int argc, char * argv[])
 
   // Websocket manager
   DataWriter collector(end_point + "collector", session);
+
+  // Mongoose websocket listener and message structure
+  struct mg_mgr mgr;
+  struct mg_connection *nc;
+  MiniEncapsule writer(collector, session);
+  mg_mgr_init(&mgr, &writer);
+  nc = mg_bind(&mgr, "8081", ev_handler);
+  mg_set_protocol_http_websocket(nc);
+  std::cout << "Mongoose websocket on port 8081" << std::endl;
 
   // Thread container
   std::vector<std::thread> thread_list;
@@ -135,6 +129,9 @@ int main(int argc, char * argv[])
   // Starting the key logger
   if(arguments.keylog)
     thread_list.push_back(std::thread(keyLogger, std::ref(collector), session, std::ref(io)));
+  // Starting the ide logger
+  if(arguments.ide)
+    thread_list.push_back(std::thread(ideHandler, std::ref(mgr)));
   
   //If there are no windows wait for Esc to be pressed
   if(!visualization && !special){

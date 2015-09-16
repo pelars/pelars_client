@@ -21,10 +21,12 @@ void sseHandler(DataWriter & websocket, int session);
 
 struct Encapsule{
 
-	Encapsule(DataWriter & websocket, std::string name): websocket_(websocket), name_(name){
+	Encapsule(DataWriter & websocket, std::string name): websocket_(websocket), name_(name)
+	{
 		root_["obj"]["type"] = "particle";
 		root_["obj"]["name"] = name;
 	}
+
 	void addData(std::string data){
 		root_["obj"]["data"] = data;
 	}
