@@ -12,3 +12,4 @@
 #include "mongoose.h"
 #include "opt.h"
 #include "ide_handler.h"
+#include "audio_detector.h"

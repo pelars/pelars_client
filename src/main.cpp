@@ -2,11 +2,15 @@
 
 // To stop all the threads if one receives a stop signal
 bool to_stop = false;
+// Connection status
 bool online = true;
+// Enable visualization
 bool visualization = false;
+// Argument parsing structure
 struct arguments arguments;
+// Mongoose websocket port
 const char *  MONGOOSE_PORT= "8081";
-// Starting time
+// System starting time
 const std::string currentDateTimeNow = currentDateTime();
 
 static void sig_handler(int signum)
@@ -81,17 +85,6 @@ int main(int argc, char * argv[])
   SessionManager sm(end_point);
   int session = sm.getNewSession();
 
-  // Creating a local mongoose server for web debug
-  /*
-  std::cout << "creating moongoose on port: " << MONGOOSE_PORT << std::endl;
-  struct mg_server * webserver;
-  webserver = mg_create_server((void *) &session, ev_handler);
-  mg_set_option(webserver, "listening_port", MONGOOSE_PORT);
-  std::thread mg_thread(serve, webserver);
-  std::cout << "moongoose ready" << std::endl;
-  
-*/
-
   std::cout << "Mongoose websocket started on port 8081" << std::endl;
 
   std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
@@ -113,6 +106,9 @@ int main(int argc, char * argv[])
 
   // Thread container
   std::vector<std::thread> thread_list;
+
+  // Audio detector
+  AudioDetector ad;
   
   // Starting the linemod thread
   if(arguments.object)
@@ -166,11 +162,6 @@ int main(int argc, char * argv[])
   // Stopping the websocket
   collector.stop();
   std::cout << "Connection to Collector closed" << std::endl;
-  // Stopping mongoose
-  //mg_thread_stop = true;
-  //mg_thread.join();
-  //mg_mgr_free(&mgr);
-  std::cout << "Mongoose stopped" << std::endl;
   // Stopped io service 
   io.stop();
   // Stopping Asio aliver

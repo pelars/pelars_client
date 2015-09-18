@@ -4,14 +4,15 @@
 SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint)
 {	
 	std::cout << "Parsing the input data" << std::endl;
-   auto eResult =  data_.LoadFile( "../../data/personal.xml" );
+    auto eResult =  data_.LoadFile( "../../data/personal.xml" );
     if(eResult != 0){
     	std::cout << "\tError parsing personal.xml or file not present in /data/" << std::endl;
     	to_stop = true;
     }else
     	std::cout << "\tParsed the input data" << std::endl;
 
-   createUser();
+    login();
+    createUser();
 }	
 
 int SessionManager::getNewSession()
@@ -31,7 +32,7 @@ int SessionManager::getNewSession()
 	std::cout << "Requesting session id " << std::endl;
 	try{
 		// Making the put request to create a new session
-		boost::network::http::client::request endpoint(endpoint_ + std::string("session"));
+		boost::network::http::client::request endpoint(endpoint_ + std::string("session") + std::string("?token=") + token_);
 		response_ = client_.put(endpoint, out_string);
 		session_manager_response_ = response_.body();
 		//std::cout << session_manager_response_ << std::endl;
@@ -64,6 +65,19 @@ int SessionManager::getNewSession()
 	return session_;
 }
 
+void SessionManager::login(){
+
+	root_.clear();
+	std::cout << "login " << std::endl;
+	if(online){
+		boost::network::http::client::request request(endpoint_ + std::string("password") + std::string("?user=Gianfranco@giangy.com&pwd=mypassword"));
+		boost::network::http::client::response response = client_.post(request);
+		if(reader_.parse(response.body(), root_))
+			token_ = root_["token"].asString();
+		std::cout << "\tToken: " << token_ << std::endl;
+	}
+}
+
 void SessionManager::createUser(){
 	// Creating the new user
 
@@ -79,7 +93,7 @@ void SessionManager::createUser(){
 
     try{
 		// Making the put request to create a new session
-		boost::network::http::client::request endpoint(endpoint_ + std::string("user"));
+		boost::network::http::client::request endpoint(endpoint_ + std::string("user") + std::string("?token=") + token_);
 		response_ = client_.put(endpoint, out_string);
 		session_manager_response_ = response_.body();
 		// Read the response and parse the json message to get the session id
@@ -109,7 +123,7 @@ void SessionManager::closeSession(int session)
 	std::cout << "closing session " << session << std::endl;
 	if(online){
 	 	//Sending data to close the session with the session manager
-		boost::network::http::client::request request_(endpoint_ + std::string("session/") + std::to_string(session));
+		boost::network::http::client::request request_(endpoint_ + std::string("session/") + std::to_string(session) + std::string("?token=") + token_);
 		response_ = client_.post(request_, out_string);
 		std::cout << "\tSession manager response: " << response_.body();
 	}

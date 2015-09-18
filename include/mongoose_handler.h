@@ -4,8 +4,9 @@
 #include <iostream>
 #include <json/json.h>
 
-void ev_handler(struct mg_connection * nc, int ev, void * ev_data) {
+extern bool stop_socket;
 
+void ev_handler(struct mg_connection * nc, int ev, void * ev_data) {
 
   switch (ev) {
     case NS_WEBSOCKET_FRAME:
@@ -20,7 +21,8 @@ void ev_handler(struct mg_connection * nc, int ev, void * ev_data) {
                   writer->websocket_.writeData(writer->out_message_);
                   });
               }
-      writer->websocket_.writeLocal(writer->out_message_); 
+      writer->websocket_.writeLocal(writer->out_message_);
+      stop_socket = true; 
     }
       break;
     default:

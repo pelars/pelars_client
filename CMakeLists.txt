@@ -59,6 +59,7 @@ include_directories(${CMAKE_PREFIX_PATH}/include/libfreenect2/tinythread/)
 include_directories(${GLEWF_INCLUDE_DIRS})
 set(FREENECT2 /home/giacomo/libraries/libfreenect2/examples/protonect/lib/libfreenect2.so)
 find_library(GLFW NAMES glfw)
+find_library(PORTAUDIO portaudio)
 
 include_directories(${JSONCPP_INCLUDE_DIR})
 include_directories(${FFMPEG_INCLUDE_DIRS})
@@ -89,6 +90,7 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/key_logger.cpp
 								${SRC}/gstreamer_grabber2.cpp
 								${SRC}/ide_handler.cpp
+								${SRC}/audio_detector.cpp
 								)
 
 add_executable(freenect-camshare ${SRC}/camshare.cpp)
@@ -117,6 +119,7 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${FREENECT2}
 										${GLFW}
 										${PCL_LIBRARIES}
+										${PORTAUDIO}
 										)
 
 target_link_libraries(freenect-camshare ${FREENECT} rt) 

@@ -6,7 +6,6 @@
 #include <fstream>
 #include <thread>
 
-
 extern bool to_stop;
 extern bool online;
 
@@ -22,9 +21,12 @@ public:
 
 	void createUser();
 
+	void login();
+
 private:
 
 	int session_, user_id_;
+	std::string token_;
 	boost::network::http::client client_;
 	boost::network::http::client::response response_;
 	std::string endpoint_, session_manager_response_;
