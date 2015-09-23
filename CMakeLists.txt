@@ -36,6 +36,7 @@ find_package(Aruco REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(FFmpeg REQUIRED)
 find_package(PCL 1.7 REQUIRED)
+pkg_search_module(GLFW REQUIRED glfw3)
 
 set(CPPNET_CLIENT ${CPPNETLIB_LIBRARIES})
 set(CPPNET_PARSER ${CPPNETLIB_LIBRARIES})
@@ -53,12 +54,8 @@ find_library(GSTREAMER_O     NAMES gobject-2.0)
 find_library(GSTREAMER       NAMES gstreamer-1.0)
 find_library(GSTREAMER_A     NAMES gstapp-1.0)
 find_library(GLIB            NAMES glib-2.0)
-#find_library(FREENECT2 NAMES freenect2)
+find_library(FREENECT2 NAMES freenect2)
 set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
-include_directories(${CMAKE_PREFIX_PATH}/include/libfreenect2/tinythread/)
-include_directories(${GLEWF_INCLUDE_DIRS})
-set(FREENECT2 /home/giacomo/libraries/libfreenect2/examples/protonect/lib/libfreenect2.so)
-find_library(GLFW NAMES glfw)
 find_library(PORTAUDIO portaudio)
 
 include_directories(${JSONCPP_INCLUDE_DIR})
@@ -67,6 +64,7 @@ include_directories(${GSTREAMER_INCLUDE_DIRS})
 include_directories(${FREENECT_INCLUDE_DIR})
 include_directories(${PCL_INCLUDE_DIRS})
 include_directories(${INCLUDE})
+include_directories(${GLFW_INCLUDE_DIRS})
 
 link_directories(${PCL_LIBRARY_DIRS})
 
@@ -117,7 +115,7 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${GSTREAMER_ALL}
 										${FFMPEG_LIBRARIES}
 										${FREENECT2}
-										${GLFW}
+										${GLFW_LIBRARIES}
 										${PCL_LIBRARIES}
 										${PORTAUDIO}
 										)

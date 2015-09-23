@@ -2,9 +2,6 @@
 #include "portaudio.h" 
 #include <iostream>
 
-class AudioDetector {
+extern bool to_stop;
 
-public:
-	AudioDetector();
-
-};
+void audioDetector();

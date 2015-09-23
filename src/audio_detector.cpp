@@ -7,16 +7,16 @@ int portAudioCallback(const void *input, void *output, unsigned long frameCount,
 
 }
 
-AudioDetector::AudioDetector(){
+void audioDetector(){
 
 	Pa_Initialize();
 
 	int used_device = 0;
 	for(int i = 0; i < Pa_GetDeviceCount(); ++i)
-	    if(std::string(Pa_GetDeviceInfo( i )->name).find("HD Pro Webcam C920: USB Audio") != std::string::npos)
+	    if(std::string(Pa_GetDeviceInfo(i)->name).find("HD Pro Webcam C920: USB Audio") != std::string::npos)
 	    	used_device = i;
 	
-	std::cout << "DEVICE " << used_device << std::endl;
+	std::cout << "Using device : " << Pa_GetDeviceInfo(used_device)->name << std::endl;
 	
 	double srate = 32000;
 	PaStream *stream;
@@ -28,28 +28,13 @@ AudioDetector::AudioDetector(){
 	inputParameters.hostApiSpecificStreamInfo = NULL;
 	inputParameters.sampleFormat = paFloat32;
 	inputParameters.suggestedLatency = Pa_GetDeviceInfo(used_device)->defaultLowInputLatency ;
-	inputParameters.hostApiSpecificStreamInfo = NULL; //See you specific host's API docs for info on using this field
+	inputParameters.hostApiSpecificStreamInfo = NULL; 
 	
-	Pa_OpenStream(
-	                &stream,
-	                &inputParameters,
-	                NULL,
-	                srate,
-	                framesPerBuffer,
-	                paNoFlag, //flags that can be used to define dither, clip settings and more
-	                (portAudioCallback), //your callback function
-	                (void *)this );
-/*
-	Pa_OpenDefaultStream(
-                &stream,
-                1,
-                1,
-                srate,
-                framesPerBuffer,
-                paNoFlag, //flags that can be used to define dither, clip settings and more
-                (portAudioCallback), //your callback function
-                (void *)this );*/
+	Pa_OpenStream(&stream, &inputParameters, NULL, srate, framesPerBuffer, paNoFlag, portAudioCallback, NULL);
 
-Pa_StartStream( stream );
+	Pa_StartStream(stream);
 
+	while(!to_stop){
+		Pa_Sleep(100);
+	}
 }

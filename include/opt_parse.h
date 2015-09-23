@@ -24,6 +24,7 @@ static struct argp_option options[] = {
   {"keylog",  'k', 0, 0,  "Sends activity data"},
   {"special",  's', 0, 0,  "handles signals"},
   {"ide",  'i', 0, 0,  "handles ide messages"},
+  {"audio",  'a', 0, 0,  "handles audio"},
   { 0 }
 };
 
@@ -31,7 +32,7 @@ static struct argp_option options[] = {
 struct arguments
 {
   char *args[1];                /* arg1 & arg2 */
-  bool face, hand, object, visualization, particle, keylog, special, ide;
+  bool face, hand, object, visualization, particle, keylog, special, ide, audio;
   std::string template_file;
 };
 
@@ -69,6 +70,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
     case 'i':
       arguments->ide = true;
+      break;
+    case 'a':
+      arguments->audio = true;
       break;
 
     case ARGP_KEY_ARG:

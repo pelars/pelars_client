@@ -107,9 +107,6 @@ int main(int argc, char * argv[])
   // Thread container
   std::vector<std::thread> thread_list;
 
-  // Audio detector
-  AudioDetector ad;
-  
   // Starting the linemod thread
   if(arguments.object)
     thread_list.push_back(std::thread(linemodf, std::ref(infile), kinect_manager, std::ref(collector), session));
@@ -128,6 +125,9 @@ int main(int argc, char * argv[])
   // Starting the ide logger
   if(arguments.ide)
     thread_list.push_back(std::thread(ideHandler, std::ref(mgr)));
+  // Starting audio detector
+  if(arguments.audio)
+    thread_list.push_back(std::thread(audioDetector));
   
   //If there are no windows wait for Esc to be pressed
   if(!visualization && !special){

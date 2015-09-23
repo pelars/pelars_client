@@ -68,13 +68,16 @@ int SessionManager::getNewSession()
 void SessionManager::login(){
 
 	root_.clear();
-	std::cout << "login " << std::endl;
+	std::cout << "Requesting login " << std::endl;
 	if(online){
 		boost::network::http::client::request request(endpoint_ + std::string("password") + std::string("?user=Gianfranco@giangy.com&pwd=mypassword"));
 		boost::network::http::client::response response = client_.post(request);
-		if(reader_.parse(response.body(), root_))
+		if(reader_.parse(response.body(), root_)){
 			token_ = root_["token"].asString();
-		std::cout << "\tToken: " << token_ << std::endl;
+			std::cout << "\tSuccess" << std::endl;
+			std::cout << "\tToken: " << token_ << std::endl;
+		}else
+			std::cout << "Failed" << std::endl;
 	}
 }
 
