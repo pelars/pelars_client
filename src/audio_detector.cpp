@@ -1,9 +1,11 @@
 #include "audio_detector.h"
 
-int portAudioCallback(const void *input, void *output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo,
-                      PaStreamCallbackFlags statusFlags, void *userData ){
+int portAudioCallback(const void * input, void * output, 
+					  unsigned long frameCount, const PaStreamCallbackTimeInfo * timeInfo,
+                      PaStreamCallbackFlags statusFlags, void * userData ){
 
 	std::cout << "callback" << std::endl;
+	return 0;
 
 }
 
@@ -19,7 +21,7 @@ void audioDetector(){
 	std::cout << "Using device : " << Pa_GetDeviceInfo(used_device)->name << std::endl;
 	
 	double srate = 32000;
-	PaStream *stream;
+	PaStream * stream;
 	unsigned long framesPerBuffer = paFramesPerBufferUnspecified; 
 	PaStreamParameters outputParameters;
 	PaStreamParameters inputParameters;
@@ -27,14 +29,16 @@ void audioDetector(){
 	inputParameters.device = used_device;
 	inputParameters.hostApiSpecificStreamInfo = NULL;
 	inputParameters.sampleFormat = paFloat32;
-	inputParameters.suggestedLatency = Pa_GetDeviceInfo(used_device)->defaultLowInputLatency ;
+	inputParameters.suggestedLatency = Pa_GetDeviceInfo(used_device)->defaultLowInputLatency;
 	inputParameters.hostApiSpecificStreamInfo = NULL; 
 	
-	Pa_OpenStream(&stream, &inputParameters, NULL, srate, framesPerBuffer, paNoFlag, portAudioCallback, NULL);
-
-	Pa_StartStream(stream);
-
-	while(!to_stop){
-		Pa_Sleep(100);
+	if(Pa_OpenStream(&stream, &inputParameters, NULL, srate, framesPerBuffer, paNoFlag, portAudioCallback, NULL) || Pa_StartStream(stream)){
+		std::cout << "error opening stream. Audio won't be available" << std::endl;
+	} else{
+		while(!to_stop)
+			Pa_Sleep(100);
 	}
+		
+	Pa_CloseStream(stream);
+	Pa_Terminate();
 }

@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 Project (sensor_manager CXX)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-set(CMAKE_BUILD_TYPE Release) 
+set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -std=c++11") 
+set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -march=native")
+set(CMAKE_BUILD_TYPE   Release) 
 
 set(CMAKE_PREFIX_PATH /prefix)
 set(SRC                ${CMAKE_CURRENT_SOURCE_DIR}/src)
