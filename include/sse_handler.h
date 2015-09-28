@@ -17,7 +17,7 @@
 extern bool to_stop;
 extern bool online;
 
-void sseHandler(DataWriter & websocket, int session);
+void sseHandler(DataWriter & websocket);
 
 struct Encapsule{
 

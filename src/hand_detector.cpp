@@ -1,6 +1,6 @@
 #include "hand_detector.h"
 
-void handDetector(DataWriter & websocket, int session)
+void handDetector(DataWriter & websocket)
 {
 
   // OpenCV matrixes to contain the data acquired from the kinect
@@ -27,15 +27,26 @@ void handDetector(DataWriter & websocket, int session)
 
   clock_t begin_time = clock();
   float elapsed = 0.0;
-  z = 0.0f; 
+  z = 0.0f;
+
+  cv::Mat camera_parameters = cv::Mat::eye(3, 3, CV_32F);
+  camera_parameters.at<float>(0,0) = k2g.getRgbParameters().fx; 
+  camera_parameters.at<float>(1,1) = k2g.getRgbParameters().fy; 
+  camera_parameters.at<float>(0,2) = k2g.getRgbParameters().cx; 
+  camera_parameters.at<float>(1,2) = k2g.getRgbParameters().cy;
+  cv::Mat distortion = cv::Mat(1, 4, 0);
+  
+
+  aruco::CameraParameters camera(camera_parameters, distortion, cv::Size(1920,1080));
 
   //cv::Mat color;
   cv::Mat grey, color;
   while(!to_stop)
   {
-    k2g.getGrey(grey);
+    grey = k2g.getGrey();
     //cv::cvtColor(color, grey, CV_BGR2GRAY);
 
+    //MDetector.detect(grey, markers, camera, 0.045);
     MDetector.detect(grey, markers);
 
     elapsed = elapsed + float(clock() - begin_time) / CLOCKS_PER_SEC;
@@ -45,6 +56,7 @@ void handDetector(DataWriter & websocket, int session)
       {
         // Get marker position
         markers[i].draw(grey, cv::Scalar(0, 0, 255), 2);
+        aruco::CvDrawingUtils::draw3dCube(grey, markers[i], camera);
 
         if (elapsed > 100.0){
           elapsed = 0.0;

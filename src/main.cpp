@@ -109,25 +109,25 @@ int main(int argc, char * argv[])
 
   // Starting the linemod thread
   if(arguments.object)
-    thread_list.push_back(std::thread(linemodf, std::ref(infile), kinect_manager, std::ref(collector), session));
+    thread_list.push_back(std::thread(linemodf, std::ref(infile), kinect_manager, std::ref(collector)));
   // Starting the face detection thread
   if(arguments.face)
-    thread_list.push_back(std::thread(detectFaces, std::ref(collector), session));
+    thread_list.push_back(std::thread(detectFaces, std::ref(collector)));
   // Starting the particle.io thread
   if(arguments.particle)
-    thread_list.push_back(std::thread(sseHandler, std::ref(collector), session));
+    thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
   // Starting the hand detector
   if(arguments.hand)
-    thread_list.push_back(std::thread(handDetector, std::ref(collector), session));
+    thread_list.push_back(std::thread(handDetector, std::ref(collector)));
   // Starting the key logger
   if(arguments.keylog)
-    thread_list.push_back(std::thread(keyLogger, std::ref(collector), session, std::ref(io)));
+    thread_list.push_back(std::thread(keyLogger, std::ref(collector), std::ref(io)));
   // Starting the ide logger
   if(arguments.ide)
     thread_list.push_back(std::thread(ideHandler, std::ref(mgr)));
   // Starting audio detector
   if(arguments.audio)
-    thread_list.push_back(std::thread(audioDetector));
+    thread_list.push_back(std::thread(audioDetector, std::ref(collector)));
   
   //If there are no windows wait for Esc to be pressed
   if(!visualization && !special){

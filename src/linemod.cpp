@@ -39,7 +39,7 @@ cv::Ptr<cv::linemod::Detector> readLinemod(const std::string& filename)
   return detector;
 }
 
-int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & websocket, int session)
+int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & websocket)
 {
   // Some matching parameters for linemod
   short matching_threshold = 85;
@@ -231,7 +231,6 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 
           // Json message
           root["obj"]["type"] = "object";
-          //root["obj"]["session"] = session;
           root["obj"]["id"] = i;
           root["obj"]["x"] = m.x; // (m.x - center_x_depth) * dz / focal_x_depth;
           root["obj"]["y"] = m.y; // (m.y - center_y_depth) * dz / focal_y_depth;

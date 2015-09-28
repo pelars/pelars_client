@@ -22,4 +22,5 @@ extern bool to_stop;
 extern bool online;
 extern bool visualization;
 
-void handDetector(DataWriter & websocket, int session);
+void handDetector(DataWriter & websocket);
+

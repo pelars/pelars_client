@@ -27,7 +27,7 @@ void UdpServer::handleReceive(const boost::system::error_code& error, std::size_
   }
 }
 
-void keyLogger(DataWriter & websocket, int session, boost::asio::io_service & io_service)
+void keyLogger(DataWriter & websocket, boost::asio::io_service & io_service)
 {
   try
   {

@@ -63,7 +63,7 @@ void Http::addRequest(const char* uri, const std::string token, Encapsule * enc)
 	curl_multi_add_handle(multi_handle, curl);
 }
 
-void sseHandler(DataWriter & websocket, int session){
+void sseHandler(DataWriter & websocket){
 
 	Http http;
 

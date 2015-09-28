@@ -1,7 +1,7 @@
 #include "face_detector.h"
 
 
-void detectFaces(DataWriter & websocket, int session)
+void detectFaces(DataWriter & websocket)
 {
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
@@ -72,29 +72,28 @@ void detectFaces(DataWriter & websocket, int session)
 	        elapsed_time = elapsed_time + double(clock() - begin_time) / CLOCKS_PER_SEC;
 
 	        if (elapsed_time > 100.0) {
+
 	        	elapsed_time = 0.0;
 	        	begin_time = clock();
-	        // Json message
-	        root["obj"]["type"] = "face";
-	        //root["obj"]["session"] = session;
-	        root["obj"]["id"] = i;
-	        root["obj"]["x"] = faces[i].x; 
-	        root["obj"]["x1"] = faces[i].x + faces[i].width;
-	        root["obj"]["y"] = faces[i].y;
-	        root["obj"]["y1"] = faces[i].y + faces[i].height;
-	        root["obj"]["time"] = elapsed; // session relative
+		        // Json message
+		        root["obj"]["type"] = "face";
 
-	        //Send message
-	        std::string out_string = writer.write(root);
-	        //std::cout << "sending " << out_string << std::endl;
-	        if(online){
-	        	//std::cout << "Face detector posting data to the server\n " << std::flush;
-          		io.post( [&websocket, out_string]() {
-                websocket.writeData(out_string);
-                });
-            }
-            websocket.writeLocal(out_string);  
-           // std::cout << "posting to the server face \n" << std::flush;  
+		        root["obj"]["id"] = i;
+		        root["obj"]["x"] = faces[i].x; 
+		        root["obj"]["x1"] = faces[i].x + faces[i].width;
+		        root["obj"]["y"] = faces[i].y;
+		        root["obj"]["y1"] = faces[i].y + faces[i].height;
+		        root["obj"]["time"] = elapsed; // session relative
+
+		        //Send message
+		        std::string out_string = writer.write(root);
+		        //std::cout << "sending " << out_string << std::endl;
+		        if(online){
+	          		io.post( [&websocket, out_string]() {
+	                websocket.writeData(out_string);
+	                });
+	            }
+	            websocket.writeLocal(out_string);  
 	  	}
 	  }
 

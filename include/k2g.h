@@ -140,21 +140,26 @@ public:
   		dev_->close();
 	}
 
-	void getColor(cv::Mat & color){
+
+	cv::Mat getColor(){
 		listener_.waitForNewFrame(frames_);
 		libfreenect2::Frame * rgb = frames_[libfreenect2::Frame::Color];
 		cv::Mat tmp(rgb->height, rgb->width, CV_8UC4, rgb->data);
-		color = tmp.clone();
+		cv::Mat r = tmp.clone();
 		listener_.release(frames_);
+		return std::move(r);
 	}
-	void getGrey(cv::Mat & g){
+
+	cv::Mat getGrey(){
 		TURBO_COLOR = false;
 		listener_.waitForNewFrame(frames_);
 		libfreenect2::Frame * grey = frames_[libfreenect2::Frame::Color];
 		cv::Mat tmp(grey->height, grey->width, CV_8UC1, grey->data);
-		g = tmp.clone();
+		cv::Mat r = tmp.clone();
 		listener_.release(frames_);
+		return std::move(r);
 	}
+
 private:
 
 	libfreenect2::Freenect2 freenect2_;

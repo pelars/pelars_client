@@ -28,4 +28,4 @@ struct result_t
 };
 
 
-int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & websocket, int session);
+int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & websocket);

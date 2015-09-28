@@ -20,4 +20,4 @@
 extern bool to_stop;
 extern bool visualization;
 
-void detectFaces(DataWriter & websocket, int session);
+void detectFaces(DataWriter & websocket);

