@@ -31,9 +31,10 @@ void detectFaces(DataWriter & websocket)
 
 	clock_t begin_time = clock();
     double elapsed_time = 0.0;
-
+    bool reset;
 	while(!to_stop)
 	{	
+		reset = false;
 	    //capture >> color;
 		gs_grabber.capture(frame);
 	    cv::Mat gray(frame);
@@ -56,24 +57,22 @@ void detectFaces(DataWriter & websocket)
 	    detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, cv::Size(gray.cols,gray.rows), cv::Size(), 1.05, (filterRects_ || findLargestObject_) ? 4 : 0);
 
 	    facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
-	    cv::Rect *faces = faces_downloaded.ptr<cv::Rect>();
+	    cv::Rect * faces = faces_downloaded.ptr<cv::Rect>();
 
 	    for( int i = 0; i < detections_num; ++i )
 	  	{
-		    cv::Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
-		    cv::ellipse( gray, center, cv::Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4, 8, 0 );
+		    cv::Point center(faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5 );
+		    cv::ellipse(gray, center, cv::Size( faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4, 8, 0 );
 
 		     // Preapare JSON message to send to the Collector
 	        Json::Value root;
 	        Json::StyledWriter writer;
 
 	        //Elapsed time from process start
-	        elapsed = deltats(orwl_gettime(), start);
-	        elapsed_time = elapsed_time + double(clock() - begin_time) / CLOCKS_PER_SEC;
+	        elapsed_time = double(clock() - begin_time) / CLOCKS_PER_SEC;
 
-	        if (elapsed_time > 100.0) {
-
-	        	elapsed_time = 0.0;
+	        if (elapsed_time > 1) {
+	        	reset = true;
 	        	begin_time = clock();
 		        // Json message
 		        root["obj"]["type"] = "face";
@@ -83,7 +82,7 @@ void detectFaces(DataWriter & websocket)
 		        root["obj"]["x1"] = faces[i].x + faces[i].width;
 		        root["obj"]["y"] = faces[i].y;
 		        root["obj"]["y1"] = faces[i].y + faces[i].height;
-		        root["obj"]["time"] = elapsed; // session relative
+		        root["obj"]["time"] = deltats(orwl_gettime(), start);; // session relative
 
 		        //Send message
 		        std::string out_string = writer.write(root);
@@ -96,6 +95,10 @@ void detectFaces(DataWriter & websocket)
 	            websocket.writeLocal(out_string);  
 	  	}
 	  }
+
+	if(reset)
+		elapsed_time = 0.0;
+
 
 		//-- Show what you got
 	  if(visualization)

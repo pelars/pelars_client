@@ -197,6 +197,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 
     //timing variable
     double elapsed;
+    elapsed_time = float(clock() - begin_time) / CLOCKS_PER_SEC;
 
     for(int i = 0; i < template_num; i++)
     {
@@ -216,8 +217,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
         //Elapsed time from process start
         elapsed = deltats(results[i][j].end, start);
 
-        elapsed_time = elapsed_time + float(clock() - begin_time) / CLOCKS_PER_SEC;
-        if(elapsed_time > 100.0)
+        if(elapsed_time > 1)
         {
 
           elapsed_time = 0.0;

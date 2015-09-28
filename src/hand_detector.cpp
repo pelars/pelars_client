@@ -41,15 +41,16 @@ void handDetector(DataWriter & websocket)
 
   //cv::Mat color;
   cv::Mat grey, color;
+  bool reset ;
   while(!to_stop)
   {
     grey = k2g.getGrey();
     //cv::cvtColor(color, grey, CV_BGR2GRAY);
-
+    reset = false;
     //MDetector.detect(grey, markers, camera, 0.045);
     MDetector.detect(grey, markers);
 
-    elapsed = elapsed + float(clock() - begin_time) / CLOCKS_PER_SEC;
+    elapsed = float(clock() - begin_time) / CLOCKS_PER_SEC;
 
     if(markers.size() > 0)
       for(int i = 0; i < markers.size(); ++i)
@@ -58,8 +59,8 @@ void handDetector(DataWriter & websocket)
         markers[i].draw(grey, cv::Scalar(0, 0, 255), 2);
         aruco::CvDrawingUtils::draw3dCube(grey, markers[i], camera);
 
-        if (elapsed > 100.0){
-          elapsed = 0.0;
+        if (elapsed > 5){
+          reset = true;
           begin_time = clock();
 
           x = markers[i][0].x;
@@ -85,6 +86,9 @@ void handDetector(DataWriter & websocket)
         }
       }
 
+    if(reset)
+      elapsed = 0;
+    
     if(visualization){
       cv::imshow("hands", grey);
       int c = cv::waitKey(1);
