@@ -10,7 +10,6 @@
 #include "opencv2/gpu/gpu.hpp"
 #include "opencv2/core/gpumat.hpp"
 #include <json/json.h>
-#include "alttime.h"
 #include <vector>
 #include <ctime>
 #include "gstreamer_grabber2.h"
@@ -19,5 +18,7 @@
 
 extern bool to_stop;
 extern bool visualization;
+extern double interval;
+extern std::chrono::time_point<std::chrono::system_clock> start;
 
 void detectFaces(DataWriter & websocket);

@@ -8,7 +8,8 @@ int portAudioCallback(const void * input, void * output,
 	FFT * fft = (FFT *)userData;
 	if(frameCount > 1){
 		float psd = fft->compute((float *)input, frameCount);
-	    if(fft->to_send_){
+	    if(psd > 0.001 && fft->timer_.needSend()){
+	    	std::cout << "sending" << std::endl;
 			std::string message = fft->message_;
 			if(online){
 			        	//std::cout << "Face detector posting data to the server\n " << std::flush;
@@ -57,4 +58,28 @@ void audioDetector(DataWriter & data_writer){
 		
 	Pa_CloseStream(stream);
 	Pa_Terminate();
+}
+
+float FFT::compute(float * buf, int count){
+		
+	psd_ = 0;
+	scale_ = 1 / (float)count;
+
+	if(amplitude_.size() < count){
+		amplitude_.resize(count);
+		freqvec_.resize(count);
+	}
+
+	fft_.fwd(&freqvec_[0], &buf[0], count);
+
+    for(int i = 0; i < count; ++i){
+    	amplitude_[i] = 2 * scale_ * sqrt(pow(freqvec_[i].real(), 2) + pow(freqvec_[i].imag(), 2));
+    	psd_ += pow(amplitude_[i], 2) * scale_;
+    }
+    
+    root_["obj"]["value"] = psd_;
+    root_["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+    message_ = writer_.write(root_);
+
+	return psd_;
 }

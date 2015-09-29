@@ -4,13 +4,10 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/core/core.hpp>        
 #include <opencv2/features2d/features2d.hpp>
-//#include "kinect_grabber.h"
-//#include "kinect2_grabber.hpp"
 #include "k2g.h"
 #include "opt.h"
 #include "data_writer.h"
 #include <iostream>
-#include "alttime.h"
 #include <json/json.h>
 #include <aruco/aruco.h>
 #include <aruco/cvdrawingutils.h>
@@ -21,6 +18,8 @@
 extern bool to_stop;
 extern bool online;
 extern bool visualization;
+extern double interval;
+extern std::chrono::time_point<std::chrono::system_clock> start;
 
 void handDetector(DataWriter & websocket);
 

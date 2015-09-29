@@ -10,8 +10,6 @@ void detectFaces(DataWriter & websocket)
 	cv::CascadeClassifier face_cascade_;
 	cv::Mat gray;
 
-	double elapsed;
-
 	cv::gpu::CascadeClassifier_GPU cascade_gpu_;
 	bool findLargestObject_ = false;
     bool filterRects_ = true;
@@ -29,12 +27,16 @@ void detectFaces(DataWriter & websocket)
 	if(visualization)
 		cv::namedWindow("face");
 
-	clock_t begin_time = clock();
-    double elapsed_time = 0.0;
-    bool reset;
+	TimedSender timer(interval);
+	bool to_send;
+
+	// Preapare JSON message to send to the Collector
+	Json::Value root;
+	Json::StyledWriter writer;
+	root["obj"]["type"] = "face";
+
 	while(!to_stop)
 	{	
-		reset = false;
 	    //capture >> color;
 		gs_grabber.capture(frame);
 	    cv::Mat gray(frame);
@@ -58,60 +60,50 @@ void detectFaces(DataWriter & websocket)
 
 	    facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
 	    cv::Rect * faces = faces_downloaded.ptr<cv::Rect>();
-
-	    for( int i = 0; i < detections_num; ++i )
+	    
+	    if(detections_num > 0)
+	    	to_send = timer.needSend();
+	    for(int i = 0; i < detections_num; ++i)
 	  	{
-		    cv::Point center(faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5 );
-		    cv::ellipse(gray, center, cv::Size( faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4, 8, 0 );
+		    cv::Point center(faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5);
+		    cv::ellipse(gray, center, cv::Size( faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4, 8, 0);
 
-		     // Preapare JSON message to send to the Collector
-	        Json::Value root;
-	        Json::StyledWriter writer;
+	        if(to_send){
 
-	        //Elapsed time from process start
-	        elapsed_time = double(clock() - begin_time) / CLOCKS_PER_SEC;
-
-	        if (elapsed_time > 1) {
-	        	reset = true;
-	        	begin_time = clock();
 		        // Json message
-		        root["obj"]["type"] = "face";
-
 		        root["obj"]["id"] = i;
 		        root["obj"]["x"] = faces[i].x; 
 		        root["obj"]["x1"] = faces[i].x + faces[i].width;
 		        root["obj"]["y"] = faces[i].y;
 		        root["obj"]["y1"] = faces[i].y + faces[i].height;
-		        root["obj"]["time"] = deltats(orwl_gettime(), start);; // session relative
+		        root["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
 
 		        //Send message
 		        std::string out_string = writer.write(root);
-		        //std::cout << "sending " << out_string << std::endl;
 		        if(online){
 	          		io.post( [&websocket, out_string]() {
 	                websocket.writeData(out_string);
 	                });
 	            }
 	            websocket.writeLocal(out_string);  
-	  	}
-	  }
-
-	if(reset)
-		elapsed_time = 0.0;
-
-
-		//-- Show what you got
-	  if(visualization)
-		cv::imshow( "face", gray);
+	        }
+	    }
 
 	    gray_gpu.release();
-	    facesBuf_gpu.release();
+		facesBuf_gpu.release();
 
-	    int c = cv::waitKey(1);
-		if((char)c == 'q' ) {
-			to_stop = true;
-			std::cout << "stop requested by face detector" << std::endl;
+		//-- Show what you got
+		if(visualization){
+			cv::imshow( "face", gray);
+			int c = cv::waitKey(1);
+			if((char)c == 'q' ) {
+				to_stop = true;
+				std::cout << "stop requested by face detector" << std::endl;
+			}	
 		}
+
+		
+		
 	}	
 }
 

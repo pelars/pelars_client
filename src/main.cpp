@@ -9,9 +9,13 @@ bool visualization = false;
 // Argument parsing structure
 struct arguments arguments;
 // Mongoose websocket port
-const char *  MONGOOSE_PORT= "8081";
+const char * MONGOOSE_PORT= "8081";
 // System starting time
 const std::string currentDateTimeNow = currentDateTime();
+// sending interval
+double interval = 1000;
+// initial time point
+std::chrono::time_point<std::chrono::system_clock> start;
 
 static void sig_handler(int signum)
 {
@@ -66,7 +70,7 @@ int main(int argc, char * argv[])
   std::thread ws_writer(asiothreadfx);
 
   // Start time
-  start = orwl_gettime();
+  start = std::chrono::system_clock::now();
 
   // Kinect Frame acquisition
   KinectManagerExchange * kinect_manager;

@@ -12,10 +12,10 @@
 #include <boost/algorithm/string.hpp>
 #include "data_writer.h"
 #include "opt.h"
-#include "alttime.h"
 
 extern bool to_stop;
 extern bool online;
+extern std::chrono::time_point<std::chrono::system_clock> start; 
 
 void sseHandler(DataWriter & websocket);
 
@@ -40,7 +40,7 @@ struct Encapsule{
 		websocket_.writeLocal(to_send_);
 	}
 	void addTime(){
-		root_["obj"]["time"] = deltats(orwl_gettime(), start);
+		root_["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
 	}
 
 	DataWriter & websocket_;

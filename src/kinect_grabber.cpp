@@ -2,7 +2,6 @@
 
 // Asion communication service and Asio keep alive
 boost::asio::io_service io;
-struct timespec start;
 
 KinectManagerExchange::KinectManagerExchange(): shm_obj_(boost::interprocess::open_or_create, "region", boost::interprocess::read_write)
 {

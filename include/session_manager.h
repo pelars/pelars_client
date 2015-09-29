@@ -8,19 +8,16 @@
 
 extern bool to_stop;
 extern bool online;
+extern std::chrono::time_point<std::chrono::system_clock> start;
 
 class SessionManager {
 
 public:
 
 	SessionManager(std::string endpoint);
-
 	int getNewSession();
-
 	void closeSession(int session);
-
 	void createUser();
-
 	void login();
 
 private:
