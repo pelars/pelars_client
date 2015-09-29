@@ -1,6 +1,4 @@
 #pragma once
-#include <opencv2/opencv.hpp>
-
 #include "xn16zdec.h"
 #include "x264encoder.h"
 #include "x264decoder.h"

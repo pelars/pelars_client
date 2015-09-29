@@ -9,7 +9,6 @@ int portAudioCallback(const void * input, void * output,
 	if(frameCount > 1){
 		float psd = fft->compute((float *)input, frameCount);
 	    if(psd > 0.001 && fft->timer_.needSend()){
-	    	std::cout << "sending" << std::endl;
 			std::string message = fft->message_;
 			if(online){
 			        	//std::cout << "Face detector posting data to the server\n " << std::flush;

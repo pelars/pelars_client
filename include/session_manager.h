@@ -1,10 +1,9 @@
 #pragma once
 #include <boost/network/protocol/http/client.hpp>
-#include <string>
 #include <json/json.h>
 #include "tinyxml2.h"
 #include <fstream>
-#include <thread>
+#include <chrono>
 
 extern bool to_stop;
 extern bool online;

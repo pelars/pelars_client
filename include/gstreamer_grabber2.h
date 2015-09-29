@@ -2,18 +2,14 @@
 #include <gst/gst.h> 
 #include <gst/app/gstappsink.h>
 #include <glib.h>
-#include <string>
 #include <iostream>
 #include <sstream>
 #include <opencv2/core/core.hpp>        
-#include <vector>
-#include <string>
 
 class GstreamerGrabber2{
 	
 public:
-
-
+	
 	GstreamerGrabber2(const char * device, const int width, const int height, const bool yuv420, const bool testsrc, const char * command = "");
 	~GstreamerGrabber2();
 

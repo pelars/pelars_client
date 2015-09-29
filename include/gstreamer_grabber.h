@@ -2,7 +2,6 @@
 #include <gst/gst.h> 
 #include <gst/app/gstappsink.h>
 #include <glib.h>
-#include <string>
 #include <iostream>
 #include <sstream>
 #include <opencv2/core/core.hpp>        

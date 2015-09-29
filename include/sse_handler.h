@@ -1,16 +1,6 @@
 #pragma once
 #include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
-#include <curlpp/Exception.hpp>
-#include <curlpp/Infos.hpp>
-#include <string.h>
-#include <fstream>
-#include <vector>
-#include <thread>
-#include <json/json.h>
 #include <boost/algorithm/string.hpp>
-#include "data_writer.h"
 #include "opt.h"
 
 extern bool to_stop;

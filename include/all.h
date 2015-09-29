@@ -8,8 +8,8 @@
 #include "hand_detector.h"
 #include "opt_parse.h"
 #include "key_logger.h"
-#include <signal.h>
 #include "mongoose.h"
 #include "opt.h"
 #include "ide_handler.h"
 #include "audio_detector.h"
+#include "opt.h"

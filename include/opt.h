@@ -1,14 +1,13 @@
 #pragma once
 #include <boost/asio.hpp>
-#include <iostream>
 #include "data_writer.h"
 #include <json/json.h>
 #include <chrono>
 
-
 // Asion communication service and Asio keep alive
 extern boost::asio::io_service io;
 extern bool online;
+extern bool to_stop;
 
 void aliver(const boost::system::error_code& /*e*/);
 
@@ -20,7 +19,6 @@ double deltats(const struct timespec & a, const struct timespec & b);
 const std::string currentDateTime();
 
 struct MiniEncapsule{
-
 
 	MiniEncapsule(DataWriter & websocket, int session): websocket_(websocket), session_(session){
 	}
