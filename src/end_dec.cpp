@@ -42,19 +42,19 @@ bool EncDec::unStep(std::ifstream & inf)
 	if(inf)
 	{
 		if(!x264_decoder_.decodeFrame(&rgb_buffer_compressed_[0],dp.color_size_,&rgb_buffer_[0])) 
-		    {
-		        std::cerr << "Unable to decode rgb frame\n";
-		        return false;
-		    }
+			{
+				std::cerr << "Unable to decode rgb frame\n";
+				return false;
+			}
 
-		    XnUInt32 decompressed_size_bytes = w_*h_*2;
-		    if(XnStreamUncompressDepth16Z((XnUInt8 *)&depth_buffer_compressed_[0],
-		                                  dp.depth_size_, (XnUInt16 *)&depth_buffer_[0],
-		                                  &decompressed_size_bytes) != 0)
-		    {
-		        std::cerr << "Unable to decode depth frame\n";
-		        return false;
-		    }			
+			XnUInt32 decompressed_size_bytes = w_*h_*2;
+			if(XnStreamUncompressDepth16Z((XnUInt8 *)&depth_buffer_compressed_[0],
+										  dp.depth_size_, (XnUInt16 *)&depth_buffer_[0],
+										  &decompressed_size_bytes) != 0)
+			{
+				std::cerr << "Unable to decode depth frame\n";
+				return false;
+			}			
 		   // invoke callback	
 	}
 	return true;
@@ -99,7 +99,7 @@ int EncDec::packRgbData()
 	while(x264_encoder_.isNalsAvailableInOutputQueue())
 	{
 		nal = x264_encoder_.getNalUnit();
-	    memcpy(&(rgb_buffer_compressed_[tmp_size]), nal.p_payload, nal.i_payload);
+		memcpy(&(rgb_buffer_compressed_[tmp_size]), nal.p_payload, nal.i_payload);
 		tmp_size += nal.i_payload;
 	}
 	return tmp_size;

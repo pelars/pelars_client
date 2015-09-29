@@ -57,6 +57,8 @@ find_library(GLIB            NAMES glib-2.0)
 find_library(FREENECT2 NAMES freenect2)
 set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
 find_library(PORTAUDIO portaudio)
+set(LINUXEXTRA rt boost_random boost_program_options)
+
 
 include_directories(${JSONCPP_INCLUDE_DIR})
 include_directories(${FFMPEG_INCLUDE_DIRS})
@@ -68,7 +70,6 @@ include_directories(${GLFW_INCLUDE_DIRS})
 
 link_directories(${PCL_LIBRARY_DIRS})
 
-set(LINUXEXTRA rt boost_random)
 add_definitions(${PCL_DEFINITIONS})
 
 add_executable(sensor_manager   ${SRC}/main.cpp 

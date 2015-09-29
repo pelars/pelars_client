@@ -15,8 +15,8 @@
 #endif
 
 extern "C" {
-    #include "x264.h"
-    #include <libswscale/swscale.h>
+	#include "x264.h"
+	#include <libswscale/swscale.h>
 }
 
 
@@ -24,23 +24,23 @@ class x264Encoder
 {
 
 public:
-    void initialize(int w, int h);
-    void unInitilize();
-    void encodeFrame(const char *rgb_buffer, int buffer_size);
-    bool isNalsAvailableInOutputQueue();
-    int image_h_;
-    int image_w_;
+	void initialize(int w, int h);
+	void unInitilize();
+	void encodeFrame(const char *rgb_buffer, int buffer_size);
+	bool isNalsAvailableInOutputQueue();
+	int image_h_;
+	int image_w_;
 
-    x264_nal_t getNalUnit();
-    x264_t *getx264Encoder() { return encoder_; }
-    int nal_size() { return output_queue_.size(); }
+	x264_nal_t getNalUnit();
+	x264_t *getx264Encoder() { return encoder_; }
+	int nal_size() { return output_queue_.size(); }
 private:
-    // Use this context to convert your BGR Image to YUV image since x264 do not support RGB input
-    SwsContext* convert_context_ = NULL;
-    std::queue<x264_nal_t> output_queue_;
-    x264_param_t parameters_;
-    x264_picture_t picture_in_, picture_out_;
-    x264_t* encoder_;
+	// Use this context to convert your BGR Image to YUV image since x264 do not support RGB input
+	SwsContext* convert_context_ = NULL;
+	std::queue<x264_nal_t> output_queue_;
+	x264_param_t parameters_;
+	x264_picture_t picture_in_, picture_out_;
+	x264_t* encoder_;
 
 };
 

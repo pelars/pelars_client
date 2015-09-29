@@ -3,23 +3,23 @@
 GstreamerGrabber2::GstreamerGrabber2(const char * device, const int width, const int height, const bool yuv420, const bool testsrc, const char * command):
 	width_(width), height_(height){
 	gst_init(NULL,NULL);
-   	const char * outformat = yuv420 ? "I420" : "RGB";
-   	if(!(command == ""))
-   		strcpy(buffer_, command);
+	const char * outformat = yuv420 ? "I420" : "RGB";
+	if(!(command == ""))
+		strcpy(buffer_, command);
 	else
-	   	if(!testsrc)
+		if(!testsrc)
 			sprintf(buffer_,"v4l2src name=src ! queue ! video/x-h264, width=%d, height=%d, framerate=30/1 ! h264parse ! avdec_h264 ! videoconvert ! video/x-raw,format=%s, width=%d,height=%d ! appsink name=sink",
-		                    width_, height_, outformat, width_, height_);
+							width_, height_, outformat, width_, height_);
 		else
 			sprintf(buffer_,"videotestsrc ! video/x-raw,format=%s, width=%d,height=%d ! appsink name=sink", outformat, width_, height_);
 	pipeline_ = gst_parse_launch(buffer_, &error_);
 	g_object_set (src_, "device", device, NULL);
 	if (!pipeline_)
 	{
-    	g_print ("Parse error: %s\n", error_->message);
-    	exit (1);
-  	}
-  	// extract
+		g_print ("Parse error: %s\n", error_->message);
+		exit (1);
+	}
+	// extract
 	sink_ = gst_bin_get_by_name(GST_BIN(pipeline_), "sink");
 	if(src_)
 	{
@@ -46,22 +46,22 @@ GstreamerGrabber2::~GstreamerGrabber2(){
  
 void GstreamerGrabber2::operator >>(cv::Mat & frame){
 
-    GstSample * sample = gst_app_sink_pull_sample(appsink_);
-    GstBuffer * gstImageBuffer= gst_sample_get_buffer(sample); 
-    GstCaps * c = gst_sample_get_caps(sample); 
-    GST_WARNING ("caps are %" GST_PTR_FORMAT, c);
-    frame.resize(width_, height_);
+	GstSample * sample = gst_app_sink_pull_sample(appsink_);
+	GstBuffer * gstImageBuffer= gst_sample_get_buffer(sample); 
+	GstCaps * c = gst_sample_get_caps(sample); 
+	GST_WARNING ("caps are %" GST_PTR_FORMAT, c);
+	frame.resize(width_, height_);
 
-    gst_buffer_extract(gstImageBuffer, 0, frame.data, gsize());
-    gst_buffer_unref(gstImageBuffer);
+	gst_buffer_extract(gstImageBuffer, 0, frame.data, gsize());
+	gst_buffer_unref(gstImageBuffer);
 }
  
 void GstreamerGrabber2::capture(IplImage * frame)
 {
 	GstSample * sample = gst_app_sink_pull_sample(appsink_);
 	GstBuffer * gstImageBuffer=	gst_sample_get_buffer(sample);	
-    GstCaps * c = gst_sample_get_caps(sample);
-    GST_WARNING ("caps are %" GST_PTR_FORMAT, c);
+	GstCaps * c = gst_sample_get_caps(sample);
+	GST_WARNING ("caps are %" GST_PTR_FORMAT, c);
 
 	gst_buffer_extract(gstImageBuffer, 0, frame->imageData, frame->imageSize);
 	gst_buffer_unref(gstImageBuffer);

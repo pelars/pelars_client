@@ -81,13 +81,13 @@ int main(int argc, char** argv)
 
 	boost::interprocess::shared_memory_object shm_obj(boost::interprocess::open_or_create, "region", boost::interprocess::read_write);
 	shm_obj.truncate(640 * 480 * 6 + 4); 
-   	boost::interprocess::mapped_region region(shm_obj, boost::interprocess::read_write);
+	boost::interprocess::mapped_region region(shm_obj, boost::interprocess::read_write);
 
-   	common = (unsigned char *)region.get_address();
-   	if(!common)
+	common = (unsigned char *)region.get_address();
+	if(!common)
    {
-   	printf("cannot map\n");
-   	return -1;
+	printf("cannot map\n");
+	return -1;
    }
 	// Initialize libfreenect.
 	freenect_context * fn_ctx;

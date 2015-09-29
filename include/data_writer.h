@@ -11,33 +11,33 @@ extern bool online;
 class DataWriter
 {
 public:
-  typedef websocketpp::client<websocketpp::config::asio_client> client;
-  typedef websocketpp::lib::lock_guard<websocketpp::lib::mutex> scoped_lock;
+	typedef websocketpp::client<websocketpp::config::asio_client> client;
+	typedef websocketpp::lib::lock_guard<websocketpp::lib::mutex> scoped_lock;
 
-  const std::string uri_;
-  client m_client_;
-  websocketpp::connection_hdl m_hdl_;
-  websocketpp::lib::mutex m_lock_;
-  bool m_open_;
-  bool m_done_;
-  bool failed_;
-  std::vector<std::string> * buffer_;
-  client::connection_ptr con_;
-  websocketpp::lib::error_code ec_;
-  websocketpp::error::category cat_;
-  websocketpp::lib::thread thread_;
-  std::mutex m_;
-  std::ofstream fs_;
-  std::string file_name_, file_extention_, complete_file_name_;
+	const std::string uri_;
+	client m_client_;
+	websocketpp::connection_hdl m_hdl_;
+	websocketpp::lib::mutex m_lock_;
+	bool m_open_;
+	bool m_done_;
+	bool failed_;
+	std::vector<std::string> * buffer_;
+	client::connection_ptr con_;
+	websocketpp::lib::error_code ec_;
+	websocketpp::error::category cat_;
+	websocketpp::lib::thread thread_;
+	std::mutex m_;
+	std::ofstream fs_;
+	std::string file_name_, file_extention_, complete_file_name_;
 
-  DataWriter(const std::string & uri, const int session);
-  ~DataWriter();
-  void stop();
-  void onClose(websocketpp::connection_hdl);
-  void onFail(websocketpp::connection_hdl);
-  void writeLocal(const std::string s);
+	DataWriter(const std::string & uri, const int session);
+	~DataWriter();
+	void stop();
+	void onClose(websocketpp::connection_hdl);
+	void onFail(websocketpp::connection_hdl);
+	void writeLocal(const std::string s);
 
-  void writeData(const std::string  s);
+	void writeData(const std::string  s);
 
 };
 

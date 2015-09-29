@@ -2,9 +2,9 @@
 #include "sse_handler.h"
 
 size_t write_data(void *ptr, size_t size, size_t nmemb, Encapsule * enc) {
-    //std::cout << "received " << enc->name_ << " " << std::string((char*)ptr, nmemb) << std::endl;
-    enc->body_.append((char*)ptr, nmemb);
-    std::vector<std::string> strs;
+	//std::cout << "received " << enc->name_ << " " << std::string((char*)ptr, nmemb) << std::endl;
+	enc->body_.append((char*)ptr, nmemb);
+	std::vector<std::string> strs;
 	boost::split(strs, enc->body_, boost::is_any_of("\n\n"));
 	int str_size = strs.size();
 	Json::Value root_;
@@ -17,16 +17,16 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, Encapsule * enc) {
 				enc->addData(strs[j]);
 				enc->prepareData();
 				if(online) 
-	          		io.post( [&enc]() {
-	          			std::cout << "SENDING" << std::endl;
-	                	enc->send();
-	                });
-		        enc->localSend();
-		    }
-	    }
-	    enc->body_ = strs[str_size - 1];	
+					io.post( [&enc]() {
+						std::cout << "SENDING" << std::endl;
+						enc->send();
+					});
+				enc->localSend();
+			}
+		}
+		enc->body_ = strs[str_size - 1];	
 	}
-    return nmemb;
+	return nmemb;
 }
 
 Http::Http()
@@ -56,7 +56,7 @@ void Http::addRequest(const char* uri, const std::string token, Encapsule * enc)
 
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, enc);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, enc);
 
 	// VERBOSE
 	//curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
@@ -70,18 +70,18 @@ void sseHandler(DataWriter & websocket){
 	std::ifstream infile("../../data/sse.txt");
 
 	if(!infile.is_open())
-  	{
-    	std::cout << "cannot open sse.txt file in \"../../data/sse.txt\"" << std::endl;
-  	}else{
-	  	std::string name, url, token;
-	  	while(infile >> name >> url >> token){
-	 	  	std::cout << "Adding " << name << " url " << url << " token " << token << std::endl;
+	{
+		std::cout << "cannot open sse.txt file in \"../../data/sse.txt\"" << std::endl;
+	}else{
+		std::string name, url, token;
+		while(infile >> name >> url >> token){
+			std::cout << "Adding " << name << " url " << url << " token " << token << std::endl;
 			http.addRequest(url.c_str(), token, new Encapsule(websocket, name));
-	  	}
-  	}
-  	while(!to_stop){
-  		http.update();
-  		//std::cout << "to_stop " << to_stop <<"\n" << std::flush;
-  	}
+		}
+	}
+	while(!to_stop){
+		http.update();
+		//std::cout << "to_stop " << to_stop <<"\n" << std::flush;
+	}
 }
 

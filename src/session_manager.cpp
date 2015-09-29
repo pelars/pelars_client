@@ -4,30 +4,30 @@
 SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint)
 {	
 	std::cout << "Parsing the input data" << std::endl;
-    auto eResult =  data_.LoadFile( "../../data/personal.xml" );
-    if(eResult != 0){
-    	std::cout << "\tError parsing personal.xml or file not present in /data/" << std::endl;
-    	to_stop = true;
-    }else
-    	std::cout << "\tParsed the input data" << std::endl;
+	auto eResult =  data_.LoadFile( "../../data/personal.xml" );
+	if(eResult != 0){
+		std::cout << "\tError parsing personal.xml or file not present in /data/" << std::endl;
+		to_stop = true;
+	}else
+		std::cout << "\tParsed the input data" << std::endl;
 
-    login();
-    createUser();
+	login();
+	createUser();
 }	
 
 int SessionManager::getNewSession()
 {
 	// Error variables
-    bool error = false;
-    bool parsed_success;
+	bool error = false;
+	bool parsed_success;
 
-    // Json message and content
-    root_.clear();
-    root_["user_id"] = user_id_;
-    root_["institution_name"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_name" )->GetText();
-    root_["institution_address"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_address" )->GetText();
-    root_["namespace" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "namespace" )->GetText();
-    std::string out_string = writer_.write(root_);
+	// Json message and content
+	root_.clear();
+	root_["user_id"] = user_id_;
+	root_["institution_name"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_name" )->GetText();
+	root_["institution_address"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_address" )->GetText();
+	root_["namespace" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "namespace" )->GetText();
+	std::string out_string = writer_.write(root_);
 
 	std::cout << "Requesting session id " << std::endl;
 	try{
@@ -87,14 +87,14 @@ void SessionManager::createUser(){
 	std::cout << "creating user" <<std::endl;
 
 	root_.clear();
-    root_["name"] = data_.FirstChildElement( "Root" )->FirstChildElement( "name" )->GetText();
-    root_["password"] = data_.FirstChildElement( "Root" )->FirstChildElement( "password" )->GetText();
-    root_["affiliation"] = data_.FirstChildElement( "Root" )->FirstChildElement( "affiliation" )->GetText();
-    root_["namespace" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "namespace" )->GetText();
-    root_["email" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "email" )->GetText();
-    std::string out_string = writer_.write(root_);
+	root_["name"] = data_.FirstChildElement( "Root" )->FirstChildElement( "name" )->GetText();
+	root_["password"] = data_.FirstChildElement( "Root" )->FirstChildElement( "password" )->GetText();
+	root_["affiliation"] = data_.FirstChildElement( "Root" )->FirstChildElement( "affiliation" )->GetText();
+	root_["namespace" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "namespace" )->GetText();
+	root_["email" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "email" )->GetText();
+	std::string out_string = writer_.write(root_);
 
-    try{
+	try{
 		// Making the put request to create a new session
 		boost::network::http::client::request endpoint(endpoint_ + std::string("user") + std::string("?token=") + token_);
 		response_ = client_.put(endpoint, out_string);
@@ -116,16 +116,16 @@ void SessionManager::createUser(){
 void SessionManager::closeSession(int session)
 {
 	// Close the session and exit
-  	// Preaparing data to close the session
-  	root_.clear();
+	// Preaparing data to close the session
+	root_.clear();
 
-    // Json message
-    root_["op_code"] = "close";
-    std::string out_string = writer_.write(root_);
+	// Json message
+	root_["op_code"] = "close";
+	std::string out_string = writer_.write(root_);
 
 	std::cout << "closing session " << session << std::endl;
 	if(online){
-	 	//Sending data to close the session with the session manager
+		//Sending data to close the session with the session manager
 		boost::network::http::client::request request_(endpoint_ + std::string("session/") + std::to_string(session) + std::string("?token=") + token_);
 		response_ = client_.post(request_, out_string);
 		std::cout << "\tSession manager response: " << response_.body();

@@ -1,91 +1,46 @@
 #pragma once
-//#include <stdlib.h>
-#include <argp.h>
+#include <boost/program_options.hpp>
+#include <boost/any.hpp>
 
-const char *argp_program_version =
-  "v1";
-const char *argp_program_bug_address =
-  "giacomo.dabisias@gmail.com";
-
-/* Program documentation. */
-static char doc[] =
-  "Pelars sensor";
-
-/* A description of the arguments we accept. */
-static char args_doc[] = "Path to template list file";
-
-/* The options we understand. */
-static struct argp_option options[] = {
-  {"face",  'f', 0,      0,  "Record faces" },
-  {"hand",    'h', 0,      0,  "Record markers for hand detection" },
-  {"object",    'o', "template list file",      0,  "Record objects from a template list file" },
-  {"visualization",  'v', 0,      0,  "Visualize windows" },
-  {"particle",  'p',  0,  0,  "Starts particle recorder"},
-  {"keylog",  'k', 0, 0,  "Sends activity data"},
-  {"special",  's', 0, 0,  "handles signals"},
-  {"ide",  'i', 0, 0,  "handles ide messages"},
-  {"audio",  'a', 0, 0,  "handles audio"},
-  { 0 }
-};
-
-/* Used by main to communicate with parse_opt. */
-struct arguments
+class Parser
 {
-  char *args[1];                /* arg1 & arg2 */
-  bool face, hand, object, visualization, particle, keylog, special, ide, audio;
-  std::string template_file;
+
+public:
+
+	Parser(int argc, char ** argv):argc_(argc), argv_(argv)
+	{
+
+		boost::program_options::options_description description("Pelars Client Usage");
+		description.add_options()
+				("face,f", "track the faces")
+				("audio,a", "track audio level")
+				("hand,h", "track the hands")
+				("particle,p", "track the partile IO sensors")
+				("ide,i", "track the Aarduino IDE log")
+				("visualization,v", "activate visualization")
+				("objects,o", boost::program_options::value<std::string>(), "Object template file")
+				("special,s", "special flag for background run");
+
+		boost::program_options::options_description hidden("Hidden options");
+		boost::program_options::store(boost::program_options::command_line_parser(argc_, argv_).options(description).run(), vm_);
+		boost::program_options::notify(vm_);
+	}
+
+	bool get(std::string value){
+		if(vm_.count(value))
+			return true;
+		return false;
+	}
+
+	std::string getString(std::string value){
+		if(vm_.count(value))
+			return vm_[value].as<std::string>();
+		return "";
+	}
+
+private:
+	int argc_;
+	char ** argv_;
+	boost::program_options::variables_map vm_;
+
 };
-
-/* Parse a single option. */
-static error_t
-parse_opt (int key, char *arg, struct argp_state *state)
-{
-  /* Get the input argument from argp_parse, which we
-     know is a pointer to our arguments structure. */
-  struct arguments *arguments = (struct arguments*)state->input;
-
-  switch (key)
-    {
-    case 'h': 
-      arguments->hand = true;
-      break;
-    case 'o':
-      arguments->object = true;
-      arguments->template_file = arg;
-      break;
-    case 'f':
-      arguments->face = true;
-      break;
-    case 'v':
-      arguments->visualization = true;
-      break;
-    case 'p':
-      arguments->particle = true;
-      break;
-    case 'k':
-      arguments->keylog = true;
-      break;
-    case 's':
-      arguments->special = true;
-      break;
-    case 'i':
-      arguments->ide = true;
-      break;
-    case 'a':
-      arguments->audio = true;
-      break;
-
-    case ARGP_KEY_ARG:
-        /* Too many arguments. */
-        argp_usage (state);
-      //arguments->args[state->arg_num] = arg;
-      break;
-
-    default:
-      return ARGP_ERR_UNKNOWN;
-    }
-  return 0;
-}
-
-/* Our argp parser. */
-static struct argp argp = { options, parse_opt, args_doc, doc };

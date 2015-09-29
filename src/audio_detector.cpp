@@ -2,26 +2,25 @@
 
 int portAudioCallback(const void * input, void * output, 
 					  unsigned long frameCount, const PaStreamCallbackTimeInfo * timeInfo,
-                      PaStreamCallbackFlags statusFlags, void * userData){
+					  PaStreamCallbackFlags statusFlags, void * userData){
 	
 
 	FFT * fft = (FFT *)userData;
 	if(frameCount > 1){
 		float psd = fft->compute((float *)input, frameCount);
-	    if(psd > 0.001 && fft->timer_.needSend()){
+		if(psd > 0.001 && fft->timer_.needSend()){
 			std::string message = fft->message_;
 			if(online){
-			        	//std::cout << "Face detector posting data to the server\n " << std::flush;
-		          		io.post([&fft, message]() {
-		                	fft->websocket_.writeData(message);
-		                });
-		            }
-		    fft->websocket_.writeLocal(message);  
+						//std::cout << "Face detector posting data to the server\n " << std::flush;
+						io.post([&fft, message]() {
+							fft->websocket_.writeData(message);
+						});
+					}
+			fft->websocket_.writeLocal(message);  
 		}
 	}
 	
-    return 0;
-
+	return 0;
 }
 
 void audioDetector(DataWriter & data_writer){
@@ -30,8 +29,8 @@ void audioDetector(DataWriter & data_writer){
 
 	int used_device = 0;
 	for(int i = 0; i < Pa_GetDeviceCount(); ++i)
-	    if(std::string(Pa_GetDeviceInfo(i)->name).find("HD Pro Webcam C920") != std::string::npos)
-	    	used_device = i;
+		if(std::string(Pa_GetDeviceInfo(i)->name).find("HD Pro Webcam C920") != std::string::npos)
+			used_device = i;
 	
 	std::cout << "Using device : " << Pa_GetDeviceInfo(used_device)->name << std::endl;
 	
@@ -71,14 +70,14 @@ float FFT::compute(float * buf, int count){
 
 	fft_.fwd(&freqvec_[0], &buf[0], count);
 
-    for(int i = 0; i < count; ++i){
-    	amplitude_[i] = 2 * scale_ * sqrt(pow(freqvec_[i].real(), 2) + pow(freqvec_[i].imag(), 2));
-    	psd_ += pow(amplitude_[i], 2) * scale_;
-    }
-    
-    root_["obj"]["value"] = psd_;
-    root_["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
-    message_ = writer_.write(root_);
+	for(int i = 0; i < count; ++i){
+		amplitude_[i] = 2 * scale_ * sqrt(pow(freqvec_[i].real(), 2) + pow(freqvec_[i].imag(), 2));
+		psd_ += pow(amplitude_[i], 2) * scale_;
+	}
+	
+	root_["obj"]["value"] = psd_;
+	root_["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+	message_ = writer_.write(root_);
 
 	return psd_;
 }

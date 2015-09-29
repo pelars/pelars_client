@@ -16,10 +16,10 @@
 #include <fstream>
 
 extern "C" {
-    #include "x264.h"
-    #include <libswscale/swscale.h>
-    #include <libavcodec/avcodec.h>
-    #include <libavutil/frame.h>
+	#include "x264.h"
+	#include <libswscale/swscale.h>
+	#include <libavcodec/avcodec.h>
+	#include <libavutil/frame.h>
 }
 
 
@@ -27,18 +27,18 @@ class x264decoder
 {
 public:
 
-    void initialize(int w, int h);
-    bool decodeFrame(uint8_t *src_buffer, unsigned int size, 
-                     uint8_t const *rgb_buffer);
+	void initialize(int w, int h);
+	bool decodeFrame(uint8_t *src_buffer, unsigned int size, 
+					 uint8_t const *rgb_buffer);
 private:
-    AVFrame* av_frame_;
-    AVFrame *av_frame_RGB_;
+	AVFrame* av_frame_;
+	AVFrame *av_frame_RGB_;
 
-    // Use this context to convert your BGR Image to YUV image since x264 do not support RGB input
-    AVCodec* av_codec_ = NULL;
-    AVCodecContext* av_codec_context_ = NULL;
-    SwsContext* convert_context_;
-    int image_w_;
-    int image_h_;
-    int rgb_size_;
+	// Use this context to convert your BGR Image to YUV image since x264 do not support RGB input
+	AVCodec* av_codec_ = NULL;
+	AVCodecContext* av_codec_context_ = NULL;
+	SwsContext* convert_context_;
+	int image_w_;
+	int image_h_;
+	int rgb_size_;
 };

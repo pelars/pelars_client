@@ -34,8 +34,8 @@ struct MiniEncapsule{
 	int session_;
 	std::string out_message_;
 	Json::Value root_;
-  	Json::StyledWriter writer_;
-  	Json::Reader reader;
+	Json::StyledWriter writer_;
+	Json::Reader reader;
 
 };
 
@@ -43,30 +43,30 @@ class TimedSender
 {   
 
 public:
-    TimedSender(double step): step_(step) {
-        inited_ = false;
-    }
+	TimedSender(double step): step_(step) {
+		inited_ = false;
+	}
 
-    bool needSend()
-    {
-        if(!inited_)
-        {
-            inited_ = true;
-            last_ = std::chrono::system_clock::now();
-            return true;
-        }
-        else if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_).count() >= step_)
-        {
-            last_ = std::chrono::system_clock::now();
-            return true;
-        }
-        else
-            return false;
-    }
+	bool needSend()
+	{
+		if(!inited_)
+		{
+			inited_ = true;
+			last_ = std::chrono::system_clock::now();
+			return true;
+		}
+		else if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_).count() >= step_)
+		{
+			last_ = std::chrono::system_clock::now();
+			return true;
+		}
+		else
+			return false;
+	}
 
 private:
-    double step_;
-    bool inited_;
-    std::chrono::time_point<std::chrono::system_clock> last_;
+	double step_;
+	bool inited_;
+	std::chrono::time_point<std::chrono::system_clock> last_;
 
 };
