@@ -28,12 +28,9 @@ void detectFaces(DataWriter & websocket)
 		cv::namedWindow("face");
 
 	TimedSender timer(interval);
-	bool to_send;
 
 	// Preapare JSON message to send to the Collector
-	Json::Value root;
 	Json::StyledWriter writer;
-	root["obj"]["type"] = "face";
 
 	while(!to_stop)
 	{	
@@ -60,33 +57,40 @@ void detectFaces(DataWriter & websocket)
 
 		facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
 		cv::Rect * faces = faces_downloaded.ptr<cv::Rect>();
+
+
+		Json::Value upper;
+		Json::Value root = Json::arrayValue;
+		Json::Value array;
 		
-		if(detections_num > 0)
-			to_send = timer.needSend();
+
 		for(int i = 0; i < detections_num; ++i)
 		{
 			cv::Point center(faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5);
 			cv::ellipse(gray, center, cv::Size( faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4, 8, 0);
 
-			if(to_send){
+			// Json message
+			array["type"] = "face";
+			array["id"] = i;
+			array["x"] = faces[i].x; 
+			array["x1"] = faces[i].x + faces[i].width;
+			array["y"] = faces[i].y;
+			array["y1"] = faces[i].y + faces[i].height;
+			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+			root.append(array);
 
-				// Json message
-				root["obj"]["id"] = i;
-				root["obj"]["x"] = faces[i].x; 
-				root["obj"]["x1"] = faces[i].x + faces[i].width;
-				root["obj"]["y"] = faces[i].y;
-				root["obj"]["y1"] = faces[i].y + faces[i].height;
-				root["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
-
-				//Send message
-				std::string out_string = writer.write(root);
-				if(online){
-					io.post( [&websocket, out_string]() {
-					websocket.writeData(out_string);
-					});
-				}
-				websocket.writeLocal(out_string);  
+				
+		}
+		upper["obj"] = root;
+		// Send message
+		if(detections_num && timer.needSend()){
+			std::string out_string = writer.write(upper);
+			if(online){
+				io.post( [&websocket, out_string]() {
+				websocket.writeData(out_string);
+				});
 			}
+			websocket.writeLocal(out_string);  
 		}
 
 		gray_gpu.release();
