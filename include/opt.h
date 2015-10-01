@@ -79,3 +79,4 @@ void createQrImage(cv::Mat & qr, QRcode * code);
 
 void drawQr(int session);
 void drawQr_(int width, int repetitions, int session);
+void printHelp();

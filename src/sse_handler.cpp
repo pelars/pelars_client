@@ -2,7 +2,6 @@
 #include "sse_handler.h"
 
 size_t write_data(void *ptr, size_t size, size_t nmemb, Encapsule * enc) {
-	//std::cout << "received " << enc->name_ << " " << std::string((char*)ptr, nmemb) << std::endl;
 	enc->body_.append((char*)ptr, nmemb);
 	std::vector<std::string> strs;
 	boost::split(strs, enc->body_, boost::is_any_of("\n\n"));
@@ -18,7 +17,6 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, Encapsule * enc) {
 				enc->prepareData();
 				if(online) 
 					io.post( [&enc]() {
-						std::cout << "SENDING" << std::endl;
 						enc->send();
 					});
 				enc->localSend();
@@ -50,8 +48,6 @@ void Http::addRequest(const char* uri, const std::string token, Encapsule * enc)
 	curl_easy_setopt(curl, CURLOPT_URL, uri);
 	struct curl_slist * headerlist = NULL;
 
-	//std::cout <<(std::string("Authorization: Bearer ") + token).c_str() << std::endl;
-
 	headerlist = curl_slist_append(headerlist,(std::string("Authorization: Bearer ") + token).c_str());
 
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
@@ -59,7 +55,6 @@ void Http::addRequest(const char* uri, const std::string token, Encapsule * enc)
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, enc);
 
 	// VERBOSE
-	//curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 	curl_multi_add_handle(multi_handle, curl);
 }
 
@@ -81,7 +76,6 @@ void sseHandler(DataWriter & websocket){
 	}
 	while(!to_stop){
 		http.update();
-		//std::cout << "to_stop " << to_stop <<"\n" << std::flush;
 	}
 }
 

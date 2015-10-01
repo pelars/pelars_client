@@ -69,8 +69,23 @@ void drawQr_(int width, int repetitions, int session)
   		for(int x = 0; x < QR_width; x++)
 			for(int yi = 0; yi < repetitions; yi++)
 				for(int xi = 0; xi < repetitions; xi++)
-	  				qr.at<char>(y*repetitions+yi + position, x*repetitions+xi + position) = qrcode->data[y * qrcode->width + x] & 1 ? 0 : 255;
+	  				qr.at<char>(y * repetitions + yi + position, x * repetitions + xi + position) = qrcode->data[y * qrcode->width + x] & 1 ? 0 : 255;
 	  		
   	cv::imshow("qr", qr);
 	int c = cv::waitKey(1);
 }
+
+
+void printHelp(){
+
+	std::cout << "Usage: ./sensormanager {OPTIONS}" << std::endl;
+	std::cout << "Options:" << std::endl;
+	std::cout << "\t-f to track faces" << std::endl;
+	std::cout << "\t-h to track hands" << std::endl;
+	std::cout << "\t-a to track audio level" << std::endl;
+	std::cout << "\t-p to track partile.io sensors" << std::endl;
+	std::cout << "\t-q to display a qr code of the session id" << std::endl;
+	std::cout << "\t--o=\"path to template file list\" to track objects" << std::endl;
+	std::cout << "\t-v to enable visualization" << std::endl;
+	std::cout << "\t-i to track the Arduino Ide" << std::endl;
+	}

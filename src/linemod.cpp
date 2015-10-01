@@ -225,12 +225,10 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 					message = writer.write(root);
 					if(online)
 					{
-						std::cout << "Object detector posting data to the server\n " << std::flush;
 						io.post( [&websocket, message]() {
 							 websocket.writeData(message);
-					 });
+						});
 					}
-
 					websocket.writeLocal(message);    
 				}
 			}

@@ -23,10 +23,17 @@ static void sig_handler(int signum)
 
 int main(int argc, char * argv[])
 {
+
+
 	signal(SIGHUP, sig_handler);
 	signal(SIGTERM, sig_handler);
 
 	Parser p(argc, argv);
+	if(p.get("help")){
+		printHelp();
+		return 0;
+	}
+	
 	visualization = p.get("visualization");
 
 	if(argc == 1)
@@ -74,7 +81,7 @@ int main(int argc, char * argv[])
 		//drawQr(session);
 		drawQr_(512, 8, session);
 	}
-	else
+	else if(session == -1)
 		std::cout << "No Qr code available since there is no active internet connection " << std::endl;
 
 	std::cout << "Mongoose websocket started on port 8081" << std::endl;

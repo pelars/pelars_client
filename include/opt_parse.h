@@ -13,12 +13,13 @@ public:
 		boost::program_options::options_description description("Pelars Client Usage");
 		description.add_options()
 				("face,f", "track the faces")
+				("help", "help message")
 				("audio,a", "track audio level")
 				("hand,h", "track the hands")
 				("particle,p", "track the partile IO sensors")
 				("ide,i", "track the Arduino IDE log")
 				("visualization,v", "activate visualization")
-				("objects,o", boost::program_options::value<std::string>(), "Object template file")
+				("object,o", boost::program_options::value<std::string>(), "Object template file")
 				("qr,q", "show session as qr code")
 				("special,s", "special flag for background run");
 
