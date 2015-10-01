@@ -69,6 +69,12 @@ int main(int argc, char * argv[])
 	SessionManager sm(end_point);
 	int session = sm.getNewSession();
 
+	// Create QR code
+	if(p.get("qr") && session != -1)
+		drawQr(session);
+	else
+		std::cout << "No Qr code available since there is no active internet connection " << std::endl;
+	
 	std::cout << "Mongoose websocket started on port 8081" << std::endl;
 	std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
 

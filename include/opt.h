@@ -3,6 +3,10 @@
 #include "data_writer.h"
 #include <json/json.h>
 #include <chrono>
+#include <qrencode.h>
+#include <opencv2/core/core.hpp>        
+#include <opencv2/highgui/highgui.hpp>
+#include <string>
 
 // Asion communication service and Asio keep alive
 extern boost::asio::io_service io;
@@ -70,3 +74,7 @@ private:
 	std::chrono::time_point<std::chrono::system_clock> last_;
 
 };
+
+void createQrImage(cv::Mat & qr, QRcode * code);
+
+void drawQr(int session);

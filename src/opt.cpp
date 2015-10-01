@@ -30,4 +30,18 @@ const std::string currentDateTime() {
 	return buf;
 }
 
-
+void drawQr(int session){
+	QRcode * qrcode;
+	cv::namedWindow("qr");
+	cv::moveWindow("qr", 10, 10);
+    qrcode = QRcode_encodeString(std::to_string(session).c_str(), 1, QR_ECLEVEL_H, QR_MODE_8, false);
+    int scale = 8;
+    int scaled_qr = qrcode->width * scale;
+    cv::Mat qr(scaled_qr * 2, scaled_qr * 2, CV_8UC1);
+    qr.setTo(cv::Scalar(255, 255, 255));
+	for (int y = 0; y < qrcode->width; ++y)
+		for(int x = 0; x < qrcode->width; ++x)
+			rectangle(qr, cv::Point(y * scale + scaled_qr / 2, x * scale + scaled_qr / 2), cv::Point((y + 1) * scale + scaled_qr / 2, (x + 1) * scale + scaled_qr / 2), qrcode->data[y * qrcode->width + x] & 1 ? 0x00 : 0xFF, CV_FILLED);
+	cv::imshow("qr", qr);
+	int c = cv::waitKey(1);
+}

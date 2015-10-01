@@ -14,7 +14,7 @@ extern std::chrono::time_point<std::chrono::system_clock> start;
 
 // Draw the Linemod results
 void drawResponse(const std::vector<cv::linemod::Template>& templates,
-                  int num_modalities, cv::Mat& dst, cv::Point offset, int T, int objid);
+				  int num_modalities, cv::Mat& dst, cv::Point offset, int T, int objid);
 
 // Functions to store detector and templates in single XML/YAML file
 cv::Ptr<cv::linemod::Detector> readLinemod(const std::string& filename);
