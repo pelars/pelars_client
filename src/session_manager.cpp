@@ -11,8 +11,8 @@ SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint)
 	}else
 		std::cout << "\tParsed the input data" << std::endl;
 
-	login();
 	createUser();
+	login();
 }	
 
 int SessionManager::getNewSession()
@@ -46,14 +46,14 @@ int SessionManager::getNewSession()
 	}
 	catch (std::exception& e){
 		// Generic error during the request
-		std::cout << "\tError during the session request: " << e.what()  << "; setting session id to 0" <<std::endl;
+		std::cout << "\tError during the session request: " << e.what()  << "; setting session id to -1" <<std::endl;
 		error = true;
 		online = false;
 		session_ = -1;
 	}
 	if(!parsed_success){
 		// error during the parsing step
-		std::cout << "\tError during the session request: Couldn't parse json message; setting session id to 0" <<std::endl;
+		std::cout << "\tError during the session request: Couldn't parse json message; setting session id to -1" <<std::endl;
 		error = true;
 		online = false;
 		session_ = -1;
@@ -68,35 +68,43 @@ int SessionManager::getNewSession()
 void SessionManager::login(){
 
 	root_.clear();
-	std::cout << "Requesting login " << std::endl;
 	if(online){
-		boost::network::http::client::request request(endpoint_ + std::string("password") + std::string("?user=Gianfranco@giangy.com&pwd=mypassword"));
-		boost::network::http::client::response response = client_.post(request);
-		if(reader_.parse(response.body(), root_)){
-			token_ = root_["token"].asString();
-			std::cout << "\tSuccess" << std::endl;
-			std::cout << "\tToken: " << token_ << std::endl;
-		}else
-			std::cout << "Failed" << std::endl;
+		std::cout << "Requesting login " << std::endl;
+		try{
+			boost::network::http::client::request request(endpoint_ + std::string("password") + std::string("?user="+mail_+"&pwd="+password_));
+			boost::network::http::client::response response = client_.post(request);
+			if(reader_.parse(response.body(), root_)){
+				token_ = root_["token"].asString();
+				std::cout << "\tSuccess" << std::endl;
+				std::cout << "\tToken: " << token_ << std::endl;
+			}else
+				std::cout << "Failed" << std::endl;
+		}catch (std::exception& e){
+			// Generic error during the request
+			std::cout << "\tError during the login request: " << e.what()  << "; setting offline mode" <<std::endl;
+			online = false;
+		}
 	}
 }
 
 void SessionManager::createUser(){
 	// Creating the new user
 
-	std::cout << "creating user" <<std::endl;
+	std::cout << "Creating user" <<std::endl;
 
 	root_.clear();
-	root_["name"] = data_.FirstChildElement( "Root" )->FirstChildElement( "name" )->GetText();
-	root_["password"] = data_.FirstChildElement( "Root" )->FirstChildElement( "password" )->GetText();
-	root_["affiliation"] = data_.FirstChildElement( "Root" )->FirstChildElement( "affiliation" )->GetText();
-	root_["namespace" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "namespace" )->GetText();
-	root_["email" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "email" )->GetText();
+	root_["name"] = data_.FirstChildElement("Root")->FirstChildElement("name")->GetText();
+	root_["password"] = data_.FirstChildElement("Root")->FirstChildElement("password")->GetText();
+	root_["affiliation"] = data_.FirstChildElement("Root")->FirstChildElement("affiliation")->GetText();
+	root_["namespace" ] = data_.FirstChildElement("Root")->FirstChildElement("namespace")->GetText();
+	root_["email" ] = data_.FirstChildElement("Root")->FirstChildElement("email")->GetText();
+	mail_ = root_["email" ].asString();
+	password_ = root_["password"].asString();
 	std::string out_string = writer_.write(root_);
 
 	try{
 		// Making the put request to create a new session
-		boost::network::http::client::request endpoint(endpoint_ + std::string("user") + std::string("?token=") + token_);
+		boost::network::http::client::request endpoint(endpoint_ + std::string("user"));
 		response_ = client_.put(endpoint, out_string);
 		session_manager_response_ = response_.body();
 		// Read the response and parse the json message to get the session id

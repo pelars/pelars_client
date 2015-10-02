@@ -16,6 +16,9 @@ public:
 	bool getColorRGB(cv::Mat & color);
 	bool getColorBGR(cv::Mat & color);
 	bool getColorGRAY(cv::Mat & color);
+	operator bool() const {return no_error_;}
+
+
 
 private:
 	
@@ -31,4 +34,6 @@ private:
 	bool imageready_ = false;
 	std::mutex m_;
 	std::condition_variable cv_;
+	bool no_error_;
+
 };

@@ -19,8 +19,9 @@ public:
 				("particle,p", "track the partile IO sensors")
 				("ide,i", "track the Arduino IDE log")
 				("visualization,v", "activate visualization")
-				("object,o", boost::program_options::value<std::string>(), "Object template file")
+				("object,o", boost::program_options::value<std::string>(), "object template file")
 				("qr,q", "show session as qr code")
+				("Server,S", boost::program_options::value<std::string>(), "server endpoint")
 				("special,s", "special flag for background run");
 
 		boost::program_options::options_description hidden("Hidden options");

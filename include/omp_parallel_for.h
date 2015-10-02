@@ -28,3 +28,4 @@ inline void parallelFor(ThreadPool & pool, const unsigned int size, std::functio
 	for(auto && result: results)
 		result.get();
 }
+

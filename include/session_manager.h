@@ -23,7 +23,7 @@ public:
 private:
 
 	int session_, user_id_;
-	std::string token_;
+	std::string token_, mail_, password_;
 	boost::network::http::client client_;
 	boost::network::http::client::response response_;
 	std::string endpoint_, session_manager_response_;

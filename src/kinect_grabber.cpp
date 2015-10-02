@@ -3,15 +3,27 @@
 // Asion communication service and Asio keep alive
 boost::asio::io_service io;
 
-KinectManagerExchange::KinectManagerExchange(): shm_obj_(boost::interprocess::open_or_create, "region", boost::interprocess::read_write)
+KinectManagerExchange::KinectManagerExchange(): shm_obj_(boost::interprocess::open_only, "region", boost::interprocess::read_write)
 {
 	size_ = 640 * 480 * 6 + 4;
 	shm_obj_.truncate(size_);
 	boost::interprocess::mapped_region r(shm_obj_, boost::interprocess::read_write);
 	r.swap(region_);
 	common_ = (unsigned char *)region_.get_address();
-	std::cout << "Shared pointer for kinect data is " << region_.get_address() << std::endl;
+	no_error_ = true;
+	//Check that memory was initialized to 1
+	const char *mem = static_cast<char*>(region_.get_address());
+	for(std::size_t i = 0; i < region_.get_size(); ++i){
+		if(*mem++ != 1){
+			std::cout << "No shared memory object, terminating" << std::endl;
+			no_error_ = false;
+			break;
+		}
+	}
+	if(no_error_)
+		std::cout << "Shared pointer for kinect data is " << region_.get_address() << std::endl;
 }
+
 
 void KinectManagerExchange::stop() 
 {
@@ -29,6 +41,7 @@ void KinectManagerExchange::start()
 
 bool KinectManagerExchange::getColorRGB(cv::Mat & color)
 {
+	int counter = 0;
 	static int lastframe = -2;
 	while(true)
 	{

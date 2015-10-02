@@ -121,8 +121,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 
 	std::string message;
 
-
-	//Main loop. Executes until 'q' is pressed or there is an error with the kinect acquisition.
+	// Main loop. Executes until 'q' is pressed or there is an error with the kinect acquisition.
 	while(!to_stop)  {
 		// Acquire depth and color images from the kinect and prepare them for linemod
 		if(!kme->get(color, depth))

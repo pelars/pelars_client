@@ -23,38 +23,28 @@ static void sig_handler(int signum)
 
 int main(int argc, char * argv[])
 {
-
-
 	signal(SIGHUP, sig_handler);
 	signal(SIGTERM, sig_handler);
 
 	Parser p(argc, argv);
-	if(p.get("help")){
+	if(p.get("help") || argc == 1){
 		printHelp();
 		return 0;
 	}
 	
 	visualization = p.get("visualization");
 
-	if(argc == 1)
-	{
-		std::cout << "please specify at least one sensor source\n" << std::endl; 
-		return -1;
-	}
-
 	// Check if the input template list file is correct
 	std::ifstream infile;
-	if(!p.getString("object").empty())
+	if(p.get("object")){
 		infile.open(p.getString("object"));
-
-	if(!infile && p.get("object"))
-	{
-		std::cout << "cannot open template list file: " << p.getString("object") << std::endl;
-		return -1;
+		if(!infile)
+		{
+			std::cout << "cannot open template list file: " << p.getString("object") << std::endl;
+			printHelp();
+			return -1;
+		}
 	}
-
-	// Keep aliver
-	std::thread ws_writer(asiothreadfx);
 
 	// Start time
 	start = std::chrono::system_clock::now();
@@ -64,11 +54,18 @@ int main(int argc, char * argv[])
 	if(p.get("object"))
 	{
 		kinect_manager = new KinectManagerExchange();
-		kinect_manager->start();
+		if(*kinect_manager)
+			kinect_manager->start();
+		else{
+			return -1;
+		}
 	}
 
+	// Keep aliver
+	std::thread ws_writer(asiothreadfx);
+
 	// Check the endpoint string and connect to the collector
-	std::string end_point = "http://pelars.sssup.it:8080/pelars/";
+	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it:8080/pelars/";
 	end_point = end_point.back() == '/' ? end_point : end_point + "/";
 	std::cout << "WebServer endpoint : " << end_point << std::endl;
 
@@ -77,11 +74,9 @@ int main(int argc, char * argv[])
 	int session = sm.getNewSession();
 
 	// Create QR code
-	if(p.get("qr") && session != -1){
-		//drawQr(session);
-		drawQr_(512, 8, session);
-	}
-	else if(session == -1)
+	if(p.get("qr") && session != -1)
+		drawQr(512, 8, session);
+	else if(session == -1 && p.get("qr"))
 		std::cout << "No Qr code available since there is no active internet connection " << std::endl;
 
 	std::cout << "Mongoose websocket started on port 8081" << std::endl;
@@ -126,17 +121,8 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(audioDetector, std::ref(collector)));
 	
 	//If there are no windows wait for Esc to be pressed
-	if(!visualization && !p.get("special")){
-		std::string str = "";
-		char ch;
-		while((ch = std::cin.get()) != 27)
-		{ 
-			if (to_stop)
-				break;
-		}
-		to_stop = true;
-	}
- 
+	checkEscape(visualization, p.get("special"));
+
 	// Wait for the termination of all threads
 	for(auto &thread : thread_list)
 		thread.join();

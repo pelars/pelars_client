@@ -29,25 +29,8 @@ const std::string currentDateTime() {
 
 	return buf;
 }
-/*
-void drawQr(int session){
-	QRcode * qrcode;
-	cv::namedWindow("qr");
-	cv::moveWindow("qr", 10, 10);
-    qrcode = QRcode_encodeString(std::to_string(session).c_str(), 1, QR_ECLEVEL_H, QR_MODE_8, false);
-    int scale = 8;
-    int scaled_qr = qrcode->width * scale;
-    cv::Mat qr(scaled_qr * 2, scaled_qr * 2, CV_8UC1);
-    qr.setTo(cv::Scalar(255, 255, 255));
-    cv::putText(qr, std::to_string(session), cv::Point(10, 50), 6, 1, cv::Scalar(0, 0, 0), 1.5, 8);
-	for (int y = 0; y < qrcode->width; ++y)
-		for(int x = 0; x < qrcode->width; ++x)
-			rectangle(qr, cv::Point(y * scale + scaled_qr / 2, x * scale + scaled_qr / 2), cv::Point((y + 1) * scale + scaled_qr / 2, (x + 1) * scale + scaled_qr / 2), qrcode->data[y * qrcode->width + x] & 1 ? 0x00 : 0xFF, CV_FILLED);
-	cv::imshow("qr", qr);
-	int c = cv::waitKey(1);
-}*/
 
-void drawQr_(int width, int repetitions, int session)
+void drawQr(int width, int repetitions, int session)
 {
 	QRcode * qrcode;
 	cv::namedWindow("qr");
@@ -88,4 +71,16 @@ void printHelp(){
 	std::cout << "\t--o=\"path to template file list\" to track objects" << std::endl;
 	std::cout << "\t-v to enable visualization" << std::endl;
 	std::cout << "\t-i to track the Arduino Ide" << std::endl;
+}
+
+void checkEscape(bool visualization, bool special){
+	if(!visualization && !special){
+		while(std::cin.get() != 27){
+			if (to_stop){
+				break;
+			}
+		}
+		to_stop = true;
+		std::cout << "Stopping" << std::endl;
 	}
+}
