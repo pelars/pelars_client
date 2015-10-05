@@ -71,6 +71,7 @@ void printHelp(){
 	std::cout << "\t--o=\"path to template file list\" to track objects" << std::endl;
 	std::cout << "\t-v to enable visualization" << std::endl;
 	std::cout << "\t-i to track the Arduino Ide" << std::endl;
+	std::cout << "\t--m=\"float value\" of the marker size" << std::endl;
 }
 
 void checkEscape(bool visualization, bool special){

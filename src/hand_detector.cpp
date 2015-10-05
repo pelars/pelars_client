@@ -1,6 +1,6 @@
 #include "hand_detector.h"
 
-void handDetector(DataWriter & websocket)
+void handDetector(DataWriter & websocket, float marker_size)
 {
 	aruco::MarkerDetector MDetector;
 	vector<aruco::Marker> markers;
@@ -22,26 +22,19 @@ void handDetector(DataWriter & websocket)
 	K2G k2g(OPENGL);
 
 	TimedSender timer(interval);
-	z = 0.0f;
+	//z = 0.0f;
 
 	cv::Mat camera_parameters = cv::Mat::eye(3, 3, CV_32F);
 	camera_parameters.at<float>(0,0) = k2g.getRgbParameters().fx; 
 	camera_parameters.at<float>(1,1) = k2g.getRgbParameters().fy; 
 	camera_parameters.at<float>(0,2) = k2g.getRgbParameters().cx; 
 	camera_parameters.at<float>(1,2) = k2g.getRgbParameters().cy;
-	cv::Mat distortion = cv::Mat(1, 4, 0);
-	
-	aruco::CameraParameters camera(camera_parameters, distortion, cv::Size(1920,1080));
-
-	//cv::Mat color;
 	cv::Mat grey, color;
 	bool to_send;
 	while(!to_stop)
 	{
 		grey = k2g.getGrey();
-		//cv::cvtColor(color, grey, CV_BGR2GRAY);
-		//MDetector.detect(grey, markers, camera, 0.045);
-		MDetector.detect(grey, markers);
+		MDetector.detect(grey, markers, camera_parameters, cv::Mat(), marker_size);
 
 		if(markers.size() > 0)
 			to_send = timer.needSend();
@@ -50,10 +43,12 @@ void handDetector(DataWriter & websocket)
 			{
 				// Get marker position
 				markers[i].draw(grey, cv::Scalar(0, 0, 255), 2);
-				aruco::CvDrawingUtils::draw3dCube(grey, markers[i], camera);
+				//aruco::CvDrawingUtils::draw3dCube(grey, markers[i], camera);
 
-				x = markers[i][0].x;
-				y = markers[i][0].y;
+				x = markers[i].Tvec.ptr<float>(0)[0];
+				y = markers[i].Tvec.ptr<float>(0)[1];
+				z = markers[i].Tvec.ptr<float>(0)[2];
+				std::cout << x << " " << y << " " << z << std::endl;
 				if(to_send){
 					root["obj"]["id"] = markers[i].id;
 					root["obj"]["x"] = x;
@@ -69,7 +64,6 @@ void handDetector(DataWriter & websocket)
 							websocket.writeData(message);
 							});
 						}
-
 					websocket.writeLocal(message);
 				}
 			}

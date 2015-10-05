@@ -12,8 +12,8 @@ set(INCLUDE            ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+	set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${OpenMP_C_FLAGS}")
+	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
@@ -36,6 +36,8 @@ find_package(Aruco REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(FFmpeg REQUIRED)
 find_package(PCL 1.7 REQUIRED)
+find_package(QREncode REQUIRED)
+
 pkg_search_module(GLFW REQUIRED glfw3)
 
 set(CPPNET_CLIENT ${CPPNETLIB_LIBRARIES})
@@ -115,13 +117,14 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${AVDEVICE}
 										${CURL}
 										${ARUCO}
-                                        ${LINUXEXTRA} 
+										${LINUXEXTRA} 
 										${GSTREAMER_ALL}
 										${FFMPEG_LIBRARIES}
 										${FREENECT2}
 										${GLFW_LIBRARIES}
 										${PCL_LIBRARIES}
 										${PORTAUDIO}
+										${QRENCODE_LIBRARY}
 										)
 
 target_link_libraries(freenect-camshare ${FREENECT} rt) 

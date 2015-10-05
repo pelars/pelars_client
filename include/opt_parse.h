@@ -14,7 +14,9 @@ public:
 		description.add_options()
 				("face,f", "track the faces")
 				("help", "help message")
+				("mongoose,m", "mongoose port for the arduino ide")
 				("audio,a", "track audio level")
+				("marker",  boost::program_options::value<float>(), "marker size")
 				("hand,h", "track the hands")
 				("particle,p", "track the partile IO sensors")
 				("ide,i", "track the Arduino IDE log")
@@ -39,6 +41,12 @@ public:
 		if(vm_.count(value))
 			return vm_[value].as<std::string>();
 		return "";
+	}
+
+	float getFloat(std::string value){
+		if(vm_.count(value))
+			return vm_[value].as<float>();
+		return NULL;
 	}
 
 private:

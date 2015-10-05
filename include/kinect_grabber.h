@@ -18,8 +18,6 @@ public:
 	bool getColorGRAY(cv::Mat & color);
 	operator bool() const {return no_error_;}
 
-
-
 private:
 	
 	int fd_;

@@ -58,7 +58,6 @@ void detectFaces(DataWriter & websocket)
 		facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
 		cv::Rect * faces = faces_downloaded.ptr<cv::Rect>();
 
-
 		Json::Value upper;
 		Json::Value root = Json::arrayValue;
 		Json::Value array;
@@ -78,9 +77,8 @@ void detectFaces(DataWriter & websocket)
 			array["y1"] = faces[i].y + faces[i].height;
 			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
 			root.append(array);
-
-				
 		}
+		
 		upper["obj"] = root;
 		// Send message
 		if(detections_num && timer.needSend()){
@@ -105,9 +103,6 @@ void detectFaces(DataWriter & websocket)
 				std::cout << "stop requested by face detector" << std::endl;
 			}	
 		}
-
-		
-		
 	}	
 }
 

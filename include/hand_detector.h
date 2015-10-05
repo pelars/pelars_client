@@ -11,5 +11,5 @@ extern bool visualization;
 extern double interval;
 extern std::chrono::time_point<std::chrono::system_clock> start;
 
-void handDetector(DataWriter & websocket);
+void handDetector(DataWriter & websocket, float marker_size);
 
