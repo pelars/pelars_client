@@ -12,5 +12,7 @@ extern bool to_stop;
 extern bool visualization;
 extern double interval;
 extern std::chrono::time_point<std::chrono::system_clock> start;
+extern const std::string currentDateTimeNow;
+extern bool snapshot;
 
 void detectFaces(DataWriter & websocket);

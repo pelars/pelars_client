@@ -1,6 +1,23 @@
 #pragma once
 #include <boost/program_options.hpp>
 #include <boost/any.hpp>
+#include <exception>
+
+class FloatException: public exception
+{
+	virtual const char* what() const throw()
+	{
+		return "Parsed argument is not a float";
+	}
+};
+
+class StringException: public exception
+{
+	virtual const char* what() const throw()
+	{
+		return "Parsed argument is not a string";
+	}
+};
 
 class Parser
 {
@@ -9,7 +26,6 @@ public:
 
 	Parser(int argc, char ** argv):argc_(argc), argv_(argv)
 	{
-
 		boost::program_options::options_description description("Pelars Client Usage");
 		description.add_options()
 				("face,f", "track the faces")
@@ -41,18 +57,17 @@ public:
 	std::string getString(std::string value){
 		if(vm_.count(value))
 			return vm_[value].as<std::string>();
-		return "";
+		throw new StringException;
 	}
 
 	float getFloat(std::string value){
 		if(vm_.count(value))
 			return vm_[value].as<float>();
-		return NULL;
+		throw new FloatException;
 	}
 
 private:
 	int argc_;
 	char ** argv_;
 	boost::program_options::variables_map vm_;
-
 };

@@ -14,25 +14,18 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 	float x, y, z;
 	std::string message;
 
-	//GstreamerGrabber gs_grabber(1920, 1080, 1);
-	//GstreamerGrabber2 gs_grabber2("/dev/video0", 1920, 1080, true, false);
-	//IplImage * frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 1); //TODO 
-	//Kinect2Grabber::Kinect2Grabber<pcl::PointXYZRGB> k2g("../../data/calibration/rgb_calibration.yaml", "../../data/calibration/depth_calibration.yaml", "../../data/calibration/pose_calibration.yaml");
-	
 	K2G k2g(OPENGL);
 
 	TimedSender timer(interval);
-	//z = 0.0f;
 
 	cv::Mat camera_parameters = cv::Mat::eye(3, 3, CV_32F);
 	camera_parameters.at<float>(0,0) = k2g.getRgbParameters().fx; 
 	camera_parameters.at<float>(1,1) = k2g.getRgbParameters().fy; 
 	camera_parameters.at<float>(0,2) = k2g.getRgbParameters().cx; 
 	camera_parameters.at<float>(1,2) = k2g.getRgbParameters().cy;
-	cv::Mat grey, color;
+	cv::Mat grey;
 	bool to_send;
 
-	
 	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
 	if(calibration)
@@ -57,7 +50,9 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 				}		
 			}
 		}
-	}else{
+	}
+	else
+	{
 		cv::FileStorage file("../../data/calibration.xml", cv::FileStorage::READ);
 		if(file.isOpened())
 		{	
@@ -75,6 +70,9 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 	while(!to_stop)
 	{
 		grey = k2g.getGrey();
+		if(snapshot)
+			imwrite( "../snapshots/table_"+ currentDateTimeNow +".jpg", k2g.getColor());
+
 		MDetector.detect(grey, markers, camera_parameters, cv::Mat(), marker_size);
 
 		if(markers.size() > 0)
@@ -95,9 +93,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 				x = pose.at<float>(0, 3);
 				y = pose.at<float>(1, 3);
 				z = pose.at<float>(2, 3);
-				//x = markers[i].Tvec.ptr<float>(0)[0];
-				//y = markers[i].Tvec.ptr<float>(0)[1];
-				//z = markers[i].Tvec.ptr<float>(0)[2];
+				
 				//std::cout << x << " " << y << " " << z << " " << markers[i].id << std::endl;
 				if(to_send){
 					root["obj"]["id"] = markers[i].id;

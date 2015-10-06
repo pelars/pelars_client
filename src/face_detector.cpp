@@ -37,7 +37,9 @@ void detectFaces(DataWriter & websocket)
 		//capture >> color;
 		gs_grabber.capture(frame);
 		cv::Mat gray(frame);
-
+		if(snapshot)
+			imwrite( "../snapshots/people_"+ currentDateTimeNow +".jpg", gray);
+		
 		//cvtColor(color, gray, CV_BGR2GRAY); 
 
 		std::vector<cv::Rect> res;

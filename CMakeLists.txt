@@ -21,7 +21,7 @@ include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
 find_package(OpenCV REQUIRED)
 find_package(USB REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(Boost COMPONENTS system filesystem thread random REQUIRED)
+find_package(Boost COMPONENTS random program_options REQUIRED)
 find_package(Websocketpp REQUIRED)
 find_package(Gstreamer-1.0 REQUIRED)
 find_package(Freenect REQUIRED)
@@ -37,19 +37,14 @@ find_package(PkgConfig REQUIRED)
 find_package(FFmpeg REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 find_package(QREncode REQUIRED)
+find_package(PortAudio REQUIRED)
 
 pkg_search_module(GLFW REQUIRED glfw3)
+set(Boost_USE_MULTITHREADED ON) 
 
-set(CPPNET_CLIENT ${CPPNETLIB_LIBRARIES})
-set(CPPNET_PARSER ${CPPNETLIB_LIBRARIES})
-set(CPPNET_URI ${CPPNETLIB_LIBRARIES})
-set(FREENECT ${FREENECT_LIBRARIES})
-set(ARUCO ${ARUCO_LIBRARIES})
-set(CURL ${CURL_LIBRARIES})
-set(AVFILTER ${FFMPEG_LIBRARIES})
-set(JSON_LIBRARY ${JSONCPP_LIBRARY})
 set(X264 ${X264_LIBRARIES})
 set(TINYXML2 ${TINYXML2_LIBRARY})
+
 
 #Should be fixed in the future
 find_library(GSTREAMER_O     NAMES gobject-2.0)
@@ -58,17 +53,17 @@ find_library(GSTREAMER_A     NAMES gstapp-1.0)
 find_library(GLIB            NAMES glib-2.0)
 find_library(FREENECT2 NAMES freenect2)
 set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
-find_library(PORTAUDIO portaudio)
-set(LINUXEXTRA rt boost_random boost_program_options)
+set(LINUXEXTRA rt boost_program_options boost_random)
 
 
 include_directories(${JSONCPP_INCLUDE_DIR})
 include_directories(${FFMPEG_INCLUDE_DIRS})
 include_directories(${GSTREAMER_INCLUDE_DIRS})
-include_directories(${FREENECT_INCLUDE_DIR})
+include_directories(${FREENECT_INCLUDE_DIRS})
 include_directories(${PCL_INCLUDE_DIRS})
 include_directories(${INCLUDE})
 include_directories(${GLFW_INCLUDE_DIRS})
+include_directories(${Boost_LIBRARY_DIRS})
 
 link_directories(${PCL_LIBRARY_DIRS})
 
@@ -101,11 +96,9 @@ add_executable(freenect-camshare ${SRC}/camshare.cpp)
 
 target_link_libraries(sensor_manager 	${OpenCV_LIBS} 
 										${TINYXML2} 
-										${Boost_LIBRARIES} 
-										${JSON_LIBRARY}
-										${CPPNET_CLIENT} 
-										${CPPNET_PARSER}
-										${CPPNET_URI}
+										${BOOST_LIBRARIES} 
+										${JSONCPP_LIBRARY}
+										${CPPNETLIB_LIBRARIES}
 										${OPENSSL_LIBRARIES} 
 										${ZMQ_LIBRARY} 
 										${X264} 
@@ -113,20 +106,20 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${AVFORMAT}
 										${AVUTIL} 
 										${AVCODEC} 
-										${AVFILTER} 
+										${FFMPEG_LIBRARIES} 
 										${AVDEVICE}
-										${CURL}
-										${ARUCO}
+										${CURL_LIBRARIES}
+										${ARUCO_LIBRARIES}
 										${LINUXEXTRA} 
 										${GSTREAMER_ALL}
 										${FFMPEG_LIBRARIES}
 										${FREENECT2}
 										${GLFW_LIBRARIES}
 										${PCL_LIBRARIES}
-										${PORTAUDIO}
+										${PORTAUDIO_LIBRARIES}
 										${QRENCODE_LIBRARY}
 										)
 
-target_link_libraries(freenect-camshare ${FREENECT} rt) 
+target_link_libraries(freenect-camshare ${FREENECT_LIBRARIES} rt) 
 
 

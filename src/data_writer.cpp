@@ -19,7 +19,8 @@ DataWriter::DataWriter(const std::string & uri, const int session): uri_(uri+std
 		websocketpp::lib::thread asio_thread(&client::run, &m_client_);
 		thread_.swap(asio_thread);
 		failed_ = false;
-	}else
+	}
+	else
 	{
 		online = false;
 		failed_ = true;

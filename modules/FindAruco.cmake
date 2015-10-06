@@ -13,10 +13,11 @@ endif(ARUCO_INCLUDE_DIR)
 find_path(ARUCO_INCLUDE_DIR
           aruco.h
           PATHS /usr/local/include/aruco
+           /prefix/aruco
           ${CMAKE_PREFIX_PATH}/include/aruco)
 
 find_library(ARUCO_LIBRARY
-             PATHS /usr/local/lib
+             PATHS /prefix/lib /usr/local/lib
              NAMES libaruco aruco)
 
 # Handle the QUIETLY and REQUIRED arguments and set ARUCO_FOUND to TRUE if

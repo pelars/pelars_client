@@ -11,6 +11,8 @@ extern bool to_stop;
 extern bool visualization;
 extern double interval;
 extern std::chrono::time_point<std::chrono::system_clock> start;
+extern float similarity;
+extern const std::string currentDateTimeNow;
 
 // Draw the Linemod results
 void drawResponse(const std::vector<cv::linemod::Template>& templates,

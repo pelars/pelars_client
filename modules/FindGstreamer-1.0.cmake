@@ -90,6 +90,9 @@ FIND_GSTREAMER_COMPONENT(GSTREAMER_MPEGTS gstreamer-mpegts-1.0>=1.4.0 gstmpegts-
 FIND_GSTREAMER_COMPONENT(GSTREAMER_PBUTILS gstreamer-pbutils-1.0 gstpbutils-1.0)
 FIND_GSTREAMER_COMPONENT(GSTREAMER_TAG gstreamer-tag-1.0 gsttag-1.0)
 FIND_GSTREAMER_COMPONENT(GSTREAMER_VIDEO gstreamer-video-1.0 gstvideo-1.0)
+FIND_GSTREAMER_COMPONENT(GSTREAMER_OBJECT gobject-2.0 gobject-2.0)
+FIND_GSTREAMER_COMPONENT(GSTREAMER_LIB glib-2.0 glib-2.0)
+
 
 # ------------------------------------------------
 # 3. Process the COMPONENTS passed to FIND_PACKAGE

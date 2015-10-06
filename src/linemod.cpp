@@ -1,8 +1,5 @@
 #include "linemod.h"
 
-extern float similarity;
-extern const std::string currentDateTimeNow;
-
 // Draw the Linemod results
 void drawResponse(const std::vector<cv::linemod::Template>& templates,
 									int num_modalities, cv::Mat& dst, cv::Point offset, int T, int objid)

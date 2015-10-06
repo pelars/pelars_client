@@ -27,7 +27,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include "libfreenect.h"
+#include "libfreenect/libfreenect.h"
  #include <iostream>
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>

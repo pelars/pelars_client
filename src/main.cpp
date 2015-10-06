@@ -2,6 +2,8 @@
 
 // To stop all the threads if one receives a stop signal
 bool to_stop = false;
+// Take a camera snapshot
+bool snapshot = false;
 // Connection status
 bool online = true;
 // Enable visualization
