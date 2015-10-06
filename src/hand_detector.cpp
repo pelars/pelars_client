@@ -51,7 +51,6 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 						calib_matrix.at<float>(1, 3) = markers[i].Tvec.at<float>(1);
 						calib_matrix.at<float>(2, 3) = markers[i].Tvec.at<float>(2);
 						cv::Rodrigues(markers[i].Rvec, cv::Mat(calib_matrix, cv::Rect(0, 0, 3, 3)));
-						file << "matrix" << calib_matrix;
 						file.release();					
 						found = true;
 					}
@@ -70,6 +69,9 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 		}
 	}
 	
+	cv::Mat camera_inverse = calib_matrix.inv();
+	cv::Mat marker_pose = cv::Mat::eye(cv::Size(4, 4), CV_32F);
+
 	while(!to_stop)
 	{
 		grey = k2g.getGrey();
@@ -83,10 +85,19 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 				// Get marker position
 				markers[i].draw(grey, cv::Scalar(0, 0, 255), 2);
 				//aruco::CvDrawingUtils::draw3dCube(grey, markers[i], camera);
+				
+				marker_pose.at<float>(0, 3) = markers[i].Tvec.at<float>(0);
+				marker_pose.at<float>(1, 3) = markers[i].Tvec.at<float>(1);
+				marker_pose.at<float>(2, 3) = markers[i].Tvec.at<float>(2);
+				cv::Rodrigues(markers[i].Rvec, cv::Mat(marker_pose, cv::Rect(0, 0, 3, 3)));
 
-				x = markers[i].Tvec.ptr<float>(0)[0];
-				y = markers[i].Tvec.ptr<float>(0)[1];
-				z = markers[i].Tvec.ptr<float>(0)[2];
+				cv::Mat pose = camera_inverse * marker_pose;
+				x = pose.at<float>(0, 3);
+				y = pose.at<float>(1, 3);
+				z = pose.at<float>(2, 3);
+				//x = markers[i].Tvec.ptr<float>(0)[0];
+				//y = markers[i].Tvec.ptr<float>(0)[1];
+				//z = markers[i].Tvec.ptr<float>(0)[2];
 				//std::cout << x << " " << y << " " << z << " " << markers[i].id << std::endl;
 				if(to_send){
 					root["obj"]["id"] = markers[i].id;
