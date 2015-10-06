@@ -24,6 +24,7 @@ public:
 				("object,o", boost::program_options::value<std::string>(), "object template file")
 				("qr,q", "show session as qr code")
 				("Server,S", boost::program_options::value<std::string>(), "server endpoint")
+				("calibration,c", "calibrate cameras")
 				("special,s", "special flag for background run");
 
 		boost::program_options::options_description hidden("Hidden options");

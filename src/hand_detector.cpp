@@ -1,6 +1,6 @@
 #include "hand_detector.h"
 
-void handDetector(DataWriter & websocket, float marker_size)
+void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 {
 	aruco::MarkerDetector MDetector;
 	vector<aruco::Marker> markers;
@@ -31,6 +31,45 @@ void handDetector(DataWriter & websocket, float marker_size)
 	camera_parameters.at<float>(1,2) = k2g.getRgbParameters().cy;
 	cv::Mat grey, color;
 	bool to_send;
+
+	
+	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
+
+	if(calibration)
+	{	
+		cv::FileStorage file("../../data/calibration.xml", cv::FileStorage::WRITE);
+		bool found = false;
+
+		while(!found){
+			grey = k2g.getGrey();
+			MDetector.detect(grey, markers, camera_parameters, cv::Mat(), marker_size);
+	
+			if(markers.size() > 0){
+				for(int i = 0; i < markers.size(); ++i){
+					if(markers[i].id == 784){
+						calib_matrix.at<float>(0, 3) = markers[i].Tvec.at<float>(0);
+						calib_matrix.at<float>(1, 3) = markers[i].Tvec.at<float>(1);
+						calib_matrix.at<float>(2, 3) = markers[i].Tvec.at<float>(2);
+						cv::Rodrigues(markers[i].Rvec, cv::Mat(calib_matrix, cv::Rect(0, 0, 3, 3)));
+						file << "matrix" << calib_matrix;
+						file.release();					
+						found = true;
+					}
+				}		
+			}
+		}
+	}else{
+		cv::FileStorage file("../../data/calibration.xml", cv::FileStorage::READ);
+		if(file.isOpened())
+		{	
+			file["matrix"] >> calib_matrix;
+			file.release();
+		}else{
+			std::cout << "could not find hand calibration file; use -c to calibrate the camera" << std::endl;
+			to_stop = true;
+		}
+	}
+	
 	while(!to_stop)
 	{
 		grey = k2g.getGrey();
@@ -48,7 +87,7 @@ void handDetector(DataWriter & websocket, float marker_size)
 				x = markers[i].Tvec.ptr<float>(0)[0];
 				y = markers[i].Tvec.ptr<float>(0)[1];
 				z = markers[i].Tvec.ptr<float>(0)[2];
-				std::cout << x << " " << y << " " << z << std::endl;
+				//std::cout << x << " " << y << " " << z << " " << markers[i].id << std::endl;
 				if(to_send){
 					root["obj"]["id"] = markers[i].id;
 					root["obj"]["x"] = x;

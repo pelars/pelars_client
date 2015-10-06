@@ -111,7 +111,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
 	// Starting the hand detector
 	if(p.get("hand"))
-		thread_list.push_back(std::thread(handDetector, std::ref(collector), marker_size));
+		thread_list.push_back(std::thread(handDetector, std::ref(collector), marker_size, p.get("calibration")));
 	// Starting the ide logger
 	if(p.get("ide"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(mgr)));
