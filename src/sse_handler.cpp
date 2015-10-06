@@ -20,6 +20,9 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, Encapsule * enc) {
 						enc->send();
 					});
 				enc->localSend();
+				snapshot_table = true;
+				snapshot_people = true;
+				snapshot_screen = true;
 			}
 		}
 		enc->body_ = strs[str_size - 1];	

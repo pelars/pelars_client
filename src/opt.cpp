@@ -72,6 +72,8 @@ void printHelp(){
 	std::cout << "\t-v to enable visualization" << std::endl;
 	std::cout << "\t-i to track the Arduino Ide" << std::endl;
 	std::cout << "\t--m=\"float value\" of the marker size" << std::endl;
+	std::cout << "\t-c to calibrate the camera with the table" << std::endl;
+	std::cout << "\t--S=\"string\" to specify the server endpoint" << std::endl;
 }
 
 void checkEscape(bool visualization, bool special){

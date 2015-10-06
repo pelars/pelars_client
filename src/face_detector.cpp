@@ -32,13 +32,21 @@ void detectFaces(DataWriter & websocket)
 	// Preapare JSON message to send to the Collector
 	Json::StyledWriter writer;
 
+	ScreenGrabber screen_grabber;
+
 	while(!to_stop)
 	{	
 		//capture >> color;
 		gs_grabber.capture(frame);
 		cv::Mat gray(frame);
-		if(snapshot)
+		if(snapshot_people){
 			imwrite( "../snapshots/people_"+ currentDateTimeNow +".jpg", gray);
+			snapshot_people = false;
+		}
+		if(snapshot_screen){
+			screen_grabber.grabScreen();
+			snapshot_screen = false;
+		}
 		
 		//cvtColor(color, gray, CV_BGR2GRAY); 
 

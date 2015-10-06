@@ -11,7 +11,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 	Json::StyledWriter writer;
 	root["obj"]["type"] = "hand";
 
-	float x, y, z;
+	float tx, ty, tz, rw, rx, ry, rz;
 	std::string message;
 
 	K2G k2g(OPENGL);
@@ -70,14 +70,15 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 	while(!to_stop)
 	{
 		grey = k2g.getGrey();
-		if(snapshot)
+		if(snapshot_table){
 			imwrite( "../snapshots/table_"+ currentDateTimeNow +".jpg", k2g.getColor());
+			snapshot_table = false;
+		}
 
 		MDetector.detect(grey, markers, camera_parameters, cv::Mat(), marker_size);
 
-		if(markers.size() > 0)
-			to_send = timer.needSend();
 		if(markers.size() > 0){
+			to_send = timer.needSend();
 			for(int i = 0; i < markers.size(); ++i)
 			{
 				// Get marker position
@@ -90,18 +91,25 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 				cv::Rodrigues(markers[i].Rvec, cv::Mat(marker_pose, cv::Rect(0, 0, 3, 3)));
 
 				cv::Mat pose = camera_inverse * marker_pose;
-				x = pose.at<float>(0, 3);
-				y = pose.at<float>(1, 3);
-				z = pose.at<float>(2, 3);
+				tx = pose.at<float>(0, 3);
+				ty = pose.at<float>(1, 3);
+				tz = pose.at<float>(2, 3);
+				Eigen::Matrix3f temp;
+				cv2eigen(pose(cv::Rect(0,0,3,3)), temp);
+				Eigen::Quaternionf quaternion(temp);
 				
 				//std::cout << x << " " << y << " " << z << " " << markers[i].id << std::endl;
 				if(to_send){
 					root["obj"]["id"] = markers[i].id;
-					root["obj"]["x"] = x;
-					root["obj"]["y"] = y;
-					root["obj"]["z"] = z / 1000;
+					root["obj"]["tx"] = tx;
+					root["obj"]["ty"] = ty;
+					root["obj"]["tz"] = tz / 1000;
+					root["obj"]["rw"] = quaternion.w();
+					root["obj"]["rx"] = quaternion.x();
+					root["obj"]["ry"] = quaternion.y();
+					root["obj"]["rz"] = quaternion.z();
 					root["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
-					message = writer.write(root);
+					message = writer.write(root);	
 
 					// Send the message online and store it offline
 					if(online){

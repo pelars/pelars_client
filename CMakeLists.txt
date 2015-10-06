@@ -38,6 +38,7 @@ find_package(FFmpeg REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 find_package(QREncode REQUIRED)
 find_package(PortAudio REQUIRED)
+find_package(Cairo REQUIRED)
 
 pkg_search_module(GLFW REQUIRED glfw3)
 set(Boost_USE_MULTITHREADED ON) 
@@ -64,6 +65,7 @@ include_directories(${PCL_INCLUDE_DIRS})
 include_directories(${INCLUDE})
 include_directories(${GLFW_INCLUDE_DIRS})
 include_directories(${Boost_LIBRARY_DIRS})
+include_directories(${CAIRO_INCLUDE_DIRS})
 
 link_directories(${PCL_LIBRARY_DIRS})
 
@@ -90,6 +92,7 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/end_dec.cpp
 								${SRC}/k2g.cpp
 								${SRC}/mongoose_handler.cpp
+								${SRC}/screen_grabber.cpp
 								)
 
 add_executable(freenect-camshare ${SRC}/camshare.cpp)
@@ -118,6 +121,7 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${PCL_LIBRARIES}
 										${PORTAUDIO_LIBRARIES}
 										${QRENCODE_LIBRARY}
+										${CAIRO_LIBRARIES}
 										)
 
 target_link_libraries(freenect-camshare ${FREENECT_LIBRARIES} rt) 

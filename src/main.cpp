@@ -2,8 +2,12 @@
 
 // To stop all the threads if one receives a stop signal
 bool to_stop = false;
-// Take a camera snapshot
-bool snapshot = false;
+// Take a camera snapshot of the table
+bool snapshot_table = false;
+// Take a camera snapshot of the people
+bool snapshot_people = false;
+// Take a camera snapshot of the people
+bool snapshot_screen = false;
 // Connection status
 bool online = true;
 // Enable visualization
@@ -147,6 +151,3 @@ int main(int argc, char * argv[])
 	ws_writer.join();
 	return 0;
 }
-
-
-
