@@ -85,7 +85,6 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/hand_detector.cpp
 								${SRC}/gstreamer_grabber.cpp
 								${SRC}/opt.cpp
-								${SRC}/key_logger.cpp
 								${SRC}/gstreamer_grabber2.cpp
 								${SRC}/ide_handler.cpp
 								${SRC}/audio_detector.cpp

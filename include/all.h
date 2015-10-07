@@ -6,7 +6,6 @@
 #include "sse_handler.h"
 #include "hand_detector.h"
 #include "opt_parse.h"
-#include "key_logger.h"
 #include "mongoose.h"
 #include "opt.h"
 #include "ide_handler.h"
