@@ -40,7 +40,9 @@ void detectFaces(DataWriter & websocket)
 		gs_grabber.capture(frame);
 		cv::Mat gray(frame);
 		if(snapshot_people){
-			imwrite( "../snapshots/people_"+ currentDateTimeNow +".jpg", gray);
+			std::time_t now_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			std::string now = std::string(std::ctime(&now_time));
+			imwrite( "../snapshots/people_" + now + ".jpg", gray);
 			snapshot_people = false;
 		}
 		if(snapshot_screen){
@@ -111,7 +113,12 @@ void detectFaces(DataWriter & websocket)
 			if((char)c == 'q' ) {
 				to_stop = true;
 				std::cout << "stop requested by face detector" << std::endl;
-			}	
+			}
+			if((char)c == 'c' ) {
+				snapshot_people = true;
+				snapshot_screen = true;
+				std::cout << "taking snapshots" << std::endl;
+			}		
 		}
 	}	
 }

@@ -6,7 +6,7 @@ bool to_stop = false;
 bool snapshot_table = false;
 // Take a camera snapshot of the people
 bool snapshot_people = false;
-// Take a camera snapshot of the people
+// Take a snapshot of the screen
 bool snapshot_screen = false;
 // Connection status
 bool online = true;
@@ -16,9 +16,9 @@ bool visualization = false;
 const std::string currentDateTimeNow = currentDateTime();
 // sending interval
 double interval = 1000;
-// initial time point
+// Initial time point
 std::chrono::time_point<std::chrono::system_clock> start;
-// signal handler
+// Signal handler
 static void sig_handler(int signum)
 {
 		to_stop = true;

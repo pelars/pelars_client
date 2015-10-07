@@ -71,7 +71,9 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 	{
 		grey = k2g.getGrey();
 		if(snapshot_table){
-			imwrite( "../snapshots/table_"+ currentDateTimeNow +".jpg", k2g.getColor());
+			std::time_t now_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			std::string now = std::string(std::ctime(&now_time));
+			imwrite( "../snapshots/table_" + now + ".jpg", k2g.getColor());
 			snapshot_table = false;
 		}
 

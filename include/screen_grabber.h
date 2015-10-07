@@ -3,8 +3,7 @@
 #include <cairo-xlib.h>
 #include <X11/Xlib.h>
 #include <string>
-
-extern const std::string currentDateTimeNow;
+#include <chrono>
 
 class ScreenGrabber{
 
