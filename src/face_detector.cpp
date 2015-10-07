@@ -114,11 +114,6 @@ void detectFaces(DataWriter & websocket)
 				to_stop = true;
 				std::cout << "stop requested by face detector" << std::endl;
 			}
-			if((char)c == 'c' ) {
-				snapshot_people = true;
-				snapshot_screen = true;
-				std::cout << "taking snapshots" << std::endl;
-			}		
 		}
 	}	
 }

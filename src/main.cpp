@@ -32,7 +32,7 @@ int main(int argc, char * argv[])
 
 	Parser p(argc, argv);
 	if(p.get("help") || argc == 1){
-		printHelp();
+		p.printHelp();
 		return 0;
 	}
 
@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
 		if(!infile)
 		{
 			std::cout << "cannot open template list file: " << p.getString("object") << std::endl;
-			printHelp();
+			p.printHelp();
 			return -1;
 		}
 	}

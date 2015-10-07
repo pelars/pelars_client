@@ -58,24 +58,6 @@ void drawQr(int width, int repetitions, int session)
 	int c = cv::waitKey(1);
 }
 
-
-void printHelp(){
-
-	std::cout << "Usage: ./sensormanager {OPTIONS}" << std::endl;
-	std::cout << "Options:" << std::endl;
-	std::cout << "\t-f to track faces" << std::endl;
-	std::cout << "\t-h to track hands" << std::endl;
-	std::cout << "\t-a to track audio level" << std::endl;
-	std::cout << "\t-p to track partile.io sensors" << std::endl;
-	std::cout << "\t-q to display a qr code of the session id" << std::endl;
-	std::cout << "\t--o=\"path to template file list\" to track objects" << std::endl;
-	std::cout << "\t-v to enable visualization" << std::endl;
-	std::cout << "\t-i to track the Arduino Ide" << std::endl;
-	std::cout << "\t--m=\"float value\" of the marker size" << std::endl;
-	std::cout << "\t-c to calibrate the camera with the table" << std::endl;
-	std::cout << "\t--S=\"string\" to specify the server endpoint" << std::endl;
-}
-
 void checkEscape(bool visualization, bool special){
 	if(!visualization && !special){
 		while(std::cin.get() != 27){
