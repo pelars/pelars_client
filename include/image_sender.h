@@ -11,7 +11,6 @@ public:
 	void send(std::string & data, std::string type);
 
 private:
-
 	std::string endpoint_, token_;
     boost::network::http::client client_;
 	boost::network::http::client::response response_;

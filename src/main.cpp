@@ -156,7 +156,9 @@ int main(int argc, char * argv[])
 	std::cout << "Connection to Collector closed" << std::endl;
 	// Stopped io service 
 	io.stop();
+	std::cout << "Io stopped" << std::endl;
 	// Stopping Asio aliver
 	ws_writer.join();
+	std::cout << "writer stopped" << std::endl;
 	return 0;
 }
