@@ -19,6 +19,7 @@ public:
 	void closeSession(int session);
 	void createUser();
 	void login();
+	std::string getToken();
 
 private:
 
@@ -31,5 +32,6 @@ private:
 	Json::Value root_;
 	Json::Reader reader_;
 	Json::StyledWriter writer_;
+	bool error_;
 
 };

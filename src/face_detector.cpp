@@ -1,7 +1,7 @@
 #include "face_detector.h"
 
 
-void detectFaces(DataWriter & websocket)
+void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, ImageSender & image_sender_people)
 {
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
@@ -14,7 +14,6 @@ void detectFaces(DataWriter & websocket)
 	bool findLargestObject_ = false;
 	bool filterRects_ = true;
 
-	//GstreamerGrabber2 gs_grabber2("/dev/video0", 1920, 1080, true, true);
 	GstreamerGrabber gs_grabber(640, 480, 0);
 	IplImage * frame = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 1); 
 
@@ -32,33 +31,51 @@ void detectFaces(DataWriter & websocket)
 	// Preapare JSON message to send to the Collector
 	Json::StyledWriter writer;
 
-	ScreenGrabber screen_grabber;
+	std::string code;
 
 	while(!to_stop)
 	{	
-		//capture >> color;
 		gs_grabber.capture(frame);
 		cv::Mat gray(frame);
+
 		if(snapshot_people){
 			std::time_t now_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 			std::string now = std::string(std::ctime(&now_time));
-			imwrite( "../snapshots/people_" + now + ".jpg", gray);
+			std::remove_if(now.begin(), now.end(), isspace);
+			std::string name = "../snapshots/people_" + now + ".jpg";
+			cv::imwrite(name , gray);
+			if(online){
+				std::ifstream in(name, std::ifstream::binary);
+				std::vector<char> data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+				in.close();
+				code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
+				image_sender_people.send(code, "jpg");
+			}
 			snapshot_people = false;
 		}
 		if(snapshot_screen){
-			screen_grabber.grabScreen();
+			std::time_t now_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			std::string now = std::string(std::ctime(&now_time));
+			std::remove_if(now.begin(), now.end(), isspace);
+			std::string name = std::string("../snapshots/screen_" + now + ".png");
+			screen_grabber.grabScreen(name);
+			if(online){
+				std::ifstream in(name, std::ifstream::binary);
+				std::vector<char> data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+				in.close();
+				code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
+				image_sender_screen.send(code, "png");
+			}
 			snapshot_screen = false;
 		}
-		
-		//cvtColor(color, gray, CV_BGR2GRAY); 
 
 		std::vector<cv::Rect> res;
-	   
+	
 		int detections_num;
 		cv::Mat faces_downloaded;
 		cv::gpu::GpuMat facesBuf_gpu;
 		cv::Mat im(gray.size(), CV_8UC1);
-	  
+	
 		gray.copyTo(im);
 		
 		cv::gpu::GpuMat gray_gpu(im);
@@ -74,7 +91,6 @@ void detectFaces(DataWriter & websocket)
 		Json::Value root = Json::arrayValue;
 		Json::Value array;
 		
-
 		for(int i = 0; i < detections_num; ++i)
 		{
 			cv::Point center(faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5);
@@ -115,6 +131,6 @@ void detectFaces(DataWriter & websocket)
 				std::cout << "stop requested by face detector" << std::endl;
 			}
 		}
-	}	
+	}
 }
 

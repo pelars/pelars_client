@@ -54,6 +54,26 @@ int main(int argc, char * argv[])
 	// Start time
 	start = std::chrono::system_clock::now();
 
+	// Check the endpoint string and connect to the collector
+	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it:8080/pelars/";
+	end_point = end_point.back() == '/' ? end_point : end_point + "/";
+	std::cout << "WebServer endpoint : " << end_point << std::endl;
+
+	// Creating a Session Manager and getting a newsession ID
+	SessionManager sm(end_point);
+	int session = sm.getNewSession();
+
+	// Image grabber 
+	ImageSender image_sender_table(session, end_point, sm.getToken());
+	ImageSender image_sender_people(session, end_point, sm.getToken());
+	ImageSender image_sender_screen(session, end_point, sm.getToken());
+
+	// Screen grabber
+	ScreenGrabber screen_grabber;
+
+	// Keep aliver
+	std::thread ws_writer(asiothreadfx);
+
 	// Kinect Frame acquisition
 	KinectManagerExchange * kinect_manager;
 	if(p.get("object"))
@@ -66,21 +86,10 @@ int main(int argc, char * argv[])
 		}
 	}
 
-	// Keep aliver
-	std::thread ws_writer(asiothreadfx);
-
-	// Check the endpoint string and connect to the collector
-	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it:8080/pelars/";
-	end_point = end_point.back() == '/' ? end_point : end_point + "/";
-	std::cout << "WebServer endpoint : " << end_point << std::endl;
-
-	//Creating a Session Manager and getting a newsession ID
-	SessionManager sm(end_point);
-	int session = sm.getNewSession();
-
 	// Create QR code
-	if(p.get("qr") && session != -1)
+	if(p.get("qr") && session != -1){
 		drawQr(512, 8, session);
+	}
 	else if(session == -1 && p.get("qr"))
 		std::cout << "No Qr code available since there is no active internet connection " << std::endl;
 
@@ -111,13 +120,13 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(linemodf, std::ref(infile), kinect_manager, std::ref(collector)));
 	// Starting the face detection thread
 	if(p.get("face"))
-		thread_list.push_back(std::thread(detectFaces, std::ref(collector)));
+		thread_list.push_back(std::thread(detectFaces, std::ref(collector), std::ref(screen_grabber), std::ref(image_sender_people), std::ref(image_sender_screen)));
 	// Starting the particle.io thread
 	if(p.get("particle"))
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
 	// Starting the hand detector
 	if(p.get("hand"))
-		thread_list.push_back(std::thread(handDetector, std::ref(collector), marker_size, p.get("calibration")));
+		thread_list.push_back(std::thread(handDetector, std::ref(collector), marker_size, p.get("calibration"), std::ref(image_sender_table)));
 	// Starting the ide logger
 	if(p.get("ide"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(mgr)));

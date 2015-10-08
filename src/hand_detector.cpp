@@ -1,6 +1,6 @@
 #include "hand_detector.h"
 
-void handDetector(DataWriter & websocket, float marker_size, bool calibration)
+void handDetector(DataWriter & websocket, float marker_size, bool calibration, ImageSender & image_sender)
 {
 	aruco::MarkerDetector MDetector;
 	vector<aruco::Marker> markers;
@@ -73,7 +73,14 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration)
 		if(snapshot_table){
 			std::time_t now_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 			std::string now = std::string(std::ctime(&now_time));
-			imwrite( "../snapshots/table_" + now + ".jpg", k2g.getColor());
+			std::remove_if(now.begin(), now.end(), ::isspace);
+			imwrite( "../snapshots/table_" + now + ".jpg", grey);
+			if(online){
+				std::ifstream in( "../snapshots/table_" + now + ".jpg", std::ifstream::binary );
+				std::vector<char> data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
+				image_sender.send(code, "jpg");
+			}
 			snapshot_table = false;
 		}
 

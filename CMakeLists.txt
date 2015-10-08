@@ -92,6 +92,8 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/k2g.cpp
 								${SRC}/mongoose_handler.cpp
 								${SRC}/screen_grabber.cpp
+								${SRC}/image_sender.cpp
+								${SRC}/base64.cpp
 								)
 
 add_executable(freenect-camshare ${SRC}/camshare.cpp)

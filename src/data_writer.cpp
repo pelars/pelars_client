@@ -54,7 +54,6 @@ DataWriter::stop()
 void DataWriter::onClose(websocketpp::connection_hdl) {
 	std::cout << "close requested from on_close\n";
 	online = false;
-
 }
 
 void DataWriter::onFail(websocketpp::connection_hdl) {

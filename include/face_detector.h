@@ -8,6 +8,9 @@
 #include "opt.h"
 #include "gstreamer_grabber.h"
 #include "screen_grabber.h"
+#include "image_sender.h"
+#include <base64.h>
+
 
 extern bool to_stop;
 extern bool visualization;
@@ -16,4 +19,4 @@ extern std::chrono::time_point<std::chrono::system_clock> start;
 extern bool snapshot_people;
 extern bool snapshot_screen;
 
-void detectFaces(DataWriter & websocket);
+void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, ImageSender & image_sender_people);

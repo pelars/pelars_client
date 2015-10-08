@@ -1,68 +1,73 @@
 #include "session_manager.h"
 
 
-SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint)
+SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint), error_(false)
 {	
 	std::cout << "Parsing the input data" << std::endl;
 	auto eResult =  data_.LoadFile( "../../data/personal.xml" );
 	if(eResult != 0){
 		std::cout << "\tError parsing personal.xml or file not present in /data/" << std::endl;
 		to_stop = true;
-	}else
+		error_ = true;;
+	}else{
 		std::cout << "\tParsed the input data" << std::endl;
-
-	createUser();
-	login();
+		createUser();
+		login();
+	}
 }	
 
 int SessionManager::getNewSession()
 {
-	// Error variables
-	bool error = false;
-	bool parsed_success;
+	if(!error_){
+		// Error variables
+		bool error = false;
+		bool parsed_success;
 
-	// Json message and content
-	root_.clear();
-	root_["user_id"] = user_id_;
-	root_["institution_name"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_name" )->GetText();
-	root_["institution_address"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_address" )->GetText();
-	root_["namespace" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "namespace" )->GetText();
-	std::string out_string = writer_.write(root_);
-
-	std::cout << "Requesting session id " << std::endl;
-	try{
-		// Making the put request to create a new session
-		boost::network::http::client::request endpoint(endpoint_ + std::string("session") + std::string("?token=") + token_);
-		response_ = client_.put(endpoint, out_string);
-		session_manager_response_ = response_.body();
-		//std::cout << session_manager_response_ << std::endl;
-
-		// Read the response and parse the json message to get the session id
-		session_manager_response_.erase(std::remove(session_manager_response_.begin(), session_manager_response_.end(), '\n'), session_manager_response_.end());
+		// Json message and content
 		root_.clear();
-		Json::Reader reader;
-		parsed_success = reader.parse(session_manager_response_, root_, false);
-		session_ = root_["id"].asInt();
-	}
-	catch (std::exception& e){
-		// Generic error during the request
-		std::cout << "\tError during the session request: " << e.what()  << "; setting session id to -1" <<std::endl;
-		error = true;
-		online = false;
-		session_ = -1;
-	}
-	if(!parsed_success){
-		// error during the parsing step
-		std::cout << "\tError during the session request: Couldn't parse json message; setting session id to -1" <<std::endl;
-		error = true;
-		online = false;
-		session_ = -1;
-	}
+		root_["user_id"] = user_id_;
+		root_["institution_name"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_name" )->GetText();
+		root_["institution_address"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_address" )->GetText();
+		root_["namespace" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "namespace" )->GetText();
+		std::string out_string = writer_.write(root_);
 
-	if (!error)
-		std::cout << "\tGot session id " << session_ << std::endl;
-	
-	return session_;
+		std::cout << "Requesting session id " << std::endl;
+		try{
+			// Making the put request to create a new session
+			boost::network::http::client::request endpoint(endpoint_ + std::string("session") + std::string("?token=") + token_);
+			response_ = client_.put(endpoint, out_string);
+			session_manager_response_ = response_.body();
+			//std::cout << session_manager_response_ << std::endl;
+
+			// Read the response and parse the json message to get the session id
+			session_manager_response_.erase(std::remove(session_manager_response_.begin(), session_manager_response_.end(), '\n'), session_manager_response_.end());
+			root_.clear();
+			Json::Reader reader;
+			parsed_success = reader.parse(session_manager_response_, root_, false);
+			session_ = root_["id"].asInt();
+		}
+		catch (std::exception& e){
+			// Generic error during the request
+			std::cout << "\tError during the session request: " << e.what()  << "; setting session id to -1" <<std::endl;
+			error = true;
+			online = false;
+			session_ = -1;
+		}
+		if(!parsed_success){
+			// error during the parsing step
+			std::cout << "\tError during the session request: Couldn't parse json message; setting session id to -1" <<std::endl;
+			error = true;
+			online = false;
+			session_ = -1;
+		}
+
+		if (!error)
+			std::cout << "\tGot session id " << session_ << std::endl;
+		
+		return session_;
+	}
+	else
+		return -1;	
 }
 
 void SessionManager::login(){
@@ -138,6 +143,10 @@ void SessionManager::closeSession(int session)
 		response_ = client_.post(request_, out_string);
 		std::cout << "\tSession manager response: " << response_.body();
 	}
+}
+
+std::string SessionManager::getToken(){
+	return token_;
 }
 
 

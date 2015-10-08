@@ -102,6 +102,7 @@ void K2G::shutDown()
 
 cv::Mat K2G::getColor()
 {
+	TURBO_COLOR = true;
 	listener_.waitForNewFrame(frames_);
 	libfreenect2::Frame * rgb = frames_[libfreenect2::Frame::Color];
 	cv::Mat tmp(rgb->height, rgb->width, CV_8UC4, rgb->data);
