@@ -31,6 +31,7 @@ public:
 	void shutDown();
 	cv::Mat getColor();
 	cv::Mat getGrey();
+	
 private:
 
 	libfreenect2::Freenect2 freenect2_;

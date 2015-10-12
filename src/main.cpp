@@ -86,13 +86,6 @@ int main(int argc, char * argv[])
 		}
 	}
 
-	// Create QR code
-	if(p.get("qr") && session != -1){
-		drawQr(512, 8, session);
-	}
-	else if(session == -1 && p.get("qr"))
-		std::cout << "No Qr code available since there is no active internet connection " << std::endl;
-
 	std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
 
 	// Check the endpoint string and connect to the session manager
@@ -133,6 +126,9 @@ int main(int argc, char * argv[])
 	// Starting audio detector
 	if(p.get("audio"))
 		thread_list.push_back(std::thread(audioDetector, std::ref(collector)));
+		// Starting audio detector
+	if(p.get("qr"))
+		thread_list.push_back(std::thread(showQr, session));
 	
 	//If there are no windows wait for Esc to be pressed
 	checkEscape(visualization, p.get("special"));

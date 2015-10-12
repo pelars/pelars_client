@@ -75,6 +75,6 @@ private:
 
 };
 
-void drawQr(int width, int repetitions, int session);
+cv::Mat drawQr(int width, int repetitions, int session);
 void printHelp();
 void checkEscape(bool visualization, bool special);
