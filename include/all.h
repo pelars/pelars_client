@@ -1,5 +1,4 @@
 #pragma once
-#include "mongoose_handler.h"
 #include "kinect_grabber.h"
 #include "linemod.h"
 #include "session_manager.h"

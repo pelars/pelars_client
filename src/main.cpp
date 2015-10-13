@@ -36,7 +36,6 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 
-	float marker_size = p.get("marker") ? p.getFloat("marker") : 0.040;	
 	visualization = p.get("visualization");
 
 	// Check if the input template list file is correct
@@ -63,10 +62,11 @@ int main(int argc, char * argv[])
 	SessionManager sm(end_point);
 	int session = sm.getNewSession();
 
-	// Image grabber 
-	ImageSender image_sender_table(session, end_point, sm.getToken());
-	ImageSender image_sender_people(session, end_point, sm.getToken());
-	ImageSender image_sender_screen(session, end_point, sm.getToken());
+	// Image grabber
+	std::string token = sm.getToken(); 
+	ImageSender image_sender_table(session, end_point, token);
+	ImageSender image_sender_people(session, end_point, token);
+	ImageSender image_sender_screen(session, end_point, token);
 
 	// Screen grabber
 	ScreenGrabber screen_grabber;
@@ -119,7 +119,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
 	// Starting the hand detector
 	if(p.get("hand"))
-		thread_list.push_back(std::thread(handDetector, std::ref(collector), marker_size, p.get("calibration"), std::ref(image_sender_table)));
+		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.033, p.get("calibration"), std::ref(image_sender_table)));
 	// Starting the ide logger
 	if(p.get("ide"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(mgr)));

@@ -1,7 +1,9 @@
 #pragma once
 #include "mongoose.h"
 #include <iostream>
+#include "opt.h"
 
-extern bool stop_socket;
+extern bool to_stop;
 
 void ideHandler(struct mg_mgr & mgr);
+void ev_handler(struct mg_connection * nc, int ev, void * ev_data);

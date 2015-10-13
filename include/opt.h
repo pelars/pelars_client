@@ -17,9 +17,6 @@ void aliver(const boost::system::error_code& /*e*/);
 
 void asiothreadfx();
 
-// Calculate a time interval
-double deltats(const struct timespec & a, const struct timespec & b);
-
 const std::string currentDateTime();
 
 struct MiniEncapsule{
@@ -31,7 +28,6 @@ struct MiniEncapsule{
 		bool parsedSuccess = reader.parse(message, root_, false);
 		root_["obj"]["session"] = session_;
 		out_message_ = writer_.write(root_);
-
 	}
 
 	DataWriter & websocket_;

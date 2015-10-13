@@ -61,7 +61,7 @@ int SessionManager::getNewSession()
 			session_ = -1;
 		}
 
-		if (!error)
+		if(!error)
 			std::cout << "\tGot session id " << session_ << std::endl;
 		
 		return session_;
@@ -113,7 +113,6 @@ void SessionManager::createUser(){
 		response_ = client_.put(endpoint, out_string);
 		session_manager_response_ = response_.body();
 		// Read the response and parse the json message to get the session id
-		//session_manager_response.erase(std::remove(session_manager_response.begin(), session_manager_response.end(), '\n'), session_manager_response.end());
 		bool parsedSuccess = reader_.parse(session_manager_response_, root_);
 		user_id_ = root_["id"].asInt();
 
@@ -129,7 +128,6 @@ void SessionManager::createUser(){
 void SessionManager::closeSession(int session)
 {
 	// Close the session and exit
-	// Preaparing data to close the session
 	root_.clear();
 
 	// Json message

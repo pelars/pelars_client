@@ -14,7 +14,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 	float tx, ty, tz, rw, rx, ry, rz;
 	std::string message;
 
-	K2G k2g(OPENGL);
+	K2G k2g(OPENCL);
 
 	TimedSender timer(interval);
 
@@ -39,7 +39,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 	
 			if(markers.size() > 0){
 				for(int i = 0; i < markers.size(); ++i){
-					if(markers[i].id == 784){
+					if(markers[i].id == 0){
 						calib_matrix.at<float>(0, 3) = markers[i].Tvec.at<float>(0);
 						calib_matrix.at<float>(1, 3) = markers[i].Tvec.at<float>(1);
 						calib_matrix.at<float>(2, 3) = markers[i].Tvec.at<float>(2);
