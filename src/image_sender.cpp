@@ -14,7 +14,8 @@ void ImageSender::send(std::string & data, std::string type){
 	try
 	{
 		boost::network::http::client::request endpoint(endpoint_);
-		boost::network::http::client::response response = client_.put(endpoint, out_string);
+		//response_.status();
+		response_ = client_.put(endpoint, out_string);
 	}
 	catch (std::exception& e)
 	{

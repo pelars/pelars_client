@@ -102,7 +102,7 @@ void K2G::shutDown()
 
 cv::Mat K2G::getColor()
 {
-	TURBO_COLOR = true;
+	//TURBO_COLOR = true;
 	listener_.waitForNewFrame(frames_);
 	libfreenect2::Frame * rgb = frames_[libfreenect2::Frame::Color];
 	cv::Mat tmp(rgb->height, rgb->width, CV_8UC4, rgb->data);
@@ -113,7 +113,7 @@ cv::Mat K2G::getColor()
 
 cv::Mat K2G::getGrey()
 {
-	TURBO_COLOR = false;
+	//TURBO_COLOR = false;
 	listener_.waitForNewFrame(frames_);
 	libfreenect2::Frame * grey = frames_[libfreenect2::Frame::Color];
 	cv::Mat tmp(grey->height, grey->width, CV_8UC1, grey->data);

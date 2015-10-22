@@ -95,16 +95,6 @@ int main(int argc, char * argv[])
 	// Websocket manager
 	DataWriter collector(end_point + "collector", session);
 
-	// Mongoose websocket listener and message structure
-	struct mg_mgr mgr;
-	struct mg_connection * nc;
-	MiniEncapsule writer(collector, session);
-	mg_mgr_init(&mgr, &writer);
-	const char * port = p.get("mongoose") ? p.getString("mongoose").c_str() : "8081";
-	nc = mg_bind(&mgr, port, ev_handler);
-	mg_set_protocol_http_websocket(nc);
-	std::cout << "Mongoose websocket started on port " << std::string(port) << std::endl;
-
 	// Thread container
 	std::vector<std::thread> thread_list;
 
@@ -122,11 +112,11 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.033, p.get("calibration"), std::ref(image_sender_table)));
 	// Starting the ide logger
 	if(p.get("ide"))
-		thread_list.push_back(std::thread(ideHandler, std::ref(mgr)));
+		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081"));
 	// Starting audio detector
 	if(p.get("audio"))
 		thread_list.push_back(std::thread(audioDetector, std::ref(collector)));
-		// Starting audio detector
+	// Starting audio detector
 	if(p.get("qr"))
 		thread_list.push_back(std::thread(showQr, session));
 	

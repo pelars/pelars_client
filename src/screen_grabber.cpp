@@ -18,5 +18,4 @@ void ScreenGrabber::grabScreen(std::string name){
     surface_ = cairo_xlib_surface_create(disp_, root_, DefaultVisual(disp_, scr_), DisplayWidth(disp_, scr_), DisplayHeight(disp_, scr_));
     cairo_surface_write_to_png(surface_, name.c_str());
     cairo_surface_destroy(surface_);
-
 }

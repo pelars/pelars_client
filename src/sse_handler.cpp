@@ -16,7 +16,7 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, Encapsule * enc) {
 				enc->addData(strs[j]);
 				enc->prepareData();
 				if(online) 
-					io.post( [&enc]() {
+					io.post([&enc]() {
 						enc->send();
 					});
 				enc->localSend();

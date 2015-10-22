@@ -3,9 +3,12 @@
 void handDetector(DataWriter & websocket, float marker_size, bool calibration, ImageSender & image_sender)
 {
 	aruco::MarkerDetector MDetector;
+	MDetector.setMinMaxSize(0.01, 0.7);
 	vector<aruco::Marker> markers;
 	if(visualization)
 		cv::namedWindow("hands");
+
+	int session = websocket.getSession();
 	
 	Json::Value root;
 	Json::StyledWriter writer;
@@ -23,7 +26,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 	camera_parameters.at<float>(1,1) = k2g.getRgbParameters().fy; 
 	camera_parameters.at<float>(0,2) = k2g.getRgbParameters().cx; 
 	camera_parameters.at<float>(1,2) = k2g.getRgbParameters().cy;
-	cv::Mat grey;
+	cv::Mat grey, color;
 	bool to_send;
 
 	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
@@ -34,7 +37,8 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 		bool found = false;
 
 		while(!found){
-			grey = k2g.getGrey();
+			color = k2g.getColor();
+			cvtColor(color, grey, CV_BGR2GRAY);
 			MDetector.detect(grey, markers, camera_parameters, cv::Mat(), marker_size);
 	
 			if(markers.size() > 0){
@@ -44,6 +48,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 						calib_matrix.at<float>(1, 3) = markers[i].Tvec.at<float>(1);
 						calib_matrix.at<float>(2, 3) = markers[i].Tvec.at<float>(2);
 						cv::Rodrigues(markers[i].Rvec, cv::Mat(calib_matrix, cv::Rect(0, 0, 3, 3)));
+						file << "matrix" << calib_matrix;
 						file.release();					
 						found = true;
 					}
@@ -63,20 +68,19 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 			to_stop = true;
 		}
 	}
-	
 	cv::Mat camera_inverse = calib_matrix.inv();
 	cv::Mat marker_pose = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
 	while(!to_stop)
 	{
-		grey = k2g.getGrey();
+		color = k2g.getColor();
+		cvtColor(color, grey, CV_BGR2GRAY);
 		if(snapshot_table){
-			std::time_t now_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-			std::string now = std::string(std::ctime(&now_time));
-			std::remove_if(now.begin(), now.end(), ::isspace);
-			imwrite( "../snapshots/table_" + now + ".jpg", grey);
+			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count());
+			std::string name = std::string("../snapshots/table_" + now + "_" + std::to_string(session) + ".jpg");
+			imwrite(name, grey);
 			if(online){
-				std::ifstream in( "../snapshots/table_" + now + ".jpg", std::ifstream::binary );
+				std::ifstream in(name, std::ifstream::binary );
 				std::vector<char> data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
 				image_sender.send(code, "jpg");
@@ -119,7 +123,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 					root["obj"]["rz"] = quaternion.z();
 					root["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
 					message = writer.write(root);	
-
+					
 					// Send the message online and store it offline
 					if(online){
 						//std::cout << "Hand detector posting data to the server\n " << std::flush;
@@ -139,6 +143,11 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 			{
 				to_stop = true;
 				std::cout << "Stop requested by hand detector" << std::endl;
+			}
+			if((char)c == 't' )
+			{
+				snapshot_table = true;
+				std::cout << "capturing table" << std::endl;
 			}
 		}
 	}

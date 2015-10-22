@@ -1,6 +1,6 @@
 #include "data_writer.h"
 
-DataWriter::DataWriter(const std::string & uri, const int session): uri_(uri+std::string("/")+std::to_string(session)), m_open_(false), m_done_(false)
+DataWriter::DataWriter(const std::string & uri, const int session): uri_(uri+std::string("/")+std::to_string(session)), m_open_(false), m_done_(false), session_(session)
 {
 	m_client_.clear_access_channels(websocketpp::log::alevel::all);
 	m_client_.set_access_channels(websocketpp::log::alevel::connect);
@@ -33,15 +33,13 @@ DataWriter::DataWriter(const std::string & uri, const int session): uri_(uri+std
 	fs_.open(complete_file_name_);
 }
 
-void 
-DataWriter::writeData(const std::string s)
+void DataWriter::writeData(const std::string s)
 { 
 	if(con_ && online)
 		m_client_.send(m_hdl_, s , websocketpp::frame::opcode::text, ec_);
 }
 
-void 
-DataWriter::stop()
+void DataWriter::stop()
 {
 	//online = false;
 	std::cout << "stop requested from DataWriter\n";
@@ -54,6 +52,10 @@ DataWriter::stop()
 void DataWriter::onClose(websocketpp::connection_hdl) {
 	std::cout << "close requested from on_close\n";
 	online = false;
+}
+
+int DataWriter::getSession() {
+	return session_;
 }
 
 void DataWriter::onFail(websocketpp::connection_hdl) {

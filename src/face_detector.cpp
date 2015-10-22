@@ -10,6 +10,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	cv::CascadeClassifier face_cascade_;
 	cv::Mat gray;
 
+	int session = websocket.getSession();
+
 	cv::gpu::CascadeClassifier_GPU cascade_gpu_;
 	bool findLargestObject_ = false;
 	bool filterRects_ = true;
@@ -39,30 +41,24 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		cv::Mat gray(frame);
 
 		if(snapshot_people){
-			std::time_t now_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-			std::string now = std::string(std::ctime(&now_time));
-			std::remove_if(now.begin(), now.end(), isspace);
-			std::string name = "../snapshots/people_" + now + ".jpg";
-			cv::imwrite(name , gray);
+			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count());
+			std::string name = std::string("../snapshots/people_" + now + "_" + std::to_string(session) +".jpg");
+			cv::imwrite(name, gray);
 			if(online){
 				std::ifstream in(name, std::ifstream::binary);
 				std::vector<char> data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-				in.close();
 				code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
 				image_sender_people.send(code, "jpg");
 			}
 			snapshot_people = false;
 		}
 		if(snapshot_screen){
-			std::time_t now_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-			std::string now = std::string(std::ctime(&now_time));
-			std::remove_if(now.begin(), now.end(), isspace);
-			std::string name = std::string("../snapshots/screen_" + now + ".png");
+			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count());
+			std::string name = std::string("../snapshots/screen_" + now + "_" + std::to_string(session) + ".png");
 			screen_grabber.grabScreen(name);
 			if(online){
 				std::ifstream in(name, std::ifstream::binary);
 				std::vector<char> data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-				in.close();
 				code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
 				image_sender_screen.send(code, "png");
 			}
@@ -129,6 +125,16 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			if((char)c == 'q' ) {
 				to_stop = true;
 				std::cout << "stop requested by face detector" << std::endl;
+			}
+			if((char)c == 'p' )
+			{
+				snapshot_people = true;
+				std::cout << "capturing people" << std::endl;
+			}
+			if((char)c == 's' )
+			{
+				snapshot_screen = true;
+				std::cout << "capturing screen" << std::endl;
 			}
 		}
 	}

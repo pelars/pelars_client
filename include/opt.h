@@ -21,22 +21,19 @@ const std::string currentDateTime();
 
 struct MiniEncapsule{
 
-	MiniEncapsule(DataWriter & websocket, int session): websocket_(websocket), session_(session){
+	MiniEncapsule(DataWriter & websocket): websocket_(websocket){
 	}
 
 	void parse(std::string message){
 		bool parsedSuccess = reader.parse(message, root_, false);
-		root_["obj"]["session"] = session_;
 		out_message_ = writer_.write(root_);
 	}
 
 	DataWriter & websocket_;
-	int session_;
 	std::string out_message_;
 	Json::Value root_;
 	Json::StyledWriter writer_;
 	Json::Reader reader;
-
 };
 
 class TimedSender
