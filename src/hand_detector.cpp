@@ -144,11 +144,6 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 				to_stop = true;
 				std::cout << "Stop requested by hand detector" << std::endl;
 			}
-			if((char)c == 't' )
-			{
-				snapshot_table = true;
-				std::cout << "capturing table" << std::endl;
-			}
 		}
 	}
 
