@@ -10,12 +10,13 @@ void ImageSender::send(std::string & data, std::string type){
 	root_["data"] = data;
 	root_["mimetype"] = type;
 
-	std::string out_string = writer_.write(root_);
+	out_string_ = writer_.write(root_);
 	try
 	{
 		boost::network::http::client::request endpoint(endpoint_);
-		//response_.status();
-		response_ = client_.put(endpoint, out_string);
+	
+		response_ = client_.put(endpoint, out_string_);
+		response_.status();
 	}
 	catch (std::exception& e)
 	{

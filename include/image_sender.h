@@ -16,4 +16,5 @@ private:
 	boost::network::http::client::response response_;
 	Json::Value root_;
 	Json::StyledWriter writer_;
+	std::string out_string_;
 };
