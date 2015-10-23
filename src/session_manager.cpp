@@ -12,7 +12,6 @@ SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint), error
 	}else{
 		std::cout << "\tParsed the input data" << std::endl;
 		createUser();
-		login();
 	}
 }	
 

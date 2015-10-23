@@ -60,10 +60,16 @@ int main(int argc, char * argv[])
 
 	// Creating a Session Manager and getting a newsession ID
 	SessionManager sm(end_point);
-	int session = sm.getNewSession();
+	sm.login();
+	int session;
+	if(!p.get("session"))
+		session = sm.getNewSession();
+	else
+		session = p.getInt("session");
+	std::string token = sm.getToken(); 
+
 
 	// Image grabber
-	std::string token = sm.getToken(); 
 	ImageSender image_sender_table(session, end_point, token);
 	ImageSender image_sender_people(session, end_point, token);
 	ImageSender image_sender_screen(session, end_point, token);
