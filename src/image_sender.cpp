@@ -1,12 +1,13 @@
 #include "image_sender.h"
 
-ImageSender::ImageSender(int session, std::string endpoint, std::string token): token_(token){
+ImageSender::ImageSender(int session, std::string endpoint, std::string token): token_(token), sending_complete_(true){
     root_["id"] = session;
     root_["type"] = "image";
   	endpoint_ = endpoint + std::string("multimedia") + std::string("?token=") + token_;
 }
 
 void ImageSender::send(std::string & data, std::string type){
+	sending_complete_ = false;
 	root_["data"] = data;
 	root_["mimetype"] = type;
 
@@ -20,6 +21,8 @@ void ImageSender::send(std::string & data, std::string type){
 	}
 	catch (std::exception& e)
 	{
+		sending_complete_ = true;
 		std::cout << "\tError during the image upload: " << e.what() << std::endl;
 	}
+	sending_complete_ = true;
 }

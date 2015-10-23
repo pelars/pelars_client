@@ -75,7 +75,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 	{
 		color = k2g.getColor();
 		cvtColor(color, grey, CV_BGR2GRAY);
-		if(snapshot_table){
+		if(snapshot_table && image_sender){
 			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count());
 			std::string name = std::string("../snapshots/table_" + now + "_" + std::to_string(session) + ".jpg");
 			imwrite(name, grey);
