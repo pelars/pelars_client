@@ -1,6 +1,7 @@
 #include "qr_creator.h"
 
 void showQr(int session){
+	sleep(1);
 	cv::startWindowThread();
 	cv::namedWindow("qr");
 	cv::moveWindow("qr", 10, 10);
@@ -15,10 +16,10 @@ void showQr(int session){
 
 	bool stop = false;
 
-	while(!stop && !to_stop){
+	while(!to_stop){
 		int c = cv::waitKey(1);
 		if((char)c == 'q') {
-			stop = true;
+			to_stop = true;
 			cv::destroyWindow("qr");
 		}
 	}

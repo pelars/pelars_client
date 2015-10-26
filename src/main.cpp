@@ -16,8 +16,6 @@ bool visualization = false;
 const std::string currentDateTimeNow = currentDateTime();
 // sending interval
 double interval = 1000;
-// Initial time point
-std::chrono::time_point<std::chrono::system_clock> start;
 // Signal handler
 static void sig_handler(int signum)
 {
@@ -50,9 +48,6 @@ int main(int argc, char * argv[])
 		}
 	}
 
-	// Start time
-	start = std::chrono::system_clock::now();
-
 	// Check the endpoint string and connect to the collector
 	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it:8080/pelars/";
 	end_point = end_point.back() == '/' ? end_point : end_point + "/";
@@ -64,10 +59,11 @@ int main(int argc, char * argv[])
 	int session;
 	if(!p.get("session"))
 		session = sm.getNewSession();
-	else
+	else{
 		session = p.getInt("session");
+		std::cout << "Using session " << session << std::endl;
+	}
 	std::string token = sm.getToken(); 
-
 
 	// Image grabber
 	ImageSender image_sender_table(session, end_point, token);
@@ -122,9 +118,12 @@ int main(int argc, char * argv[])
 	// Starting audio detector
 	if(p.get("audio"))
 		thread_list.push_back(std::thread(audioDetector, std::ref(collector)));
-	// Starting audio detector
+	// Starting qr visualization
 	if(p.get("qr"))
 		thread_list.push_back(std::thread(showQr, session));
+	// Starting status visualization
+	if(p.get("status"))
+		thread_list.push_back(std::thread(drawStatus, std::ref(p)));
 	
 	//If there are no windows wait for Esc to be pressed
 	checkEscape(visualization, p.get("special"));

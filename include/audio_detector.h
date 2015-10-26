@@ -5,7 +5,6 @@
 
 extern bool to_stop;
 extern double interval;
-extern std::chrono::time_point<std::chrono::system_clock> start;
 
 void audioDetector(DataWriter & data_writer);
 

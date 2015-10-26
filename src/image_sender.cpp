@@ -11,8 +11,8 @@ void ImageSender::send(std::string & data, std::string type){
 	sending_complete_ = false;
 	root_["data"] = data;
 	root_["mimetype"] = type;
-	std::time_t t = std::time(NULL);
-	root_["time"] = std::gmtime(&t);
+	std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+	root_["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 
 	out_string_ = writer_.write(root_);
 	try

@@ -2,6 +2,7 @@
 #include <string>
 #include <boost/network/protocol/http/client.hpp>
 #include <json/json.h>
+#include <chrono>
 
 class ImageSender{
 	
@@ -9,7 +10,7 @@ public:
 
 	ImageSender(int session, std::string endpoint, std::string token);
 	void send(std::string & data, std::string type);
-	const operator bool() { return sending_complete_;}
+	operator bool() const { return sending_complete_;}
 
 private:
 	std::string endpoint_, token_;

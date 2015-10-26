@@ -76,8 +76,8 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 		color = k2g.getColor();
 		cvtColor(color, grey, CV_BGR2GRAY);
 		if(snapshot_table && image_sender){
-			std::time_t t = std::time(NULL);
-			std::string now = std::to_string(std::gmtime(&t));
+			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 			std::string name = std::string("../snapshots/table_" + now + "_" + std::to_string(session) + ".jpg");
 			imwrite(name, grey);
 			if(online){
@@ -127,7 +127,8 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 					root["obj"]["rx"] = quaternion.x();
 					root["obj"]["ry"] = quaternion.y();
 					root["obj"]["rz"] = quaternion.z();
-					root["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+					std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+					root["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 					message = writer.write(root);	
 					
 					// Send the message online and store it offline
@@ -149,11 +150,6 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 			{
 				to_stop = true;
 				std::cout << "Stop requested by hand detector" << std::endl;
-			}
-			if((char)c == 't' )
-			{
-				snapshot_table = true;
-				std::cout << "table" << std::endl;
 			}
 		}
 	}

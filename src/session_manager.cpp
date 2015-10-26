@@ -75,6 +75,7 @@ void SessionManager::login(){
 	if(online){
 		std::cout << "Requesting login " << std::endl;
 		try{
+			std::cout << endpoint_ + std::string("password") + std::string("?user="+mail_+"&pwd="+password_) << std::endl;
 			boost::network::http::client::request request(endpoint_ + std::string("password") + std::string("?user="+mail_+"&pwd="+password_));
 			boost::network::http::client::response response = client_.post(request);
 			if(reader_.parse(response.body(), root_)){
@@ -114,7 +115,6 @@ void SessionManager::createUser(){
 		// Read the response and parse the json message to get the session id
 		bool parsedSuccess = reader_.parse(session_manager_response_, root_);
 		user_id_ = root_["id"].asInt();
-
 		if(root_["message"].asString().find(std::string("User already present")) == std::string::npos)
 			std::cout << "\tGot response " << session_manager_response_;
 	}

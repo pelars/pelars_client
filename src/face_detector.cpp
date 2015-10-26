@@ -40,8 +40,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		cv::Mat gray(frame);
 
 		if(snapshot_people && image_sender_people){
-			std::time_t t = std::time(NULL);
-			std::string now = std::to_string(std::gmtime(&t));
+			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 			std::string name = std::string("../snapshots/people_" + now + "_" + std::to_string(session) +".jpg");
 			cv::imwrite(name, gray);
 			if(online){
@@ -58,8 +58,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			snapshot_people = false;
 		}
 		if(snapshot_screen && image_sender_screen){
-			std::time_t t = std::time(NULL);
-			std::string now = std::to_string(std::gmtime(&t));
+			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 			std::string name = std::string("../snapshots/screen_" + now + "_" + std::to_string(session) + ".png");
 			screen_grabber.grabScreen(name);
 			if(online){
@@ -108,7 +108,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			array["x1"] = faces[i].x + faces[i].width;
 			array["y"] = faces[i].y;
 			array["y1"] = faces[i].y + faces[i].height;
-			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 			root.append(array);
 		}
 		
@@ -134,16 +135,6 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			if((char)c == 'q' ) {
 				to_stop = true;
 				std::cout << "stop requested by face detector" << std::endl;
-			}
-			if((char)c == 's' )
-			{
-				snapshot_screen = true;
-				std::cout << "screen" << std::endl;
-			}
-			if((char)c == 'p' )
-			{
-				snapshot_people= true;
-				std::cout << "people" << std::endl;
 			}
 		}
 	}

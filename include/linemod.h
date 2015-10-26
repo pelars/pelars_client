@@ -10,7 +10,6 @@
 extern bool to_stop;
 extern bool visualization;
 extern double interval;
-extern std::chrono::time_point<std::chrono::system_clock> start;
 extern float similarity;
 extern const std::string currentDateTimeNow;
 

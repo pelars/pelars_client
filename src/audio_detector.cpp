@@ -4,14 +4,13 @@ int portAudioCallback(const void * input, void * output,
 					  unsigned long frameCount, const PaStreamCallbackTimeInfo * timeInfo,
 					  PaStreamCallbackFlags statusFlags, void * userData){
 	
-
 	FFT * fft = (FFT *)userData;
 	if(frameCount > 1){
 		const float psd = fft->compute((float *)input, frameCount);
 		if(psd > 0.001 && fft->timer_.needSend()){
 			const std::string message = fft->message_;
 			if(online){
-						//std::cout << "Face detector posting data to the server\n " << std::flush;
+						//std::cout << "Audio detector posting data to the server\n " << std::flush;
 						io.post([&fft, message]() {
 							fft->websocket_.writeData(message);
 						});
@@ -19,7 +18,6 @@ int portAudioCallback(const void * input, void * output,
 			fft->websocket_.writeLocal(message);  
 		}
 	}
-	
 	return 0;
 }
 
@@ -76,8 +74,8 @@ float FFT::compute(float * buf, int count){
 	}
 	
 	root_["obj"]["value"] = psd_;
-
-	root_["obj"]["time"] = std::gmtime(&t);
+	std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+	root_["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 	message_ = writer_.write(root_);
 
 	return psd_;

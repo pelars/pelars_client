@@ -215,7 +215,8 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 					root["obj"]["y"] = m.y; // (m.y - center_y_depth) * dz / focal_y_depth;
 					root["obj"]["z"] = dz;
 					root["obj"]["pos"] = pos; // maybe not and one at level of ...
-					root["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+					std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+					root["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 
 					//Send message
 					message = writer.write(root);

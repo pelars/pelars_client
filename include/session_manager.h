@@ -8,7 +8,6 @@
 
 extern bool to_stop;
 extern bool online;
-extern std::chrono::time_point<std::chrono::system_clock> start;
 
 class SessionManager {
 
