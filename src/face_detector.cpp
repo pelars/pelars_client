@@ -10,11 +10,11 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	cv::CascadeClassifier face_cascade_;
 	cv::Mat gray;
 
-	int session = websocket.getSession();
+	const int session = websocket.getSession();
 
 	cv::gpu::CascadeClassifier_GPU cascade_gpu_;
-	bool findLargestObject_ = false;
-	bool filterRects_ = true;
+	const bool findLargestObject_ = false;
+	const bool filterRects_ = true;
 
 	GstreamerGrabber gs_grabber(640, 480, 0);
 	IplImage * frame = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 1); 
@@ -32,7 +32,6 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 	// Preapare JSON message to send to the Collector
 	Json::StyledWriter writer;
-
 	std::string code;
 
 	while(!to_stop)
@@ -46,8 +45,13 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			cv::imwrite(name, gray);
 			if(online){
 				std::ifstream in(name, std::ifstream::binary);
-				std::vector<char> data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-				code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
+				in.unsetf(std::ios::skipws);
+			    in.seekg(0, std::ios::end);
+			    std::streampos fileSize = in.tellg();
+			    in.seekg(0, std::ios::beg);
+			    std::vector<char> data(fileSize);
+				in.read(&data[0], fileSize);
+				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
 				image_sender_people.send(code, "jpg");
 			}
 			snapshot_people = false;
@@ -58,14 +62,17 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			screen_grabber.grabScreen(name);
 			if(online){
 				std::ifstream in(name, std::ifstream::binary);
-				std::vector<char> data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-				code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
+				in.unsetf(std::ios::skipws);
+			    in.seekg(0, std::ios::end);
+			    std::streampos fileSize = in.tellg();
+			    in.seekg(0, std::ios::beg);
+			    std::vector<char> data(fileSize);
+				in.read(&data[0], fileSize);
+				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
 				image_sender_screen.send(code, "png");
 			}
 			snapshot_screen = false;
 		}
-
-		std::vector<cv::Rect> res;
 	
 		int detections_num;
 		cv::Mat faces_downloaded;
@@ -125,6 +132,16 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			if((char)c == 'q' ) {
 				to_stop = true;
 				std::cout << "stop requested by face detector" << std::endl;
+			}
+			if((char)c == 's' )
+			{
+				snapshot_screen = true;
+				std::cout << "screen" << std::endl;
+			}
+			if((char)c == 'p' )
+			{
+				snapshot_people= true;
+				std::cout << "people" << std::endl;
 			}
 		}
 	}

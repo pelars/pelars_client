@@ -8,7 +8,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 	if(visualization)
 		cv::namedWindow("hands");
 
-	int session = websocket.getSession();
+	const int session = websocket.getSession();
 	
 	Json::Value root;
 	Json::StyledWriter writer;
@@ -80,8 +80,13 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 			std::string name = std::string("../snapshots/table_" + now + "_" + std::to_string(session) + ".jpg");
 			imwrite(name, grey);
 			if(online){
-				std::ifstream in(name, std::ifstream::binary );
-				std::vector<char> data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+				std::ifstream in(name, std::ifstream::binary);
+				in.unsetf(std::ios::skipws);
+			    in.seekg(0, std::ios::end);
+			    std::streampos fileSize = in.tellg();
+			    in.seekg(0, std::ios::beg);
+			    std::vector<char> data(fileSize);
+				in.read(&data[0], fileSize);
 				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
 				image_sender.send(code, "jpg");
 			}
@@ -143,6 +148,11 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 			{
 				to_stop = true;
 				std::cout << "Stop requested by hand detector" << std::endl;
+			}
+			if((char)c == 't' )
+			{
+				snapshot_table = true;
+				std::cout << "table" << std::endl;
 			}
 		}
 	}

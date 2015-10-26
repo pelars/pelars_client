@@ -25,7 +25,6 @@ find_package(Boost COMPONENTS random program_options REQUIRED)
 find_package(Websocketpp REQUIRED)
 find_package(Gstreamer-1.0 REQUIRED)
 find_package(Freenect REQUIRED)
-find_package(Websocketpp REQUIRED)
 find_package(FFmpeg REQUIRED)
 find_package(TinyXML2 REQUIRED)
 find_package(JsonCpp REQUIRED)
@@ -45,7 +44,6 @@ set(Boost_USE_MULTITHREADED ON)
 
 set(X264 ${X264_LIBRARIES})
 set(TINYXML2 ${TINYXML2_LIBRARY})
-
 
 #Should be fixed in the future
 find_library(GSTREAMER_O     NAMES gobject-2.0)

@@ -7,9 +7,9 @@ int portAudioCallback(const void * input, void * output,
 
 	FFT * fft = (FFT *)userData;
 	if(frameCount > 1){
-		float psd = fft->compute((float *)input, frameCount);
+		const float psd = fft->compute((float *)input, frameCount);
 		if(psd > 0.001 && fft->timer_.needSend()){
-			std::string message = fft->message_;
+			const std::string message = fft->message_;
 			if(online){
 						//std::cout << "Face detector posting data to the server\n " << std::flush;
 						io.post([&fft, message]() {
@@ -34,7 +34,7 @@ void audioDetector(DataWriter & data_writer){
 	
 	std::cout << "Using device : " << Pa_GetDeviceInfo(used_device)->name << std::endl;
 	
-	double srate = 32000;
+	const double srate = 32000;
 	PaStream * stream;
 	unsigned long framesPerBuffer = paFramesPerBufferUnspecified; 
 	PaStreamParameters outputParameters;
