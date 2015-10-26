@@ -76,7 +76,8 @@ float FFT::compute(float * buf, int count){
 	}
 	
 	root_["obj"]["value"] = psd_;
-	root_["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+
+	root_["obj"]["time"] = std::gmtime(&t);
 	message_ = writer_.write(root_);
 
 	return psd_;

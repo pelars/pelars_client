@@ -33,7 +33,8 @@ struct Encapsule{
 		websocket_.writeLocal(to_send_);
 	}
 	void addTime(){
-		root_["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+		std::time_t t = std::time(NULL);
+		root_["obj"]["time"] = std::gmtime(&t);
 	}
 
 	DataWriter & websocket_;

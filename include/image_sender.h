@@ -9,6 +9,7 @@ public:
 
 	ImageSender(int session, std::string endpoint, std::string token);
 	void send(std::string & data, std::string type);
+	const operator bool() { return sending_complete_;}
 
 private:
 	std::string endpoint_, token_;
@@ -17,4 +18,5 @@ private:
 	Json::Value root_;
 	Json::StyledWriter writer_;
 	std::string out_string_;
+	bool sending_complete_;
 };

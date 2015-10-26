@@ -39,8 +39,9 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		gs_grabber.capture(frame);
 		cv::Mat gray(frame);
 
-		if(snapshot_people){
-			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count());
+		if(snapshot_people && image_sender_people){
+			std::time_t t = std::time(NULL);
+			std::string now = std::to_string(std::gmtime(&t));
 			std::string name = std::string("../snapshots/people_" + now + "_" + std::to_string(session) +".jpg");
 			cv::imwrite(name, gray);
 			if(online){
@@ -56,8 +57,9 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			}
 			snapshot_people = false;
 		}
-		if(snapshot_screen){
-			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count());
+		if(snapshot_screen && image_sender_screen){
+			std::time_t t = std::time(NULL);
+			std::string now = std::to_string(std::gmtime(&t));
 			std::string name = std::string("../snapshots/screen_" + now + "_" + std::to_string(session) + ".png");
 			screen_grabber.grabScreen(name);
 			if(online){

@@ -39,6 +39,7 @@ public:
 				("object,O", boost::program_options::value<std::string>(), "object template file")
 				("qr,q", "show session as qr code")
 				("Server,S", boost::program_options::value<std::string>(), "server endpoint")
+				("Session,x", boost::program_options::value<int>(), "session id")
 				("calibration,c", "calibrate cameras")
 				("special,s", "special flag for background run");
 
@@ -67,6 +68,12 @@ public:
 		if(vm_.count(value))
 			return vm_[value].as<float>();
 		throw new FloatException;
+	}
+
+	int getInt(std::string value){
+		if(vm_.count(value))
+			return vm_[value].as<int>();
+		throw new IntException;
 	}
 
 private:
