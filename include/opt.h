@@ -17,7 +17,8 @@ void aliver(const boost::system::error_code& /*e*/);
 
 void asiothreadfx();
 
-int uploadData(std::string file_name, std::string endpoint);
+int uploadData(std::string file_name, std::string endpoint, int session = 0);
+
 
 const std::string currentDateTime();
 

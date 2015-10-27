@@ -60,7 +60,7 @@ void checkEscape(bool visualization, bool special){
 	}
 }
 
-int uploadData(std::string file_name, std::string end_point){
+int uploadData(std::string file_name, std::string end_point, int session){
 
 	std::ifstream in(file_name);
 	if(!in.is_open())
@@ -68,12 +68,20 @@ int uploadData(std::string file_name, std::string end_point){
 
 	std::string delimiter = "_";
 
-	size_t last = 0; size_t next = 0; 
-	next = file_name.find(delimiter, last);
-	last = next + 1;
-	next = file_name.find(delimiter, last);
-	 
-	DataWriter collector(end_point + "upload", stoi(file_name.substr(last, next-last)));
+	int s;
+
+	if(session){
+		s = session;
+	}else{
+		size_t last = 0; size_t next = 0; 
+		next = file_name.find(delimiter, last);
+		last = next + 1;
+		next = file_name.find(delimiter, last);
+		s = stoi(file_name.substr(last, next-last));
+	}
+
+	DataWriter collector(end_point + "upload", s);
+	sleep(1); //else the websocket is not initialized
 
 	int packet_size = 0;
 	char buffer[1024];
@@ -83,5 +91,7 @@ int uploadData(std::string file_name, std::string end_point){
 		std::string tmp(buffer, packet_size);
 		collector.writeData(tmp);
 	}
+	collector.stop();
 	return 0;
 }
+

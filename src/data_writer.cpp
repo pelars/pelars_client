@@ -36,7 +36,7 @@ DataWriter::DataWriter(const std::string & uri, const int session): uri_(uri+std
 void DataWriter::writeData(const std::string s)
 { 
 	if(con_ && online)
-		m_client_.send(m_hdl_, s , websocketpp::frame::opcode::text, ec_);
+		m_client_.send(m_hdl_, s , websocketpp::frame::opcode::text, ec_)
 }
 
 void DataWriter::stop()

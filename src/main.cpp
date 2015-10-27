@@ -34,14 +34,24 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 
+	// Keep aliver
+	std::thread ws_writer(asiothreadfx);
+
 	// Check the endpoint string and connect to the collector
 	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it:8080/pelars/";
 	end_point = end_point.back() == '/' ? end_point : end_point + "/";
 	std::cout << "WebServer endpoint : " << end_point << std::endl;
-
+	
 
 	if(p.get("upload")){
-		return uploadData(p.getString("upload"), end_point);
+		int error;
+		if(!p.get("session")){
+			error = uploadData(p.getString("upload"), end_point);
+		}else
+			error = uploadData(p.getString("upload"), end_point,  p.getInt("session"));
+		io.stop();
+		ws_writer.join();
+		return !error;
 	}
 
 	visualization = p.get("visualization");
@@ -58,7 +68,6 @@ int main(int argc, char * argv[])
 		}
 	}
 
-
 	// Creating a Session Manager and getting a newsession ID
 	SessionManager sm(end_point);
 	sm.login();
@@ -71,6 +80,11 @@ int main(int argc, char * argv[])
 	}
 	std::string token = sm.getToken(); 
 
+	std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
+	// Check the endpoint string and connect to the session manager
+	std::string session_endpoint = end_point + "session/";
+	std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;     
+
 	// Image grabber
 	ImageSender image_sender_table(session, end_point, token);
 	ImageSender image_sender_people(session, end_point, token);
@@ -79,8 +93,7 @@ int main(int argc, char * argv[])
 	// Screen grabber
 	ScreenGrabber screen_grabber;
 
-	// Keep aliver
-	std::thread ws_writer(asiothreadfx);
+	
 
 	// Kinect Frame acquisition
 	KinectManagerExchange * kinect_manager;
@@ -93,11 +106,6 @@ int main(int argc, char * argv[])
 			return -1;
 		}
 	}
-
-	std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
-	// Check the endpoint string and connect to the session manager
-	std::string session_endpoint = end_point + "session/";
-	std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;     
 
 	// Websocket manager
 	DataWriter collector(end_point + "collector", session);
