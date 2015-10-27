@@ -42,6 +42,7 @@ public:
 				("session,x", boost::program_options::value<int>(), "session id")
 				("calibration,c", "calibrate cameras")
 				("special,s", "special flag for background run")
+				("upload,u", boost::program_options::value<std::string>(), "file name to upload")
 				("status,j", "displays system status");
 
 		boost::program_options::options_description hidden("Hidden options");

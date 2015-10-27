@@ -59,3 +59,29 @@ void checkEscape(bool visualization, bool special){
 		std::cout << "Stopping" << std::endl;
 	}
 }
+
+int uploadData(std::string file_name, std::string end_point){
+
+	std::ifstream in(file_name);
+	if(!in.is_open())
+		return -1;
+
+	std::string delimiter = "_";
+
+	size_t last = 0; size_t next = 0; 
+	next = file_name.find(delimiter, last);
+	last = next + 1;
+	next = file_name.find(delimiter, last);
+	 
+	DataWriter collector(end_point + "upload", stoi(file_name.substr(last, next-last)));
+
+	int packet_size = 0;
+	char buffer[1024];
+	while(!in.eof()){
+		in >> packet_size;
+		in.read(buffer, packet_size);
+		std::string tmp(buffer, packet_size);
+		collector.writeData(tmp);
+	}
+	return 0;
+}

@@ -34,6 +34,16 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 
+	// Check the endpoint string and connect to the collector
+	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it:8080/pelars/";
+	end_point = end_point.back() == '/' ? end_point : end_point + "/";
+	std::cout << "WebServer endpoint : " << end_point << std::endl;
+
+
+	if(p.get("upload")){
+		return uploadData(p.getString("upload"), end_point);
+	}
+
 	visualization = p.get("visualization");
 
 	// Check if the input template list file is correct
@@ -48,10 +58,6 @@ int main(int argc, char * argv[])
 		}
 	}
 
-	// Check the endpoint string and connect to the collector
-	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it:8080/pelars/";
-	end_point = end_point.back() == '/' ? end_point : end_point + "/";
-	std::cout << "WebServer endpoint : " << end_point << std::endl;
 
 	// Creating a Session Manager and getting a newsession ID
 	SessionManager sm(end_point);
@@ -89,7 +95,6 @@ int main(int argc, char * argv[])
 	}
 
 	std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
-
 	// Check the endpoint string and connect to the session manager
 	std::string session_endpoint = end_point + "session/";
 	std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;     
