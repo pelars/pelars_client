@@ -14,7 +14,7 @@ public:
 	typedef websocketpp::lib::lock_guard<websocketpp::lib::mutex> scoped_lock;
 	std::string file_name_, file_extention_, complete_file_name_;
 
-	DataWriter(const std::string & uri, const int session);
+	DataWriter(const std::string & uri, const int session, const bool create_file = true);
 	~DataWriter();
 	void stop();
 	void writeLocal(const std::string s);

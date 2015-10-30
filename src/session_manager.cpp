@@ -69,6 +69,7 @@ int SessionManager::getNewSession()
 		return -1;	
 }
 
+
 void SessionManager::login(){
 
 	root_.clear();

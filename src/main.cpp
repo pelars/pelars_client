@@ -42,13 +42,9 @@ int main(int argc, char * argv[])
 	end_point = end_point.back() == '/' ? end_point : end_point + "/";
 	std::cout << "WebServer endpoint : " << end_point << std::endl;
 	
-
 	if(p.get("upload")){
 		int error;
-		if(!p.get("session")){
-			error = uploadData(p.getString("upload"), end_point);
-		}else
-			error = uploadData(p.getString("upload"), end_point,  p.getInt("session"));
+		error = uploadData(p.getString("upload"), end_point);
 		io.stop();
 		ws_writer.join();
 		return !error;
@@ -92,8 +88,6 @@ int main(int argc, char * argv[])
 
 	// Screen grabber
 	ScreenGrabber screen_grabber;
-
-	
 
 	// Kinect Frame acquisition
 	KinectManagerExchange * kinect_manager;

@@ -7,6 +7,7 @@
 #include <opencv2/core/core.hpp>        
 #include <opencv2/highgui/highgui.hpp>
 #include <string>
+#include "session_manager.h"
 
 // Asion communication service and Asio keep alive
 extern boost::asio::io_service io;
@@ -17,7 +18,7 @@ void aliver(const boost::system::error_code& /*e*/);
 
 void asiothreadfx();
 
-int uploadData(std::string file_name, std::string endpoint, int session = 0);
+int uploadData(std::string file_name, std::string endpoint);
 
 
 const std::string currentDateTime();

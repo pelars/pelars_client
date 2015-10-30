@@ -48,7 +48,7 @@ gboolean GstreamerGrabber::initVideoCapture()
 	gst_app_sink_set_max_buffers((GstAppSink*)this->appsink, 1);
 
 
-	 if (!this->video_source || !this->appsink || !this->vsource_capsfilter ||!this->parser || !this->decoder || !this->cspappsink_capsfilter)
+	if (!this->video_source || !this->appsink || !this->vsource_capsfilter ||!this->parser || !this->decoder || !this->cspappsink_capsfilter)
 	{
 		g_printerr ("Not all elements for video were created: vs:%p vsf:%p app:%p parser:%p decoder:%p\n",this->video_source,this->vsource_capsfilter ,this->appsink,this->parser,this->decoder);
 		return FALSE;

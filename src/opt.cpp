@@ -60,38 +60,52 @@ void checkEscape(bool visualization, bool special){
 	}
 }
 
-int uploadData(std::string file_name, std::string end_point, int session){
+int uploadData(std::string file_name, std::string end_point){
 
 	std::ifstream in(file_name);
-	if(!in.is_open())
+	if(!in.is_open()){
+		std::cout << "could not open file " << std::endl;
 		return -1;
+	}
 
 	std::string delimiter = "_";
 
-	int s;
-
-	if(session){
-		s = session;
-	}else{
-		size_t last = 0; size_t next = 0; 
-		next = file_name.find(delimiter, last);
-		last = next + 1;
-		next = file_name.find(delimiter, last);
-		s = stoi(file_name.substr(last, next-last));
+	size_t last = 0; size_t next = 0; 
+	next = file_name.find(delimiter, last);
+	last = next + 1;
+	next = file_name.find(delimiter, last);
+	int s = stoi(file_name.substr(last, next-last));
+	SessionManager * sm;
+	if (s == -1){
+		sm = new SessionManager(end_point);
+		sm->login();
+		s = sm->getNewSession();
 	}
-
-	DataWriter collector(end_point + "upload", s);
+	DataWriter collector(end_point + "upload", s, false);
 	sleep(1); //else the websocket is not initialized
 
 	int packet_size = 0;
 	char buffer[1024];
+	int num = 0;
+	std::cout << "uploading data to " << s << std::endl;;
 	while(!in.eof()){
 		in >> packet_size;
 		in.read(buffer, packet_size);
 		std::string tmp(buffer, packet_size);
 		collector.writeData(tmp);
+		//std::cout << "packet" << std::endl;
+		//std::cout << tmp << std::endl;
+		std::cout << "." << std::flush;
+		num++;
+		if(!(num % 300)){
+			std::cout << "sent 300 packets, sleeping 30s" << std::endl;
+			sleep(30);
+		}
 	}
+	std::cout << std::endl;
+	std::cout << num << " packet sent" << std::endl;
 	collector.stop();
+	sm->closeSession(s);
 	return 0;
 }
 
