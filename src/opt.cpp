@@ -67,6 +67,13 @@ void checkEscape(bool visualization, bool special){
 
 int uploadData(std::string file_name, std::string end_point){
 
+	int packet_size = 0;
+	char buffer[1024];
+	int num = 0;
+	double time = 0;
+	Json::Value root;
+	Json::Reader reader;
+
 	// Open file
 	std::ifstream in(file_name);
 	if(!in.is_open()){
@@ -81,13 +88,23 @@ int uploadData(std::string file_name, std::string end_point){
 	last = next + 1;
 	next = file_name.find(delimiter, last);
 	int s = stoi(file_name.substr(last, next-last));
+	bool new_session = false;
 
 	// Create new session if the session id is not present on the server
-	SessionManager * sm;
-	if (s == -1){
-		sm = new SessionManager(end_point);
-		sm->login();
-		s = sm->getNewSession();
+	SessionManager sm(end_point);
+	sm.login();
+	if(s == -1){
+
+		// Read first packet and get time to create the session with the correct time if it was not opened
+		in >> packet_size;
+		in.read(buffer, packet_size);
+		std::string tmp(buffer, packet_size);
+		reader.parse(tmp, root);
+		time = root["obj"]["time"].asDouble();
+		in.seekg(0);
+
+		new_session = true;
+		s = sm.getNewSession(time);
 	}
 
 	// Connect the websocker on the upload endpoint
@@ -95,9 +112,7 @@ int uploadData(std::string file_name, std::string end_point){
 	sleep(1); //else the websocket is not initialized
 
 	// Initialize data for reading
-	int packet_size = 0;
-	char buffer[1024];
-	int num = 0;
+	
 	std::cout << "uploading data to " << s << std::endl;
 
 	// Read data and send it in chunks of 300 packets every 30s
@@ -114,13 +129,20 @@ int uploadData(std::string file_name, std::string end_point){
 			std::cout << "sent 300 packets, sleeping 30s" << std::endl;
 			sleep(30);
 		}
+		if(in.eof()){
+			// Get time of the last packet and use it as closing time
+			reader.parse(tmp, root);
+			time = root["obj"]["time"].asDouble();
+		}
+
 	}
 	std::cout << std::endl;
 	std::cout << num << " packet sent" << std::endl;
 
 	// Close websocket and session
 	collector.stop();
-	sm->closeSession(s);
+	sm.closeSession(s, time);
+
 	return 0;
 }
 

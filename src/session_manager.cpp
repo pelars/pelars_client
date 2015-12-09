@@ -15,7 +15,7 @@ SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint), error
 	}
 }	
 
-int SessionManager::getNewSession()
+int SessionManager::getNewSession(double time)
 {
 	if(!error_){
 		// Error variables
@@ -29,6 +29,9 @@ int SessionManager::getNewSession()
 		root_["institution_address"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_address" )->GetText();
 		root_["namespace" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "namespace" )->GetText();
 		std::string out_string = writer_.write(root_);
+		if(!time)
+			root_["time"] = time;
+
 
 		std::cout << "Requesting session id " << std::endl;
 		try{
@@ -125,13 +128,15 @@ void SessionManager::createUser(){
 	}
 }
 
-void SessionManager::closeSession(int session)
+void SessionManager::closeSession(int session, double time)
 {
 	// Close the session and exit
 	root_.clear();
 
 	// Json message
 	root_["op_code"] = "close";
+	if(time != 0)
+		root_["time"] = time;
 	std::string out_string = writer_.write(root_);
 
 	std::cout << "closing session " << session << std::endl;

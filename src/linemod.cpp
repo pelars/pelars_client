@@ -99,7 +99,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 	cv::Mat color, depth;
 
 	// Encoder and data
-	EncDec encoder(false, 640, 480, 0, 0);
+	//EncDec encoder(false, 640, 480, 0, 0);
 	cv::Mat large(480, 640 * 2, CV_8UC3);
 
 	// Linemod variables
@@ -251,21 +251,21 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 		}
 
 		// Store streams
-		const unsigned char * pp = (const unsigned char*)display.data;
-		encoder.step(pp,(uint16_t*)depth.data);
+		//const unsigned char * pp = (const unsigned char*)display.data;
+		//encoder.step(pp,(uint16_t*)depth.data);
 
 		// stich 
-		cv::Rect roirgb( cv::Point( 0, 0 ), display.size());
-		cv::Mat  destinationROI = large( roirgb);
-		display.copyTo( destinationROI );
+		//cv::Rect roirgb( cv::Point( 0, 0 ), display.size());
+		//cv::Mat  destinationROI = large( roirgb);
+		//display.copyTo( destinationROI );
 
-		cv::Rect roidepth( cv::Point( 640, 0 ), adjMap.size());
-		destinationROI = large( roidepth);
-		adjMap.copyTo( destinationROI );
+		//cv::Rect roidepth( cv::Point( 640, 0 ), adjMap.size());
+		//destinationROI = large( roidepth);
+		//adjMap.copyTo( destinationROI );
 
-		rgb_buffer_compressedx_.clear();
-		cv::imencode(".jpg",large,rgb_buffer_compressedx_);
-		onfvideojpeg.write((char*)&rgb_buffer_compressedx_[0],rgb_buffer_compressedx_.size());
+		//rgb_buffer_compressedx_.clear();
+		//cv::imencode(".jpg",large,rgb_buffer_compressedx_);
+		//onfvideojpeg.write((char*)&rgb_buffer_compressedx_[0],rgb_buffer_compressedx_.size());
 
 		// Clear the depth and color input in order to grab a new one
 		sources.clear();

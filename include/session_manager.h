@@ -14,8 +14,8 @@ class SessionManager {
 public:
 
 	SessionManager(std::string endpoint);
-	int getNewSession();
-	void closeSession(int session);
+	int getNewSession(double time = 0);
+	void closeSession(int session, double time = 0);
 	void createUser();
 	void login();
 	std::string getToken();
