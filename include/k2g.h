@@ -31,6 +31,7 @@ public:
 	void shutDown();
 	cv::Mat getColor();
 	cv::Mat getGrey();
+	void prepareMake3D(const libfreenect2::Freenect2Device::IrCameraParams & depth_p);
 	
 private:
 
@@ -40,8 +41,10 @@ private:
 	libfreenect2::Registration * registration_ = 0;
 	libfreenect2::SyncMultiFrameListener listener_;
 	libfreenect2::FrameMap frames_;
-	libfreenect2::Frame undistorted_, registered_;
-	Eigen::Vector4d pworld_;
-	Eigen::Matrix4d d_matrix_, d_matrix_inv_;
+	libfreenect2::Frame undistorted_, registered_, big_mat_;
 	std::string serial_;
+	Eigen::Matrix<float,512,1> colmap;
+	Eigen::Matrix<float,424,1> rowmap;
+	int map_[512 * 424]; // will be used in the next libfreenect2 update
+	float qnan_;
 };

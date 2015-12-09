@@ -4,6 +4,7 @@
 #include <websocketpp/common/thread.hpp>
 #include <fstream>
 #include <mutex>
+#define BOOST_BIND_NO_PLACEHOLDERS
 
 extern bool online;
 

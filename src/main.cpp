@@ -25,9 +25,11 @@ static void sig_handler(int signum)
 
 int main(int argc, char * argv[])
 {
+	// Signal handlers
 	signal(SIGHUP, sig_handler);
 	signal(SIGTERM, sig_handler);
 
+	// Parse input arguments
 	Parser p(argc, argv);
 	if(p.get("help") || argc == 1){
 		p.printHelp();
@@ -121,7 +123,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.033, p.get("calibration"), std::ref(image_sender_table)));
 	// Starting the ide logger
 	if(p.get("ide"))
-		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081"));
+		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));
 	// Starting audio detector
 	if(p.get("audio"))
 		thread_list.push_back(std::thread(audioDetector, std::ref(collector)));

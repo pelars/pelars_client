@@ -1,6 +1,6 @@
 #include "k2g.h"
 
-K2G::K2G(processor p): undistorted_(512, 424, 4), registered_(512, 424, 4), listener_(libfreenect2::Frame::Color | libfreenect2::Frame::Ir | libfreenect2::Frame::Depth)
+K2G::K2G(processor p): undistorted_(512, 424, 4), registered_(512, 424, 4), big_mat_(1920, 1082, 4), listener_(libfreenect2::Frame::Color | libfreenect2::Frame::Ir | libfreenect2::Frame::Depth)
 {
 	if(freenect2_.enumerateDevices() == 0)
 	{
@@ -33,65 +33,65 @@ K2G::K2G(processor p): undistorted_(512, 424, 4), registered_(512, 424, 4), list
 	dev_->setIrAndDepthFrameListener(&listener_);
 	dev_->start();
 
-	registration_ = new libfreenect2::Registration(dev_->getIrCameraParams(), dev_->getColorCameraParams());
+	prepareMake3D(dev_->getIrCameraParams());
 
-	d_matrix_ = Eigen::Matrix4d::Identity();
-	d_matrix_(0,0) = dev_->getIrCameraParams().fx;
-	d_matrix_(0,2) = dev_->getIrCameraParams().cx;
-	d_matrix_(1,1) = dev_->getIrCameraParams().fy;
-	d_matrix_(1,2) = dev_->getIrCameraParams().cy;
-	d_matrix_inv_ = d_matrix_.inverse();
+	registration_ = new libfreenect2::Registration(dev_->getIrCameraParams(), dev_->getColorCameraParams());
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr K2G::getCloud()
 {		
-	listener_.waitForNewFrame(frames_);
-	libfreenect2::Frame * rgb = frames_[libfreenect2::Frame::Color];
-	libfreenect2::Frame * depth = frames_[libfreenect2::Frame::Depth];
+		listener_.waitForNewFrame(frames_);
+		libfreenect2::Frame * rgb = frames_[libfreenect2::Frame::Color];
+		libfreenect2::Frame * depth = frames_[libfreenect2::Frame::Depth];
 
-	registration_->apply(rgb, depth, &undistorted_, &registered_);
-	const short w = undistorted_.width;
-	const short h = undistorted_.height;
+		registration_->apply(rgb, depth, &undistorted_, &registered_, true, &big_mat_);
+		const short w = undistorted_.width;
+		const short h = undistorted_.height;
 
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>(w, h));
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>(w, h));
 
-	const float * itD0 = (float *)undistorted_.data;
-	const char * itRGB0 = (char *)registered_.data;
-	pcl::PointXYZRGB * itP = &cloud->points[0];
-	
-	for(int y = 0; y < h; ++y)
-	{	
-		const unsigned int offset = y * w;
-		const float * itD = itD0 + offset;
-		const char * itRGB = itRGB0 + offset*4;
+		const float * itD0 = (float *)undistorted_.data;
+		const char * itRGB0 = (char *)registered_.data;
+		pcl::PointXYZRGB * itP = &cloud->points[0];
+		bool is_dense = true;
 		
-		for(size_t x = 0; x < w; ++x, ++itP, ++itD, itRGB += 4 )
-		{
-			const float depth_value = *itD / 1000.0f;
-			
-			if(isnan(depth_value))
+		for(int y = 0; y < h; ++y){
+
+			const unsigned int offset = y * w;
+			const float * itD = itD0 + offset;
+			const char * itRGB = itRGB0 + offset * 4;
+			const float dy = rowmap(y);
+
+			for(size_t x = 0; x < w; ++x, ++itP, ++itD, itRGB += 4 )
 			{
-				itP->x = itP->y = itP->z = std::numeric_limits<float>::quiet_NaN();
-				itP->rgba = 0;
+				const float depth_value = *itD / 1000.0f;
+				
+				if(!std::isnan(depth_value) && !(std::abs(depth_value) < 0.0001)){
+	
+					const float rx = colmap(x) * depth_value;
+                	const float ry = dy * depth_value;               
+					itP->z = depth_value;
+					itP->x = rx;
+					itP->y = ry;
 
-			}else{
+					itP->b = itRGB[0];
+					itP->g = itRGB[1];
+					itP->r = itRGB[2];
+				} else {
+					itP->z = qnan_;
+					itP->x = qnan_;
+					itP->y = qnan_;
 
-				Eigen::Vector4d psd(x, y, 1.0, 1.0 / depth_value);
-				pworld_ = d_matrix_inv_ * psd * depth_value;
-				itP->z = depth_value;
-
-				itP->x = isnan(pworld_.x()) ? 0 : pworld_.x();
-				itP->y = isnan(pworld_.y()) ? 0 : pworld_.y();
-
-				itP->b = itRGB[0];
-				itP->g = itRGB[1];
-				itP->r = itRGB[2];
+					itP->b = qnan_;
+					itP->g = qnan_;
+					itP->r = qnan_;
+					is_dense = false;
+ 				}
 			}
 		}
-	}
-
-	listener_.release(frames_);
-	return cloud;
+		cloud->is_dense = is_dense;
+		listener_.release(frames_);
+		return cloud;
 }
 
 void K2G::shutDown()
@@ -133,3 +133,26 @@ libfreenect2::Freenect2Device::ColorCameraParams K2G::getRgbParameters()
 	libfreenect2::Freenect2Device::ColorCameraParams rgb = dev_->getColorCameraParams();
 	return rgb;
 }
+
+void K2G::prepareMake3D(const libfreenect2::Freenect2Device::IrCameraParams & depth_p)
+{
+	const int w = 512;
+	const int h = 424;
+    float * pm1 = colmap.data();
+    float * pm2 = rowmap.data();
+    for(int i = 0; i < w; i++)
+    {
+        *pm1++ = (i-depth_p.cx + 0.5) / depth_p.fx;
+    }
+    for (int i = 0; i < h; i++)
+    {
+        *pm2++ = (i-depth_p.cy + 0.5) / depth_p.fy;
+    }
+}
+
+
+
+
+
+
+
