@@ -19,7 +19,9 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 
 	K2G k2g(OPENCL);
 
-	TimedSender timer(interval);
+	TimedSender timer(interval / 2);
+
+	std::string folder_name = std::string("../snapshots_") + std::to_string(session);
 
 	cv::Mat camera_parameters = cv::Mat::eye(3, 3, CV_32F);
 	camera_parameters.at<float>(0,0) = k2g.getRgbParameters().fx; 
@@ -77,8 +79,13 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 		cvtColor(color, grey, CV_BGR2GRAY);
 		if(snapshot_table && image_sender){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
-			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-			std::string name = std::string("../snapshots/table_" + now + "_" + std::to_string(session) + ".jpg");
+			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
+			std::string name = std::string(folder_name + "/table_" + now + "_" + std::to_string(session) + ".jpg");
+			
+			if(!boost::filesystem::exists(folder_name)){
+				boost::filesystem::path dir(folder_name);
+				boost::filesystem::create_directory(dir);
+			}
 			imwrite(name, grey);
 			if(online){
 				std::ifstream in(name, std::ifstream::binary);

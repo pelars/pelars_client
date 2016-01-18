@@ -46,7 +46,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 	//CREating data for storing the streams
 	std::vector<uint8_t> rgb_buffer_compressedx_;
 	std::ofstream onfvideojpeg;
-	onfvideojpeg.open("out" + currentDateTimeNow + ".mpg",std::ios::binary);
+	onfvideojpeg.open("out" + currentDateTime() + ".mpg",std::ios::binary);
 
 
 	//Kinect v1 intrinsic parameters

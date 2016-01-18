@@ -7,8 +7,8 @@ DataWriter::DataWriter(const std::string & uri, const int session, const bool cr
 	m_client_.set_access_channels(websocketpp::log::alevel::disconnect);
 	m_client_.set_access_channels(websocketpp::log::alevel::app);
 
-	m_client_.set_close_handler(bind(&DataWriter::onClose, this,  std::placeholders::_1));
-	m_client_.set_fail_handler(bind(&DataWriter::onFail, this, std::placeholders::_1));
+	m_client_.set_close_handler(bind(&DataWriter::onClose, this,  ::_1));
+	m_client_.set_fail_handler(bind(&DataWriter::onFail, this, ::_1));
 
 	if(uri_.find("http://") == 0){
 		// Initialize the Asio transport policy

@@ -2,8 +2,7 @@
 #include "xn16zdec.h"
 #include "x264encoder.h"
 #include "x264decoder.h"
-
-extern const std::string currentDateTimeNow;
+#include "opt.h"
 
 template <class T>
 bool streamread1(std::istream & ins, T & out)

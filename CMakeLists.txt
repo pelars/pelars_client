@@ -38,8 +38,9 @@ find_package(PCL 1.7 REQUIRED)
 find_package(QREncode REQUIRED)
 find_package(PortAudio REQUIRED)
 find_package(Cairo REQUIRED)
+find_package(Freenect2 REQUIRED)
 
-pkg_search_module(GLFW REQUIRED glfw3)
+#pkg_search_module(GLFW REQUIRED glfw3)
 set(Boost_USE_MULTITHREADED ON) 
 
 set(X264 ${X264_LIBRARIES})
@@ -50,7 +51,7 @@ find_library(GSTREAMER_O     NAMES gobject-2.0)
 find_library(GSTREAMER       NAMES gstreamer-1.0)
 find_library(GSTREAMER_A     NAMES gstapp-1.0)
 find_library(GLIB            NAMES glib-2.0)
-find_library(FREENECT2 NAMES freenect2)
+#find_library(FREENECT2 NAMES freenect2)
 set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
 set(LINUXEXTRA rt boost_program_options boost_random)
 
@@ -59,6 +60,7 @@ include_directories(${JSONCPP_INCLUDE_DIR})
 include_directories(${FFMPEG_INCLUDE_DIRS})
 include_directories(${GSTREAMER_INCLUDE_DIRS})
 include_directories(${FREENECT_INCLUDE_DIRS})
+include_directories(${FREENECT2_INCLUDE_DIRS})
 include_directories(${PCL_INCLUDE_DIRS})
 include_directories(${INCLUDE})
 include_directories(${GLFW_INCLUDE_DIRS})
@@ -92,6 +94,7 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/image_sender.cpp
 								${SRC}/base64.cpp
 								${SRC}/qr_creator.cpp
+								${SRC}/upload.cpp
 								)
 
 add_executable(freenect-camshare ${SRC}/camshare.cpp)
@@ -115,7 +118,7 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${LINUXEXTRA} 
 										${GSTREAMER_ALL}
 										${FFMPEG_LIBRARIES}
-										${FREENECT2}
+										${FREENECT2_LIBRARY}
 										${GLFW_LIBRARIES}
 										${PCL_LIBRARIES}
 										${PORTAUDIO_LIBRARIES}

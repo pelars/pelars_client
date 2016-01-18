@@ -7,12 +7,12 @@ ImageSender::ImageSender(int session, std::string endpoint, std::string token): 
   	endpoint_ = endpoint + std::string("multimedia") + std::string("?token=") + token_;
 }
 
-void ImageSender::send(std::string & data, std::string type){
+void ImageSender::send(std::string & data, std::string type, long time){
 	sending_complete_ = false;
 	root_["data"] = data;
 	root_["mimetype"] = type;
 	std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
-	root_["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
+	root_["time"] = time != 0 ? time : (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 
 	out_string_ = writer_.write(root_);
 	try

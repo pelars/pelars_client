@@ -1,6 +1,7 @@
 #include "k2g.h"
 
-K2G::K2G(processor p): undistorted_(512, 424, 4), registered_(512, 424, 4), big_mat_(1920, 1082, 4), listener_(libfreenect2::Frame::Color | libfreenect2::Frame::Ir | libfreenect2::Frame::Depth)
+K2G::K2G(processor p): undistorted_(512, 424, 4), registered_(512, 424, 4), big_mat_(1920, 1082, 4), listener_(libfreenect2::Frame::Color | libfreenect2::Frame::Ir | libfreenect2::Frame::Depth),
+qnan_(std::numeric_limits<float>::quiet_NaN())
 {
 	if(freenect2_.enumerateDevices() == 0)
 	{

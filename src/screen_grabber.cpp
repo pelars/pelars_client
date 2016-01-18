@@ -1,10 +1,7 @@
 #include "screen_grabber.h"
 #include <iostream>
 
-ScreenGrabber::ScreenGrabber(){
-	
-
-}
+ScreenGrabber::ScreenGrabber(){}
 
 void ScreenGrabber::grabScreen(std::string name){
     Display * disp_;

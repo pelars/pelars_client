@@ -9,7 +9,7 @@ class ImageSender{
 public:
 
 	ImageSender(int session, std::string endpoint, std::string token);
-	void send(std::string & data, std::string type);
+	void send(std::string & data, std::string type, long time = 0);
 	operator bool() const { return sending_complete_;}
 
 private:

@@ -12,6 +12,7 @@
 #include <string>
 #include <iostream>
 #include <Eigen/Core>
+#include <limits>
 
 extern bool to_stop;
 extern bool TURBO_COLOR;

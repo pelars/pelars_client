@@ -3,6 +3,7 @@
 #include "opencv2/gpu/gpu.hpp"
 #include <data_writer.h>
 #include <boost/network/protocol/http/client.hpp>
+#include <boost/filesystem.hpp>
 #include <json/json.h>
 #include <vector>
 #include "opt.h"

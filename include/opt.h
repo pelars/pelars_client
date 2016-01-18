@@ -6,13 +6,18 @@
 #include <qrencode.h>
 #include <opencv2/core/core.hpp>        
 #include <opencv2/highgui/highgui.hpp>
+#include <boost/filesystem.hpp>
 #include <string>
 #include "session_manager.h"
+#include "image_sender.h"
+#include <base64.h>
 
 // Asion communication service and Asio keep alive
 extern boost::asio::io_service io;
 extern bool online;
 extern bool to_stop;
+
+void sig_handler(int signum);
 
 void aliver(const boost::system::error_code& /*e*/);
 
@@ -72,6 +77,5 @@ private:
 
 };
 
-cv::Mat drawQr(int width, int repetitions, int session);
 void printHelp();
 void checkEscape(bool visualization, bool special);

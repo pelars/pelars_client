@@ -9,8 +9,8 @@ EncDec::EncDec(bool decoder, int w, int h, int dw, int dh, bool rgba)
 	}
 	if(!decoder)
 	{
-		onfcustom.open("out" + currentDateTimeNow + ".bin",std::ios::binary);
-		onfvideo.open("out" + currentDateTimeNow + ".mp4",std::ios::binary);
+		onfcustom.open("out" + currentDateTime() + ".bin", std::ios::binary);
+		onfvideo.open("out" + currentDateTime() + ".mp4", std::ios::binary);
 	}
 	rgb_pixel_size_ = rgba ? 4 : 3;
 	dept_pixel_size_ = 2;

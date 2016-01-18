@@ -1,28 +1,5 @@
 #include "all.h"
 
-// To stop all the threads if one receives a stop signal
-bool to_stop = false;
-// Take a camera snapshot of the table
-bool snapshot_table = false;
-// Take a camera snapshot of the people
-bool snapshot_people = false;
-// Take a snapshot of the screen
-bool snapshot_screen = false;
-// Connection status
-bool online = true;
-// Enable visualization
-bool visualization = false;
-// System starting time
-const std::string currentDateTimeNow = currentDateTime();
-// sending interval
-double interval = 1000;
-// Signal handler
-static void sig_handler(int signum)
-{
-		to_stop = true;
-		printf("Received signal %d\n", signum);
-}
-
 int main(int argc, char * argv[])
 {
 	// Signal handlers
@@ -40,7 +17,7 @@ int main(int argc, char * argv[])
 	std::thread ws_writer(asiothreadfx);
 
 	// Check the endpoint string and connect to the collector
-	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it:8080/pelars/";
+	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it/pelars/";
 	end_point = end_point.back() == '/' ? end_point : end_point + "/";
 	std::cout << "WebServer endpoint : " << end_point << std::endl;
 	
@@ -138,11 +115,11 @@ int main(int argc, char * argv[])
 	checkEscape(visualization, p.get("special"));
 
 	// Wait for the termination of all threads
-	for(auto &thread : thread_list)
+	for(auto & thread : thread_list)
 		thread.join();
 	
 	// Create a local file for data acquisition and backup
-	std::string tmp = collector.file_name_ + std::string(online ? "_backup_" : "_local_") + currentDateTimeNow + collector.file_extention_;
+	std::string tmp = collector.file_name_ + std::string(online ? "_backup_" : "_local_") + currentDateTime() + collector.file_extention_;
 	std::rename(collector.complete_file_name_.c_str(), tmp.c_str());
 
 	// Terminate everything and exit

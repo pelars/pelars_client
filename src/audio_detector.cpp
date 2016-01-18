@@ -1,20 +1,21 @@
 #include "audio_detector.h"
 
+const float threshold = 0.0005;
+
 int portAudioCallback(const void * input, void * output, 
 					  unsigned long frameCount, const PaStreamCallbackTimeInfo * timeInfo,
 					  PaStreamCallbackFlags statusFlags, void * userData){
-	
 	FFT * fft = (FFT *)userData;
-	if(frameCount > 1){
+	if(frameCount > 1 ){
 		const float psd = fft->compute((float *)input, frameCount);
-		if(psd > 0.001 && fft->timer_.needSend()){
+		if(psd > threshold && fft->timer_.needSend()){
 			const std::string message = fft->message_;
+			//std::cout << psd << std::endl;
 			if(online){
-						//std::cout << "Audio detector posting data to the server\n " << std::flush;
-						io.post([&fft, message]() {
-							fft->websocket_.writeData(message);
-						});
-					}
+				io.post([&fft, message]() {
+					fft->websocket_.writeData(message);
+				});
+			}
 			fft->websocket_.writeLocal(message);  
 		}
 	}
@@ -25,11 +26,15 @@ void audioDetector(DataWriter & data_writer){
 
 	Pa_Initialize();
 
-	int used_device = 0;
+	int used_device = -1;
 	for(int i = 0; i < Pa_GetDeviceCount(); ++i)
 		if(std::string(Pa_GetDeviceInfo(i)->name).find("HD Pro Webcam C920") != std::string::npos)
 			used_device = i;
-	
+
+	if(used_device == -1){
+		std::cout << "no C920 found" << std::endl;
+		return;
+	}
 	std::cout << "Using device : " << Pa_GetDeviceInfo(used_device)->name << std::endl;
 	
 	const double srate = 32000;

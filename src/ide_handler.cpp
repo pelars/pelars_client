@@ -30,9 +30,7 @@ void ev_handler(struct mg_connection * nc, int ev, void * ev_data)
 				DataWriter * writer = (DataWriter *)nc->mgr->user_data;
 				struct websocket_message * wm = (struct websocket_message *)ev_data;
 				std::string message((char *)(wm->data), wm->size);
-				snapshot_table = true;
-				snapshot_people = true;
-				snapshot_screen = true;
+				
 				//std::cout << "SENDING " << message << std::endl;
 				if(online){
 						io.post( [&writer, message]() {
@@ -55,6 +53,9 @@ void button_handler(struct mg_connection * nc, int ev, void * ev_data)
 				DataWriter * writer = (DataWriter *)nc->mgr->user_data;
 				struct websocket_message * wm = (struct websocket_message *)ev_data;
 				std::string message((char *)(wm->data), wm->size);
+				snapshot_table = true;
+				snapshot_people = true;
+				snapshot_screen = true;
 				//std::cout << "SENDING " << message << std::endl;
 				if(online){
 						io.post( [&writer, message]() {

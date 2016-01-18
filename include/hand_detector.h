@@ -4,6 +4,7 @@
 #include <iostream>
 #include <aruco/aruco.h>
 #include <aruco/cvdrawingutils.h>
+#include <boost/filesystem.hpp>
 #include "opencv2/calib3d/calib3d.hpp"
 #include "opencv2/core/eigen.hpp"
 #include <opencv2/imgproc/imgproc.hpp>

@@ -1,6 +1,14 @@
 #include "face_detector.h"
 
 
+double std_width = 185.0; //mm
+
+double focal_length_pixel = 489.3;  //pixel
+
+inline double distance(int x1, int x2){
+		return (std_width * focal_length_pixel) / std::abs(x1 - x2);
+	}
+
 void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, ImageSender & image_sender_people)
 {
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
@@ -34,6 +42,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	Json::StyledWriter writer;
 	std::string code;
 
+	std::string folder_name = std::string("../snapshots_") + std::to_string(session);
+
 	while(!to_stop)
 	{	
 		gs_grabber.capture(frame);
@@ -41,8 +51,13 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 		if(snapshot_people && image_sender_people){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
-			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-			std::string name = std::string("../snapshots/people_" + now + "_" + std::to_string(session) +".jpg");
+			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
+			if(!boost::filesystem::exists(folder_name)){
+				boost::filesystem::path dir(folder_name);
+				boost::filesystem::create_directory(dir);
+			}
+			std::string name = std::string(folder_name + "/people_" + now + "_" + std::to_string(session) +".jpg");
+			std::cout << name << std::endl;
 			cv::imwrite(name, gray);
 			if(online){
 				std::ifstream in(name, std::ifstream::binary);
@@ -59,8 +74,13 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		}
 		if(snapshot_screen && image_sender_screen){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
-			std::string now = std::to_string((double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-			std::string name = std::string("../snapshots/screen_" + now + "_" + std::to_string(session) + ".png");
+			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
+			std::string name = std::string(folder_name + "/screen_" + now + "_" + std::to_string(session) + ".png");
+			
+			if(!boost::filesystem::exists(folder_name)){
+				boost::filesystem::path dir(folder_name);
+				boost::filesystem::create_directory(dir);
+			}
 			screen_grabber.grabScreen(name);
 			if(online){
 				std::ifstream in(name, std::ifstream::binary);
@@ -110,6 +130,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			array["y1"] = faces[i].y + faces[i].height;
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
+			array["distance"] = distance(faces[i].x, faces[i].x + faces[i].width);
 			root.append(array);
 		}
 		

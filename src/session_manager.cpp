@@ -28,9 +28,11 @@ int SessionManager::getNewSession(double time)
 		root_["institution_name"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_name" )->GetText();
 		root_["institution_address"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_address" )->GetText();
 		root_["namespace" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "namespace" )->GetText();
+		if(time != 0){
+			root_["start"] = time;
+		}
 		std::string out_string = writer_.write(root_);
-		if(!time)
-			root_["time"] = time;
+
 
 
 		std::cout << "Requesting session id " << std::endl;
@@ -79,7 +81,7 @@ void SessionManager::login(){
 	if(online){
 		std::cout << "Requesting login " << std::endl;
 		try{
-			std::cout << endpoint_ + std::string("password") + std::string("?user="+mail_+"&pwd="+password_) << std::endl;
+			//std::cout << endpoint_ + std::string("password") + std::string("?user="+mail_+"&pwd="+password_) << std::endl;
 			boost::network::http::client::request request(endpoint_ + std::string("password") + std::string("?user="+mail_+"&pwd="+password_));
 			boost::network::http::client::response response = client_.post(request);
 			if(reader_.parse(response.body(), root_)){
