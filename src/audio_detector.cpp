@@ -40,7 +40,7 @@ void audioDetector(DataWriter & data_writer){
 	const double srate = 32000;
 	PaStream * stream;
 	unsigned long framesPerBuffer = paFramesPerBufferUnspecified; 
-	PaStreamParameters outputParameters;
+	//PaStreamParameters outputParameters;
 	PaStreamParameters inputParameters;
 	inputParameters.channelCount = Pa_GetDeviceInfo(used_device)->maxInputChannels;
 	inputParameters.device = used_device;
@@ -61,7 +61,7 @@ void audioDetector(DataWriter & data_writer){
 	Pa_Terminate();
 }
 
-float FFT::compute(float * buf, int count){
+float FFT::compute(float * buf, unsigned int count){
 		
 	psd_ = 0;
 	scale_ = 1 / (float)count;
@@ -73,7 +73,7 @@ float FFT::compute(float * buf, int count){
 
 	fft_.fwd(&freqvec_[0], &buf[0], count);
 
-	for(int i = 0; i < count; ++i){
+	for(unsigned int i = 0; i < count; ++i){
 		amplitude_[i] = 2 * scale_ * sqrt(pow(freqvec_[i].real(), 2) + pow(freqvec_[i].imag(), 2));
 		psd_ += pow(amplitude_[i], 2) * scale_;
 	}

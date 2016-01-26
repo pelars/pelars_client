@@ -40,6 +40,7 @@ public:
 				("qr,q", "show session as qr code")
 				("server,S", boost::program_options::value<std::string>(), "server endpoint")
 				("session,x", boost::program_options::value<int>(), "session id")
+				("face_camera,F", boost::program_options::value<int>(), "video device id (ex: for /dev/video3 use -f 3)")
 				("calibration,c", "calibrate cameras")
 				("special,s", "special flag for background run")
 				("upload,u", boost::program_options::value<std::string>(), "file name to upload")
@@ -127,7 +128,6 @@ void drawStatus(Parser & p){
     	offset += 30;
     }
 
-    bool stop = false;
     cv::imshow("status", status);
 	while(!to_stop){
 		int c = cv::waitKey(1);

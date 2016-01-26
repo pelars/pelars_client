@@ -80,6 +80,10 @@ int main(int argc, char * argv[])
 		}
 	}
 
+	int face_camera_id = 0;
+	if(p.get("face_camera"))
+		face_camera_id = p.getInt("face_camera");
+
 	// Websocket manager
 	DataWriter collector(end_point + "collector", session);
 
@@ -91,7 +95,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(linemodf, std::ref(infile), kinect_manager, std::ref(collector)));
 	// Starting the face detection thread
 	if(p.get("face"))
-		thread_list.push_back(std::thread(detectFaces, std::ref(collector), std::ref(screen_grabber), std::ref(image_sender_people), std::ref(image_sender_screen)));
+		thread_list.push_back(std::thread(detectFaces, std::ref(collector), std::ref(screen_grabber), std::ref(image_sender_people), std::ref(image_sender_screen), face_camera_id));
 	// Starting the particle.io thread
 	if(p.get("particle"))
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));

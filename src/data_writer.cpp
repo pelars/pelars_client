@@ -28,7 +28,7 @@ DataWriter::DataWriter(const std::string & uri, const int session, const bool cr
 	}
 
 	if(create_file){
-		file_name_ = std::string("./session_")+ std::to_string(session);
+		file_name_ = std::string("../../backup/session_")+ std::to_string(session);
 		file_extention_ = std::string(".txt");
 		complete_file_name_ = file_name_ + file_extention_;
 		fs_.open(complete_file_name_);

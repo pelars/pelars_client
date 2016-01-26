@@ -40,9 +40,9 @@ private:
 	libfreenect2::Freenect2Device * dev_ = 0;
 	libfreenect2::PacketPipeline * pipeline_ = 0;
 	libfreenect2::Registration * registration_ = 0;
-	libfreenect2::SyncMultiFrameListener listener_;
 	libfreenect2::FrameMap frames_;
 	libfreenect2::Frame undistorted_, registered_, big_mat_;
+	libfreenect2::SyncMultiFrameListener listener_;
 	std::string serial_;
 	Eigen::Matrix<float,512,1> colmap;
 	Eigen::Matrix<float,424,1> rowmap;

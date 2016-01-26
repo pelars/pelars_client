@@ -35,7 +35,8 @@ struct MiniEncapsule{
 
 	void parse(std::string message){
 		bool parsedSuccess = reader.parse(message, root_, false);
-		out_message_ = writer_.write(root_);
+		if(parsedSuccess)
+			out_message_ = writer_.write(root_);
 	}
 
 	DataWriter & websocket_;

@@ -50,6 +50,7 @@ void button_handler(struct mg_connection * nc, int ev, void * ev_data)
 	switch (ev) {
 		case NS_WEBSOCKET_FRAME:
 			{
+				//std::cout << "pressed button" << std::endl;
 				DataWriter * writer = (DataWriter *)nc->mgr->user_data;
 				struct websocket_message * wm = (struct websocket_message *)ev_data;
 				std::string message((char *)(wm->data), wm->size);

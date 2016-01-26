@@ -9,7 +9,7 @@ inline double distance(int x1, int x2){
 		return (std_width * focal_length_pixel) / std::abs(x1 - x2);
 	}
 
-void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, ImageSender & image_sender_people)
+void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, ImageSender & image_sender_people, const int face_camera_id)
 {
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
@@ -24,8 +24,13 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	const bool findLargestObject_ = false;
 	const bool filterRects_ = true;
 
-	GstreamerGrabber gs_grabber(640, 480, 0);
-	IplImage * frame = cvCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 1); 
+	const int width = 800;
+	const int height = 448;
+
+	Json::StyledWriter writer;
+
+	GstreamerGrabber gs_grabber(width, height, face_camera_id);
+	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 1); 
 
 	if(!cascade_gpu_.load(face_cascade_name_gpu_))
 	{ 
@@ -38,11 +43,10 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 	TimedSender timer(interval);
 
-	// Preapare JSON message to send to the Collector
-	Json::StyledWriter writer;
+		// Preapare JSON message to send to the Collectorh
 	std::string code;
 
-	std::string folder_name = std::string("../snapshots_") + std::to_string(session);
+	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
 
 	while(!to_stop)
 	{	

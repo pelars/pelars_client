@@ -46,8 +46,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr K2G::getCloud()
 		libfreenect2::Frame * depth = frames_[libfreenect2::Frame::Depth];
 
 		registration_->apply(rgb, depth, &undistorted_, &registered_, true, &big_mat_);
-		const short w = undistorted_.width;
-		const short h = undistorted_.height;
+		const unsigned short w = undistorted_.width;
+		const unsigned short h = undistorted_.height;
 
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>(w, h));
 

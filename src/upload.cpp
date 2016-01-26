@@ -9,8 +9,13 @@ int uploadData(std::string file_name, std::string end_point){
 	Json::Value root;
 	Json::Reader reader;
 
+	// Remove path prefix to get only name
+	std::size_t found = file_name.find_last_of("/");
+	if(found != std::string::npos)
+		file_name = file_name.substr(found + 1);
+
 	// Open file
-	std::ifstream in(file_name);
+	std::ifstream in("../../backup/" + file_name);
 	if(!in.is_open()){
 		std::cout << "could not open file " << std::endl;
 		return -1;
@@ -23,7 +28,7 @@ int uploadData(std::string file_name, std::string end_point){
 	last = next + 1;
 	next = file_name.find(delimiter, last);
 	int s = stoi(file_name.substr(last, next - last));
-	bool new_session = false;
+	//bool new_session = false;
 
 	// Create new session if the session id is not present on the server
 	SessionManager sm(end_point);
@@ -37,7 +42,7 @@ int uploadData(std::string file_name, std::string end_point){
 
 		reader.parse(tmp, root, false);
 		if(root["obj"].isArray()){
-			for(const Json::Value& a : root["obj"])
+			for(const Json::Value & a : root["obj"])
 				time = a["time"].asInt64();
 		}
 		else{
@@ -46,7 +51,7 @@ int uploadData(std::string file_name, std::string end_point){
 		
 		in.seekg(0);
 
-		new_session = true;
+		//new_session = true;
 		s = sm.getNewSession(time);
 	}
 
@@ -88,8 +93,8 @@ int uploadData(std::string file_name, std::string end_point){
 
 
 	boost::filesystem::directory_iterator end_itr;
-	std::string image_dir("../snapshots_" + std::to_string(s));
-	ImageSender image_sender(s, "http://pelars.sssup.it:8080/pelars/", sm.getToken());
+	std::string image_dir("../../images/snapshots_" + std::to_string(s));
+	ImageSender image_sender(s, "http://pelars.sssup.it/pelars/", sm.getToken());
 
 	for(boost::filesystem::directory_iterator itr(image_dir); itr != end_itr; ++itr){
 		std::string path = itr->path().string();

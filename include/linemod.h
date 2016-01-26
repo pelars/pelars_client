@@ -28,4 +28,4 @@ struct result_t
 	std::chrono::time_point<std::chrono::system_clock> end;
 };
 
-int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & websocket);
+void linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & websocket);

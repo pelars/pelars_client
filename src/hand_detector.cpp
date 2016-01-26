@@ -14,7 +14,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 	Json::StyledWriter writer;
 	root["obj"]["type"] = "hand";
 
-	float tx, ty, tz, rw, rx, ry, rz;
+	float tx, ty, tz;
 	std::string message;
 
 	K2G k2g(OPENCL);
@@ -44,7 +44,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 			MDetector.detect(grey, markers, camera_parameters, cv::Mat(), marker_size);
 	
 			if(markers.size() > 0){
-				for(int i = 0; i < markers.size(); ++i){
+				for(unsigned int i = 0; i < markers.size(); ++i){
 					if(markers[i].id == 0){
 						calib_matrix.at<float>(0, 3) = markers[i].Tvec.at<float>(0);
 						calib_matrix.at<float>(1, 3) = markers[i].Tvec.at<float>(1);
@@ -105,7 +105,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 
 		if(markers.size() > 0){
 			to_send = timer.needSend();
-			for(int i = 0; i < markers.size(); ++i)
+			for(unsigned int i = 0; i < markers.size(); ++i)
 			{
 				// Get marker position
 				markers[i].draw(grey, cv::Scalar(0, 0, 255), 2);

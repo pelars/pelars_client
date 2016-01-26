@@ -16,6 +16,8 @@ bool visualization = false;
 const std::string currentDateTimeNow = currentDateTime();
 // sending interval
 double interval = 1000;
+// Asion communication service and Asio keep alive
+boost::asio::io_service io;
 
 // Keep alive
 void aliver(const boost::system::error_code& /*e*/)
