@@ -1,6 +1,5 @@
 #include "face_detector.h"
 
-
 double std_width = 185.0; //mm
 
 double focal_length_pixel = 489.3;  //pixel
@@ -27,6 +26,32 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	const int width = 800;
 	const int height = 448;
 
+	const float scale_x = 800/1920;
+	const float scale_y = 448/1080;
+
+	const float fx = 614.01269552 * scale_x;
+	const float cx = 315.00073982 * scale_x;
+	const float fy = 614.43556296 * scale_y;
+	const float cy = 237.14926858 * scale_y; 
+	/*
+	const float k1 = 0.12269303;
+	const float k2 = -0.26618881;
+	const float p1 = 0.00129035;
+	const float p2 = 0.00081791;
+	const float k3 = 0.17005303;
+	*/
+
+
+	float face_distance, tx, ty, tz, tx1, ty1, tx2, ty2, x_unproject, y_unproject;
+	cv::Mat pose;
+	cv::Mat hand_pose = cv::Mat(cv::Size(4, 1), CV_32F);
+	hand_pose.at<float>(0, 3) = 1;
+
+	// Preapare JSON message to send to the Collectorh
+	std::string code;
+
+	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
+
 	Json::StyledWriter writer;
 
 	GstreamerGrabber gs_grabber(width, height, face_camera_id);
@@ -43,8 +68,17 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 	TimedSender timer(interval);
 
-		// Preapare JSON message to send to the Collectorh
-	std::string code;
+	cv::FileStorage file("../../data/calibration_webcam.xml", cv::FileStorage::READ);
+	if(file.isOpened())
+	{	
+		file["matrix"] >> calib_matrix;
+		file.release();
+	}else{
+		std::cout << "could not find face calibration file; use -c to calibrate the cameras" << std::endl;
+		to_stop = true;
+	}
+
+	cv::Mat camera_inverse = calib_matrix.inv();
 
 	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
 
@@ -123,18 +157,58 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		for(int i = 0; i < detections_num; ++i)
 		{
 			cv::Point center(faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5);
-			cv::ellipse(gray, center, cv::Size( faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255 ), 4, 8, 0);
+			cv::ellipse(gray, center, cv::Size(faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255), 4, 8, 0);
+
+			face_distance = distance(faces[i].x, faces[i].x + faces[i].width);
+
+			const float const_x = face_distance / fx;
+			const float const_y = face_distance / fy;
+
+			x_unproject = (faces[i].x - cx) * const_x;
+			y_unproject = (faces[i].y - cy) * const_y;
+				
+			const float tmp = y_unproject;
+			
+			//hand_pose.at<float>(0, 3) = 1; already done after declaration
+			hand_pose.at<float>(0, 0) = x_unproject;
+			hand_pose.at<float>(0, 1) = y_unproject;
+			hand_pose.at<float>(0, 2) = face_distance;
+
+			pose = camera_inverse * hand_pose;
+			tx = pose.at<float>(0, 0);
+			ty = pose.at<float>(0, 1);
+			tz = pose.at<float>(0, 2);
+
+			x_unproject = (faces[i].x + faces[i].width - cx) * const_x;
+			y_unproject = (faces[i].y + faces[i].height - cy) * const_y;
+
+			hand_pose.at<float>(0, 0) = x_unproject;
+			hand_pose.at<float>(0, 1) = y_unproject;
+
+			pose = camera_inverse * hand_pose;
+			tx1 = pose.at<float>(0, 0);
+			ty1 = pose.at<float>(0, 1);
+
+			// Reuse previous values
+			hand_pose.at<float>(0, 0) = x_unproject;
+			hand_pose.at<float>(0, 1) = tmp;
+
+			pose = camera_inverse * hand_pose;
+			tx2 = pose.at<float>(0, 0);
+			ty2 = pose.at<float>(0, 1);
 
 			// Json message
 			array["type"] = "face";
 			array["id"] = i;
-			array["x"] = faces[i].x; 
-			array["x1"] = faces[i].x + faces[i].width;
-			array["y"] = faces[i].y;
-			array["y1"] = faces[i].y + faces[i].height;
+			array["x"] = tx; 
+			array["y"] = ty;
+			array["x1"] = tx1;
+			array["y1"] = ty1;
+			array["x2"] = tx2;
+			array["y2"] = ty2;
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
-			array["distance"] = distance(faces[i].x, faces[i].x + faces[i].width);
+			array["distance"] = tz;
 			root.append(array);
 		}
 		

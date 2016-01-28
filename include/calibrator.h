@@ -8,15 +8,7 @@
 #include "opencv2/calib3d/calib3d.hpp"
 #include "opencv2/core/eigen.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
-#include "image_sender.h"
-#include "base64.h"
+#include "gstreamer_grabber.h"
 
 
-extern bool to_stop;
-extern bool online;
-extern bool visualization;
-extern double interval;
-extern bool snapshot_table;
-
-void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender);
-
+void calibration(const unsigned int id, const float marker_size);

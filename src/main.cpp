@@ -20,6 +20,8 @@ int main(int argc, char * argv[])
 	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it/pelars/";
 	end_point = end_point.back() == '/' ? end_point : end_point + "/";
 	std::cout << "WebServer endpoint : " << end_point << std::endl;
+
+	K2G::processor processor = (K2G::processor)(p.get("processor") ? p.getInt("processor") : 1);
 	
 	if(p.get("upload")){
 		int error;
@@ -27,6 +29,19 @@ int main(int argc, char * argv[])
 		io.stop();
 		ws_writer.join();
 		return !error;
+	}
+
+	// Check if video device is different than /dev/video0
+	int face_camera_id = 0;
+	if(p.get("face_camera"))
+		face_camera_id = p.getInt("face_camera");
+
+	// Calibrate the cameras and exit
+	if(p.get("calibration")){
+		calibration(face_camera_id, p.get("marker") ? p.getFloat("marker") : 0.033);
+		io.stop();
+		ws_writer.join();
+		return 0;
 	}
 
 	visualization = p.get("visualization");
@@ -80,10 +95,6 @@ int main(int argc, char * argv[])
 		}
 	}
 
-	int face_camera_id = 0;
-	if(p.get("face_camera"))
-		face_camera_id = p.getInt("face_camera");
-
 	// Websocket manager
 	DataWriter collector(end_point + "collector", session);
 
@@ -101,7 +112,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
 	// Starting the hand detector
 	if(p.get("hand"))
-		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.033, p.get("calibration"), std::ref(image_sender_table)));
+		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.033, std::ref(image_sender_table)));
 	// Starting the ide logger
 	if(p.get("ide"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));

@@ -97,6 +97,7 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/base64.cpp
 								${SRC}/qr_creator.cpp
 								${SRC}/upload.cpp
+								${SRC}/calibrator.cpp
 								)
 
 #add_executable(freenect-camshare ${SRC}/camshare.cpp)

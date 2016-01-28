@@ -3,7 +3,6 @@
 ImageSender::ImageSender(int session, std::string endpoint, std::string token): token_(token), sending_complete_(true){
     root_["id"] = session;
     root_["type"] = "image";
-    root_["phase"] = "collector";
   	endpoint_ = endpoint + std::string("multimedia") + std::string("?token=") + token_;
 }
 

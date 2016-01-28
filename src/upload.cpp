@@ -23,8 +23,8 @@ int uploadData(std::string file_name, std::string end_point){
 
 	// Read the session id from the file name
 	std::string delimiter = "_";
-	size_t last = 0; size_t next = 0; 
-	next = file_name.find(delimiter, last);
+	size_t last = 0; 
+	size_t next = file_name.find(delimiter, last); 
 	last = next + 1;
 	next = file_name.find(delimiter, last);
 	int s = stoi(file_name.substr(last, next - last));
@@ -42,7 +42,7 @@ int uploadData(std::string file_name, std::string end_point){
 
 		reader.parse(tmp, root, false);
 		if(root["obj"].isArray()){
-			for(const Json::Value & a : root["obj"])
+			for(Json::Value & a : root["obj"])
 				time = a["time"].asInt64();
 		}
 		else{
@@ -50,7 +50,6 @@ int uploadData(std::string file_name, std::string end_point){
 		}
 		
 		in.seekg(0);
-
 		//new_session = true;
 		s = sm.getNewSession(time);
 	}
@@ -79,7 +78,7 @@ int uploadData(std::string file_name, std::string end_point){
 			// Get time of the last packet and use it as closing time
 			reader.parse(tmp, root);
 			if(root["obj"].isArray()){
-				for(const Json::Value& a : root["obj"])
+				for(Json::Value& a : root["obj"])
 					time = a["time"].asInt64();
 			}
 			else{

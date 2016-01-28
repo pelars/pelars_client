@@ -52,7 +52,7 @@ const std::string currentDateTime() {
 void checkEscape(bool visualization, bool special){
 	if(!visualization && !special){
 		while(std::cin.get() != 27){
-			if (to_stop){
+			if(to_stop){
 				break;
 			}
 		}

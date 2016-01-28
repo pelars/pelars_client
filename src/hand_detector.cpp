@@ -1,6 +1,6 @@
 #include "hand_detector.h"
 
-void handDetector(DataWriter & websocket, float marker_size, bool calibration, ImageSender & image_sender)
+void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender)
 {
 	aruco::MarkerDetector MDetector;
 	MDetector.setMinMaxSize(0.01, 0.7);
@@ -17,7 +17,7 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 	float tx, ty, tz;
 	std::string message;
 
-	K2G k2g(OPENCL);
+	K2G k2g(K2G::OPENCL);
 
 	TimedSender timer(interval / 2);
 
@@ -33,43 +33,16 @@ void handDetector(DataWriter & websocket, float marker_size, bool calibration, I
 
 	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
-	if(calibration)
+	cv::FileStorage file("../../data/calibration_kinect2.xml", cv::FileStorage::READ);
+	if(file.isOpened())
 	{	
-		cv::FileStorage file("../../data/calibration.xml", cv::FileStorage::WRITE);
-		bool found = false;
-
-		while(!found){
-			color = k2g.getColor();
-			cvtColor(color, grey, CV_BGR2GRAY);
-			MDetector.detect(grey, markers, camera_parameters, cv::Mat(), marker_size);
+		file["matrix"] >> calib_matrix;
+		file.release();
+	}else{
+		std::cout << "could not find hand calibration file; use -c to calibrate the cameras" << std::endl;
+		to_stop = true;
+	}
 	
-			if(markers.size() > 0){
-				for(unsigned int i = 0; i < markers.size(); ++i){
-					if(markers[i].id == 0){
-						calib_matrix.at<float>(0, 3) = markers[i].Tvec.at<float>(0);
-						calib_matrix.at<float>(1, 3) = markers[i].Tvec.at<float>(1);
-						calib_matrix.at<float>(2, 3) = markers[i].Tvec.at<float>(2);
-						cv::Rodrigues(markers[i].Rvec, cv::Mat(calib_matrix, cv::Rect(0, 0, 3, 3)));
-						file << "matrix" << calib_matrix;
-						file.release();					
-						found = true;
-					}
-				}		
-			}
-		}
-	}
-	else
-	{
-		cv::FileStorage file("../../data/calibration.xml", cv::FileStorage::READ);
-		if(file.isOpened())
-		{	
-			file["matrix"] >> calib_matrix;
-			file.release();
-		}else{
-			std::cout << "could not find hand calibration file; use -c to calibrate the camera" << std::endl;
-			to_stop = true;
-		}
-	}
 	cv::Mat camera_inverse = calib_matrix.inv();
 	cv::Mat marker_pose = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
