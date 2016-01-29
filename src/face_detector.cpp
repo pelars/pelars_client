@@ -2,7 +2,7 @@
 
 double std_width = 185.0; //mm
 
-double focal_length_pixel = 489.3;  //pixel
+double focal_length_pixel = 589.3588305153235; //489.3;  //pixel
 
 inline double distance(int x1, int x2){
 		return (std_width * focal_length_pixel) / std::abs(x1 - x2);
@@ -23,16 +23,14 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	const bool findLargestObject_ = false;
 	const bool filterRects_ = true;
 
-	const int width = 800;
-	const int height = 448;
+	const int width = 800.0;
+	const int height = 448.0;
 
-	const float scale_x = 800/1920;
-	const float scale_y = 448/1080;
+	const float fx = 589.3588305153235;
+	const float cx = 414.1871817694326;
+	const float fy = 588.585116717914;
+	const float cy = 230.3588624031242; 
 
-	const float fx = 614.01269552 * scale_x;
-	const float cx = 315.00073982 * scale_x;
-	const float fy = 614.43556296 * scale_y;
-	const float cy = 237.14926858 * scale_y; 
 	/*
 	const float k1 = 0.12269303;
 	const float k2 = -0.26618881;
@@ -44,7 +42,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 	float face_distance, tx, ty, tz, tx1, ty1, tx2, ty2, x_unproject, y_unproject;
 	cv::Mat pose;
-	cv::Mat hand_pose = cv::Mat(cv::Size(4, 1), CV_32F);
+	cv::Mat hand_pose = cv::Mat(cv::Size(1, 4), CV_32F);
 	hand_pose.at<float>(0, 3) = 1;
 
 	// Preapare JSON message to send to the Collectorh
@@ -166,6 +164,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 			x_unproject = (faces[i].x - cx) * const_x;
 			y_unproject = (faces[i].y - cy) * const_y;
+
+			//std::cout << x_unproject << " " << y_unproject << std::endl;
 				
 			const float tmp = y_unproject;
 			
@@ -206,6 +206,9 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			array["y1"] = ty1;
 			array["x2"] = tx2;
 			array["y2"] = ty2;
+
+			//std::cout << "x " << tx << " y " << ty << ", x1 " << tx1 << " y1 " << ty1 << ", x2  " << tx2 << " y2 " << ty2 << ", tz " << tz <<  " distance " << face_distance << std::endl;
+
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 			array["distance"] = tz;
@@ -227,7 +230,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		gray_gpu.release();
 		facesBuf_gpu.release();
 
-		//-- Show what you got
+		// Show what you got
 		if(visualization){
 			cv::imshow( "face", gray);
 			int c = cv::waitKey(1);

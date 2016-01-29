@@ -50,6 +50,7 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	{
 		color = k2g.getColor();
 		cvtColor(color, grey, CV_BGR2GRAY);
+		cv::flip(grey, grey, 1);
 		if(snapshot_table && image_sender){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());

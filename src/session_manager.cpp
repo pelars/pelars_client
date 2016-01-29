@@ -33,8 +33,6 @@ int SessionManager::getNewSession(double time)
 		}
 		std::string out_string = writer_.write(root_);
 
-
-
 		std::cout << "Requesting session id " << std::endl;
 		try{
 			// Making the put request to create a new session
@@ -154,6 +152,8 @@ void SessionManager::closeSession(int session, double time)
 std::string SessionManager::getToken(){
 	return token_;
 }
+
+
 
 
 

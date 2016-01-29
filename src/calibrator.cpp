@@ -28,14 +28,10 @@ void calibration(const unsigned int id, const float marker_size){
 	kcamera_parameters.at<float>(0,2) = k2g.getRgbParameters().cx; 
 	kcamera_parameters.at<float>(1,2) = k2g.getRgbParameters().cy;
 
-	// Webcam values
-	const float scale_x = width / 1920;
-	const float scale_y = height / 1080;
-
-	const float fx = 614.01269552 * scale_x;
-	const float cx = 315.00073982 * scale_x;
-	const float fy = 614.43556296 * scale_y;
-	const float cy = 237.14926858 * scale_y; 
+	const float fx = 589.3588305153235;
+	const float cx = 414.1871817694326;
+	const float fy = 588.585116717914;
+	const float cy = 230.3588624031242; 
 
 	cv::Mat wcamera_parameters = cv::Mat::eye(3, 3, CV_32F);
 	wcamera_parameters.at<float>(0,0) = fx; 
@@ -90,6 +86,7 @@ void calibration(const unsigned int id, const float marker_size){
 					cv::Rodrigues(wmarkers[i].Rvec, cv::Mat(wcalib_matrix, cv::Rect(0, 0, 3, 3)));					
 					wfound = true;
 					wmarkers[i].draw(wgray, cv::Scalar(0, 0, 255), 2);
+					std::cout << wcalib_matrix << std::endl;
 					break;
 				}
 			}		

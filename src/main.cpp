@@ -25,7 +25,7 @@ int main(int argc, char * argv[])
 	
 	if(p.get("upload")){
 		int error;
-		error = uploadData(p.getString("upload"), end_point);
+		error = uploadData(p.getString("upload"), end_point, p.get("session") ? p.getInt("session") : 0);
 		io.stop();
 		ws_writer.join();
 		return !error;
@@ -44,20 +44,6 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 
-	visualization = p.get("visualization");
-
-	// Check if the input template list file is correct
-	std::ifstream infile;
-	if(p.get("object")){
-		infile.open(p.getString("object"));
-		if(!infile)
-		{
-			std::cout << "cannot open template list file: " << p.getString("object") << std::endl;
-			p.printHelp();
-			return -1;
-		}
-	}
-
 	// Creating a Session Manager and getting a newsession ID
 	SessionManager sm(end_point);
 	sm.login();
@@ -73,7 +59,24 @@ int main(int argc, char * argv[])
 	std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
 	// Check the endpoint string and connect to the session manager
 	std::string session_endpoint = end_point + "session/";
-	std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;     
+	std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;    
+
+	// Websocket manager
+	DataWriter collector(end_point + "collector", session); 
+
+	visualization = p.get("visualization");
+
+	// Check if the input template list file is correct
+	std::ifstream infile;
+	if(p.get("object")){
+		infile.open(p.getString("object"));
+		if(!infile)
+		{
+			std::cout << "cannot open template list file: " << p.getString("object") << std::endl;
+			p.printHelp();
+			return -1;
+		}
+	}
 
 	// Image grabber
 	ImageSender image_sender_table(session, end_point, token);
@@ -95,8 +98,10 @@ int main(int argc, char * argv[])
 		}
 	}
 
-	// Websocket manager
-	DataWriter collector(end_point + "collector", session);
+	// Send the two calibration matrixes
+	sleep(1);
+	if(sendCalibration(collector) != 0)
+		std::cout << "error sending the calibration. Did you calibrate the cameras with -c ?" << std::endl;
 
 	// Thread container
 	std::vector<std::thread> thread_list;

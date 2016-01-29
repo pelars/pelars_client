@@ -61,3 +61,75 @@ void checkEscape(bool visualization, bool special){
 	}
 }
 
+int sendCalibration(DataWriter & websocket){
+
+	cv::Mat wcalib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
+	cv::Mat kcalib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
+
+	cv::FileStorage wfile("../../data/calibration_webcam.xml", cv::FileStorage::READ);
+	cv::FileStorage kfile("../../data/calibration_kinect2.xml", cv::FileStorage::READ);
+
+	Json::StyledWriter writer;
+
+	if(wfile.isOpened())
+	{	
+		wfile["matrix"] >> wcalib_matrix;
+		wfile.release();
+	}else{
+		std::cout << "could not find face calibration file; use -c to calibrate the cameras" << std::endl;
+		return -1;
+	}
+
+	if(kfile.isOpened())
+	{	
+		kfile["matrix"] >> kcalib_matrix;
+		kfile.release();
+	}else{
+		std::cout << "could not find hand calibration file; use -c to calibrate the cameras" << std::endl;
+		return -1;
+	}
+
+	Json::Value root;
+	Json::Value array = Json::arrayValue;
+
+	root["obj"]["type"] = "calibration";
+	root["obj"]["camera"] = "webcam";
+	for(unsigned int i = 0; i < 3; ++i)
+		for(unsigned int j = 0; j < 4; ++j)
+			array.append(wcalib_matrix.at<float>(i,j));
+
+	root["obj"]["parameters"] = array; 
+
+	std::string message = writer.write(root);
+	std::cout << "sending " << message << std::endl;	
+	
+	// Send the message online and store it offline
+	if(online){
+		//std::cout << "Hand detector posting data to the server\n " << std::flush;
+		io.post( [&websocket, message]() {
+			websocket.writeData(message);
+			});
+		}
+	websocket.writeLocal(message);
+	
+	Json::Value array2 = Json::arrayValue;
+	root["obj"]["camera"] = "kinect2";
+	for(unsigned int i = 0; i < 3; ++i)
+		for(unsigned int j = 0; j < 4; ++j)
+			array2.append(kcalib_matrix.at<float>(i,j));
+
+	root["obj"]["parameters"] = array2; 
+	message = writer.write(root);
+	std::cout << "sending " << message << std::endl;
+
+	// Send the message online and store it offline
+	if(online){
+		//std::cout << "Hand detector posting data to the server\n " << std::flush;
+		io.post( [&websocket, message]() {
+			websocket.writeData(message);
+			});
+		}
+	websocket.writeLocal(message);
+
+	return 0;
+}
