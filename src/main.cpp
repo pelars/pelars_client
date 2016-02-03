@@ -21,7 +21,7 @@ int main(int argc, char * argv[])
 	end_point = end_point.back() == '/' ? end_point : end_point + "/";
 	std::cout << "WebServer endpoint : " << end_point << std::endl;
 
-	K2G::processor processor = (K2G::processor)(p.get("processor") ? p.getInt("processor") : 1);
+	K2G::Processor processor = (K2G::Processor)(p.get("processor") ? p.getInt("processor") : 1);
 	
 	if(p.get("upload")){
 		int error;
@@ -56,8 +56,8 @@ int main(int argc, char * argv[])
 	}
 	std::string token = sm.getToken(); 
 
-	std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
 	// Check the endpoint string and connect to the session manager
+	std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
 	std::string session_endpoint = end_point + "session/";
 	std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;    
 
@@ -66,17 +66,6 @@ int main(int argc, char * argv[])
 
 	visualization = p.get("visualization");
 
-	// Check if the input template list file is correct
-	std::ifstream infile;
-	if(p.get("object")){
-		infile.open(p.getString("object"));
-		if(!infile)
-		{
-			std::cout << "cannot open template list file: " << p.getString("object") << std::endl;
-			p.printHelp();
-			return -1;
-		}
-	}
 
 	// Image grabber
 	ImageSender image_sender_table(session, end_point, token);
@@ -86,7 +75,8 @@ int main(int argc, char * argv[])
 	// Screen grabber
 	ScreenGrabber screen_grabber;
 
-	// Kinect Frame acquisition
+	// Kinect Frame acquisition and check if the input template list file is correct
+	std::ifstream infile;
 	KinectManagerExchange * kinect_manager;
 	if(p.get("object"))
 	{
@@ -96,15 +86,26 @@ int main(int argc, char * argv[])
 		else{
 			return -1;
 		}
+
+		infile.open(p.getString("object"));
+		if(!infile)
+		{
+			std::cout << "cannot open template list file: " << p.getString("object") << std::endl;
+			p.printHelp();
+			return -1;
+		}
 	}
 
-	// Send the two calibration matrixes
+	// Send the two calibration matrixes. Need to sleep to give the websocket time to connect :/
 	sleep(1);
-	if(sendCalibration(collector) != 0)
+	if(sendCalibration(collector) != 0){
 		std::cout << "error sending the calibration. Did you calibrate the cameras with -c ?" << std::endl;
+	}
 
 	// Thread container
 	std::vector<std::thread> thread_list;
+
+	cout << '\a' << std::flush;
 
 	// Starting the linemod thread
 	if(p.get("object"))
@@ -117,7 +118,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
 	// Starting the hand detector
 	if(p.get("hand"))
-		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.033, std::ref(image_sender_table)));
+		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.033, std::ref(image_sender_table), processor));
 	// Starting the ide logger
 	if(p.get("ide"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));

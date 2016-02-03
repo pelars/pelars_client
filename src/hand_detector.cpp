@@ -1,6 +1,6 @@
 #include "hand_detector.h"
 
-void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender)
+void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor)
 {
 	aruco::MarkerDetector MDetector;
 	MDetector.setMinMaxSize(0.01, 0.7);
@@ -17,11 +17,11 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	float tx, ty, tz;
 	std::string message;
 
-	K2G k2g(K2G::OPENCL);
+	K2G k2g(processor);
 
 	TimedSender timer(interval / 2);
 
-	std::string folder_name = std::string("../snapshots_") + std::to_string(session);
+	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
 
 	cv::Mat camera_parameters = cv::Mat::eye(3, 3, CV_32F);
 	camera_parameters.at<float>(0,0) = k2g.getRgbParameters().fx; 
@@ -103,7 +103,7 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 					root["obj"]["id"] = markers[i].id;
 					root["obj"]["tx"] = tx;
 					root["obj"]["ty"] = ty;
-					root["obj"]["tz"] = tz / 1000;
+					root["obj"]["tz"] = tz;
 					root["obj"]["rw"] = quaternion.w();
 					root["obj"]["rx"] = quaternion.x();
 					root["obj"]["ry"] = quaternion.y();
@@ -115,7 +115,7 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 					// Send the message online and store it offline
 					if(online){
 						//std::cout << "Hand detector posting data to the server\n " << std::flush;
-						io.post( [&websocket, message]() {
+						io.post([&websocket, message]() {
 							websocket.writeData(message);
 							});
 						}

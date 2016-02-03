@@ -15,7 +15,6 @@ void calibration(const unsigned int id, const float marker_size){
 
 	GstreamerGrabber gs_grabber(width, height, id);
 
-
 	aruco::MarkerDetector MDetector;
 	MDetector.setMinMaxSize(0.01, 0.7);
 	vector<aruco::Marker> kmarkers;
@@ -51,10 +50,27 @@ void calibration(const unsigned int id, const float marker_size){
 	cv::namedWindow("kinect2");
 	cv::namedWindow("webcam");
 
+	cv::Mat kdist = cv::Mat(cv::Size(4, 1), CV_32F);
+	cv::Mat wdist = cv::Mat(cv::Size(4, 1), CV_32F);
+
+	kdist.at<float>(0) = 0; 
+	kdist.at<float>(1) = 0; 
+	kdist.at<float>(2) = 0; 
+	kdist.at<float>(3) = 0;
+
+	wdist.at<float>(0) = 0.1161538110871388; 
+	wdist.at<float>(1) = -0.213821121281364; 
+	wdist.at<float>(2) = 0.000927392238536357; 
+	wdist.at<float>(3) = 0.0007135216206840332;
+
+	aruco::CameraParameters kparam(kcamera_parameters, kdist, cv::Size(1920,1080));
+	aruco::CameraParameters wparam(wcamera_parameters, wdist, cv::Size(width, height));
+
 	while(!stop){
 		// Kinect2 grabber
 		kcolor = k2g.getColor();
 		cvtColor(kcolor, kgray, CV_BGR2GRAY);
+		cv::flip(kgray, kgray, 1);
 		MDetector.detect(kgray, kmarkers, kcamera_parameters, cv::Mat(), marker_size);
 
 		// Webcam grabber
@@ -70,9 +86,11 @@ void calibration(const unsigned int id, const float marker_size){
 					kcalib_matrix.at<float>(0, 3) = kmarkers[i].Tvec.at<float>(0);
 					kcalib_matrix.at<float>(1, 3) = kmarkers[i].Tvec.at<float>(1);
 					kcalib_matrix.at<float>(2, 3) = kmarkers[i].Tvec.at<float>(2);
+					std::cout << kmarkers[i].Tvec.at<float>(0) << " " << kmarkers[i].Tvec.at<float>(1) << " " << kmarkers[i].Tvec.at<float>(2) << std::endl;
 					cv::Rodrigues(kmarkers[i].Rvec, cv::Mat(kcalib_matrix, cv::Rect(0, 0, 3, 3)));		
 					kfound = true;
 					kmarkers[i].draw(kgray, cv::Scalar(0, 0, 255), 2);
+					aruco::CvDrawingUtils::draw3dAxis(kgray, kmarkers[i], kparam);
 					break;
 				}
 			}		
@@ -83,10 +101,11 @@ void calibration(const unsigned int id, const float marker_size){
 					wcalib_matrix.at<float>(0, 3) = wmarkers[i].Tvec.at<float>(0);
 					wcalib_matrix.at<float>(1, 3) = wmarkers[i].Tvec.at<float>(1);
 					wcalib_matrix.at<float>(2, 3) = wmarkers[i].Tvec.at<float>(2);
+					//std::cout << wmarkers[i].Tvec.at<float>(0) << " " << wmarkers[i].Tvec.at<float>(1) << " " << wmarkers[i].Tvec.at<float>(2) << std::endl;
 					cv::Rodrigues(wmarkers[i].Rvec, cv::Mat(wcalib_matrix, cv::Rect(0, 0, 3, 3)));					
 					wfound = true;
 					wmarkers[i].draw(wgray, cv::Scalar(0, 0, 255), 2);
-					std::cout << wcalib_matrix << std::endl;
+					aruco::CvDrawingUtils::draw3dAxis(wgray, wmarkers[i], wparam);
 					break;
 				}
 			}		

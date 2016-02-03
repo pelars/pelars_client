@@ -101,7 +101,7 @@ int sendCalibration(DataWriter & websocket){
 	root["obj"]["parameters"] = array; 
 
 	std::string message = writer.write(root);
-	std::cout << "sending " << message << std::endl;	
+	//std::cout << "sending " << message << std::endl;	
 	
 	// Send the message online and store it offline
 	if(online){
@@ -120,7 +120,7 @@ int sendCalibration(DataWriter & websocket){
 
 	root["obj"]["parameters"] = array2; 
 	message = writer.write(root);
-	std::cout << "sending " << message << std::endl;
+	//std::cout << "sending " << message << std::endl;
 
 	// Send the message online and store it offline
 	if(online){

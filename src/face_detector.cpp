@@ -151,9 +151,10 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		Json::Value upper;
 		Json::Value root = Json::arrayValue;
 		Json::Value array;
-		
+		//std::cout << " found " << detections_num << " faces" << std::endl;
 		for(int i = 0; i < detections_num; ++i)
 		{
+
 			cv::Point center(faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5);
 			cv::ellipse(gray, center, cv::Size(faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255), 4, 8, 0);
 

@@ -18,5 +18,5 @@ extern bool visualization;
 extern double interval;
 extern bool snapshot_table;
 
-void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender);
+void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor);
 
