@@ -53,7 +53,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	Json::StyledWriter writer;
 
 	GstreamerGrabber gs_grabber(width, height, face_camera_id);
-	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 1); 
+	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3); 
 
 	if(!cascade_gpu_.load(face_cascade_name_gpu_))
 	{ 
@@ -79,11 +79,12 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	cv::Mat camera_inverse = calib_matrix.inv();
 
 	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
-
 	while(!to_stop)
 	{	
 		gs_grabber.capture(frame);
-		cv::Mat gray(frame);
+		cv::Mat color(frame);
+		cv::flip(color, color, 1);
+		cvtColor(color, gray, CV_BGR2GRAY);
 
 		if(snapshot_people && image_sender_people){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
@@ -94,7 +95,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			}
 			std::string name = std::string(folder_name + "/people_" + now + "_" + std::to_string(session) +".jpg");
 			std::cout << name << std::endl;
-			cv::imwrite(name, gray);
+			cv::imwrite(name, color);
 			if(online){
 				std::ifstream in(name, std::ifstream::binary);
 				in.unsetf(std::ios::skipws);
@@ -233,7 +234,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 		// Show what you got
 		if(visualization){
-			cv::imshow( "face", gray);
+			cv::imshow( "face", color);
 			int c = cv::waitKey(1);
 			if((char)c == 'q' ) {
 				to_stop = true;

@@ -69,8 +69,9 @@ void calibration(const unsigned int id, const float marker_size){
 	while(!stop){
 		// Kinect2 grabber
 		kcolor = k2g.getColor();
+		cv::flip(kcolor, kcolor, 1);
 		cvtColor(kcolor, kgray, CV_BGR2GRAY);
-		cv::flip(kgray, kgray, 1);
+
 		MDetector.detect(kgray, kmarkers, kcamera_parameters, cv::Mat(), marker_size);
 
 		// Webcam grabber
@@ -89,8 +90,8 @@ void calibration(const unsigned int id, const float marker_size){
 					std::cout << kmarkers[i].Tvec.at<float>(0) << " " << kmarkers[i].Tvec.at<float>(1) << " " << kmarkers[i].Tvec.at<float>(2) << std::endl;
 					cv::Rodrigues(kmarkers[i].Rvec, cv::Mat(kcalib_matrix, cv::Rect(0, 0, 3, 3)));		
 					kfound = true;
-					kmarkers[i].draw(kgray, cv::Scalar(0, 0, 255), 2);
-					aruco::CvDrawingUtils::draw3dAxis(kgray, kmarkers[i], kparam);
+					kmarkers[i].draw(kcolor, cv::Scalar(0, 0, 255), 2);
+					aruco::CvDrawingUtils::draw3dAxis(kcolor, kmarkers[i], kparam);
 					break;
 				}
 			}		
@@ -111,7 +112,7 @@ void calibration(const unsigned int id, const float marker_size){
 			}		
 		}
 
-		cv::imshow("kinect2", kgray);
+		cv::imshow("kinect2", kcolor);
 		cv::imshow("webcam", wgray);
 		int c = cv::waitKey(1);
 		if((char)c == 'c' && wfound && kfound) {
