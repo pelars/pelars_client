@@ -38,7 +38,7 @@ int main(int argc, char * argv[])
 
 	// Calibrate the cameras and exit
 	if(p.get("calibration")){
-		calibration(face_camera_id, p.get("marker") ? p.getFloat("marker") : 0.033);
+		calibration(face_camera_id, p.get("marker") ? p.getFloat("marker") : 0.07);
 		io.stop();
 		ws_writer.join();
 		return 0;

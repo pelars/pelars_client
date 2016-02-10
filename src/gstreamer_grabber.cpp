@@ -71,8 +71,8 @@ gboolean GstreamerGrabber::initVideoCapture()
 
 	g_object_set (G_OBJECT (this->vsource_capsfilter), "caps", this->srcdeinterlace_caps, NULL);
 	gst_caps_unref(this->srcdeinterlace_caps);
-	sprintf(buffer,"video/x-raw, format=(string)GRAY8, width=(int)%d, height=(int)%d, framerate=(fraction)30/1", width_, height_);
-//    this->cspappsink_caps = gst_caps_from_string("video/x-raw, format=(string)BGR, width=(int)1920, height=(int)1080, framerate=(fraction)30/1");        
+	sprintf(buffer,"video/x-raw, format=(string)BGR, width=(int)%d, height=(int)%d, framerate=(fraction)30/1", width_, height_);
+//    this->cspappsink_caps = gst_caps_from_string("video/x-raw, format=(string)GRAY8, width=(int)1920, height=(int)1080, framerate=(fraction)30/1");        
 	this->cspappsink_caps = gst_caps_from_string(buffer);  
 
 	if(!this->cspappsink_caps)
