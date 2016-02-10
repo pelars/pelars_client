@@ -29,7 +29,10 @@ void audioDetector(DataWriter & data_writer){
 	int used_device = -1;
 	for(int i = 0; i < Pa_GetDeviceCount(); ++i)
 		if(std::string(Pa_GetDeviceInfo(i)->name).find("HD Pro Webcam C920") != std::string::npos)
+		{
 			used_device = i;
+			break;
+		}
 
 	if(used_device == -1){
 		std::cout << "no C920 found" << std::endl;
