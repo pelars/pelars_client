@@ -10,18 +10,28 @@ inline double distance(int x1, int x2){
 
 void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, ImageSender & image_sender_people, const int face_camera_id)
 {
+	// Needed since else opencv does not crete the window (BUG?)
+	if(visualization)
+		sleep(1);
+
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
 	//std::string face_cascade_name_ = "../../data/haarcascade_frontalface_alt.xml";
 	std::string face_cascade_name_gpu_ = "../../data/haarcascade_frontalface_alt2.xml";
 	cv::CascadeClassifier face_cascade_;
-	cv::Mat gray;
+
+	cv::gpu::GpuMat gray_gpu;
+	cv::Mat faces_downloaded, color;
+
 
 	const int session = websocket.getSession();
 
-	cv::gpu::CascadeClassifier_GPU cascade_gpu_;
 	const bool findLargestObject_ = false;
 	const bool filterRects_ = true;
+
+	cv::gpu::CascadeClassifier_GPU cascade_gpu_;
+	cascade_gpu_.visualizeInPlace = false;
+	cascade_gpu_.findLargestObject = findLargestObject_;
 
 	const int width = 800.0;
 	const int height = 448.0;
@@ -39,11 +49,15 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	const float k3 = 0.17005303;
 	*/
 
+	Json::Value upper;
+	Json::Value root = Json::arrayValue;
+	Json::Value array;
 
 	float face_distance, tx, ty, tz, tx1, ty1, tx2, ty2, x_unproject, y_unproject;
 	cv::Mat pose;
 	cv::Mat hand_pose = cv::Mat(cv::Size(1, 4), CV_32F);
 	hand_pose.at<float>(0, 3) = 1;
+	int detections_num;
 
 	// Preapare JSON message to send to the Collectorh
 	std::string code;
@@ -65,6 +79,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		cv::namedWindow("face");
 
 	TimedSender timer(interval);
+	TimedSender timer_minute(60000);
 
 	cv::FileStorage file("../../data/calibration_webcam.xml", cv::FileStorage::READ);
 	if(file.isOpened())
@@ -81,12 +96,19 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
 	while(!to_stop)
 	{	
-		gs_grabber.capture(frame);
-		cv::Mat color(frame);
-		cv::flip(color, color, 1);
-		cvtColor(color, gray, CV_BGR2GRAY);
 
-		if(snapshot_people && image_sender_people){
+		cv::gpu::GpuMat facesBuf_gpu;
+		gs_grabber.capture(frame);
+		color = cv::Mat(frame);
+
+		cv::flip(color, color, 1);
+		cv::gpu::GpuMat color_gpu(color);
+
+		//cvtColor(color, gray, CV_BGR2GRAY);
+		cv::gpu::cvtColor(color_gpu, gray_gpu, CV_BGR2GRAY);
+
+		bool send_minute = timer_minute.needSend();
+		if((snapshot_people && image_sender_people) || send_minute){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 			if(!boost::filesystem::exists(folder_name)){
@@ -105,11 +127,11 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			    std::vector<char> data(fileSize);
 				in.read(&data[0], fileSize);
 				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-				image_sender_people.send(code, "jpg");
+				image_sender_people.send(code, "jpg", "people");
 			}
 			snapshot_people = false;
 		}
-		if(snapshot_screen && image_sender_screen){
+		if((snapshot_screen && image_sender_screen) || send_minute){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 			std::string name = std::string(folder_name + "/screen_" + now + "_" + std::to_string(session) + ".png");
@@ -128,36 +150,23 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			    std::vector<char> data(fileSize);
 				in.read(&data[0], fileSize);
 				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-				image_sender_screen.send(code, "png");
+				image_sender_screen.send(code, "png", "screen");
 			}
 			snapshot_screen = false;
 		}
-	
-		int detections_num;
-		cv::Mat faces_downloaded;
-		cv::gpu::GpuMat facesBuf_gpu;
-		cv::Mat im(gray.size(), CV_8UC1);
-	
-		gray.copyTo(im);
 		
-		cv::gpu::GpuMat gray_gpu(im);
-
-		cascade_gpu_.visualizeInPlace = false;
-		cascade_gpu_.findLargestObject = findLargestObject_;
-		detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, cv::Size(gray.cols,gray.rows), cv::Size(), 1.05, (filterRects_ || findLargestObject_) ? 4 : 0);
+		detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, cv::Size(color.cols,color.rows), cv::Size(), 1.05, (filterRects_ || findLargestObject_) ? 4 : 0);
 
 		facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
 		cv::Rect * faces = faces_downloaded.ptr<cv::Rect>();
 
-		Json::Value upper;
-		Json::Value root = Json::arrayValue;
-		Json::Value array;
+		
 		//std::cout << " found " << detections_num << " faces" << std::endl;
 		for(int i = 0; i < detections_num; ++i)
 		{
 
 			cv::Point center(faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5);
-			cv::ellipse(gray, center, cv::Size(faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255), 4, 8, 0);
+			cv::ellipse(color, center, cv::Size(faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255), 4, 8, 0);
 
 			face_distance = distance(faces[i].x, faces[i].x + faces[i].width);
 
@@ -229,8 +238,11 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			websocket.writeLocal(out_string);  
 		}
 
-		gray_gpu.release();
-		facesBuf_gpu.release();
+		//gray_gpu.release();
+		//facesBuf_gpu.release();
+		upper.clear();
+		root.clear();
+		array.clear();
 
 		// Show what you got
 		if(visualization){

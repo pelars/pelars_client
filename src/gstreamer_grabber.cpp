@@ -87,10 +87,12 @@ gboolean GstreamerGrabber::initVideoCapture()
 		
 	this->bin_capture = gst_bin_new ("bin_capture");        
 	 
-	gst_bin_add_many (GST_BIN (this->bin_capture), this->video_source, this->vsource_capsfilter,this->parser/*this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2*/,this->decoder, this->appsink, NULL);
-	 
-	 // WE RELY ON THE FACT THAT THE x264 decoder uses YUV420 so we can grab the first HxWx8bit this as grayscale
-	if(gst_element_link_many(this->video_source, this->vsource_capsfilter,this->parser,this->decoder /*this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2*/, this->appsink, NULL) != TRUE)
+	//gst_bin_add_many (GST_BIN (this->bin_capture), this->video_source, this->vsource_capsfilter,this->parser/*this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2*/,this->decoder, this->appsink, NULL);
+	gst_bin_add_many (GST_BIN (this->bin_capture), this->video_source, this->vsource_capsfilter,this->parser,this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2,this->decoder, this->appsink, NULL);
+
+	// WE RELY ON THE FACT THAT THE x264 decoder uses YUV420 so we can grab the first HxWx8bit this as grayscale
+	//if(gst_element_link_many(this->video_source, this->vsource_capsfilter,this->parser,this->decoder /*this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2*/, this->appsink, NULL) != TRUE)
+	if (gst_element_link_many(this->video_source, this->vsource_capsfilter,this->parser,this->decoder, this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2, this->appsink, NULL) != TRUE)
 	{
 		g_printerr ("video_src linking failed.\n");
 		return FALSE;

@@ -20,6 +20,8 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	K2G k2g(processor);
 
 	TimedSender timer(interval / 2);
+	TimedSender timer_minute(60000);
+
 
 	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
 
@@ -52,10 +54,10 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 		cvtColor(color, grey, CV_BGR2GRAY);
 		cv::flip(color, color, 1);
 		cv::flip(grey, grey, 1);	
-		if(snapshot_table && image_sender){
+		if((snapshot_table && image_sender) || timer_minute.needSend()){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-			std::string name = std::string(folder_name + "/table_" + now + "_" + std::to_string(session) + ".jpg");
+			std::string name = std::string(folder_name + "/workspace_" + now + "_" + std::to_string(session) + ".jpg");
 			if(!boost::filesystem::exists(folder_name)){
 				boost::filesystem::path dir(folder_name);
 				boost::filesystem::create_directory(dir);
@@ -70,7 +72,7 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 			    std::vector<char> data(fileSize);
 				in.read(&data[0], fileSize);
 				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-				image_sender.send(code, "jpg");
+				image_sender.send(code, "jpg", "workspace");
 			}
 			snapshot_table = false;
 		}
@@ -82,7 +84,7 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 			for(unsigned int i = 0; i < markers.size(); ++i)
 			{
 				// Get marker position
-				markers[i].draw(grey, cv::Scalar(0, 0, 255), 2);
+				markers[i].draw(color, cv::Scalar(0, 0, 255), 2);
 				//aruco::CvDrawingUtils::draw3dCube(grey, markers[i], camera);
 				
 				marker_pose.at<float>(0, 3) = markers[i].Tvec.at<float>(0);

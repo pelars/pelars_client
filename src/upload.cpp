@@ -115,10 +115,12 @@ int uploadData(std::string file_name, std::string end_point, int session_id){
 	    		std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
 	    		std::string type = path.substr(path.size() - 3, path.size());
 	    		std::size_t start = name.find("_") + 1;
+	    		std::string view = name.substr(0, start - 1);
 	    		std::size_t end = name.substr(start, name.size()).find("_") - 1;
 	    		long time_epoch = stol(name.substr(start, end));
 	    		//std::cout << time_epoch << std::endl;
-	    		image_sender.send(code, type, time_epoch);
+	    		//std::cout << "name " << view << " type " << type << std::endl;
+	    		image_sender.send(code, type, view, time_epoch);
 	    		in.close();
 	    }
 	}

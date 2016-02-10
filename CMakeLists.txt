@@ -127,7 +127,7 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${PORTAUDIO_LIBRARIES}
 										${QRENCODE_LIBRARY}
 										${CAIRO_LIBRARIES}
-X11
+										X11
 										)
 
 #target_link_libraries(freenect-camshare ${FREENECT_LIBRARIES} rt) 
