@@ -98,9 +98,8 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/qr_creator.cpp
 								${SRC}/upload.cpp
 								${SRC}/calibrator.cpp
+								${SRC}/aliver.cpp
 								)
-
-#add_executable(freenect-camshare ${SRC}/camshare.cpp)
 
 target_link_libraries(sensor_manager 	${OpenCV_LIBS} 
 										${TINYXML2} 
@@ -130,6 +129,7 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										X11
 										)
 
+#add_executable(freenect-camshare ${SRC}/camshare.cpp)
 #target_link_libraries(freenect-camshare ${FREENECT_LIBRARIES} rt) 
 
 

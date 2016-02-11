@@ -116,7 +116,6 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 				boost::filesystem::create_directory(dir);
 			}
 			std::string name = std::string(folder_name + "/people_" + now + "_" + std::to_string(session) +".jpg");
-			std::cout << name << std::endl;
 			cv::imwrite(name, color);
 			if(online){
 				std::ifstream in(name, std::ifstream::binary);
@@ -217,12 +216,12 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			array["y1"] = ty1;
 			array["x2"] = tx2;
 			array["y2"] = ty2;
+			array["distance"] = tz;
 
 			//std::cout << "x " << tx << " y " << ty << ", x1 " << tx1 << " y1 " << ty1 << ", x2  " << tx2 << " y2 " << ty2 << ", tz " << tz <<  " distance " << face_distance << std::endl;
 
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
-			array["distance"] = tz;
 			root.append(array);
 		}
 		

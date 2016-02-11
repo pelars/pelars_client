@@ -16,8 +16,11 @@ public:
 	std::string file_name_, file_extention_, complete_file_name_;
 
 	DataWriter(const std::string & uri, const int session, const bool create_file = true);
+	DataWriter(const std::string & uri, const int session, const int aliver);
+
 	~DataWriter();
 	void stop();
+	void astop();
 	void writeLocal(const std::string s);
 	void writeData(const std::string s);
 	int getSession();
@@ -41,5 +44,7 @@ private:
 	
 	void onClose(websocketpp::connection_hdl);
 	void onFail(websocketpp::connection_hdl);
+	void aonFail(websocketpp::connection_hdl);
+
 };
 

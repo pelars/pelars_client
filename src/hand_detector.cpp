@@ -80,50 +80,57 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 		MDetector.detect(grey, markers, camera_parameters, cv::Mat(), marker_size);
 
 		if(markers.size() > 0){
+
 			to_send = timer.needSend();
 			for(unsigned int i = 0; i < markers.size(); ++i)
 			{
-				// Get marker position
-				markers[i].draw(color, cv::Scalar(0, 0, 255), 2);
-				//aruco::CvDrawingUtils::draw3dCube(grey, markers[i], camera);
-				
-				marker_pose.at<float>(0, 3) = markers[i].Tvec.at<float>(0);
-				marker_pose.at<float>(1, 3) = markers[i].Tvec.at<float>(1);
-				marker_pose.at<float>(2, 3) = markers[i].Tvec.at<float>(2);
-				cv::Rodrigues(markers[i].Rvec, cv::Mat(marker_pose, cv::Rect(0, 0, 3, 3)));
-
-				cv::Mat pose = camera_inverse * marker_pose;
-				tx = pose.at<float>(0, 3);
-				ty = pose.at<float>(1, 3);
-				tz = pose.at<float>(2, 3);
-				Eigen::Matrix3f temp;
-				cv2eigen(pose(cv::Rect(0,0,3,3)), temp);
-				Eigen::Quaternionf quaternion(temp);
-				
-				//std::cout << x << " " << y << " " << z << " " << markers[i].id << std::endl;
-				if(to_send){
-					root["obj"]["id"] = markers[i].id;
-					root["obj"]["tx"] = tx;
-					root["obj"]["ty"] = ty;
-					root["obj"]["tz"] = tz;
-					root["obj"]["rw"] = quaternion.w();
-					root["obj"]["rx"] = quaternion.x();
-					root["obj"]["ry"] = quaternion.y();
-					root["obj"]["rz"] = quaternion.z();
-					std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
-					root["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
-					message = writer.write(root);	
+				if(markers[i].id != 0)
+				{
+					// Get marker position
+					markers[i].draw(color, cv::Scalar(0, 0, 255), 2);
+					//aruco::CvDrawingUtils::draw3dCube(grey, markers[i], camera);
 					
-					// Send the message online and store it offline
-					if(online){
-						//std::cout << "Hand detector posting data to the server\n " << std::flush;
-						io.post([&websocket, message]() {
-							websocket.writeData(message);
-							});
-						}
-					websocket.writeLocal(message);
+					marker_pose.at<float>(0, 3) = markers[i].Tvec.at<float>(0);
+					marker_pose.at<float>(1, 3) = markers[i].Tvec.at<float>(1);
+					marker_pose.at<float>(2, 3) = markers[i].Tvec.at<float>(2);
+					cv::Rodrigues(markers[i].Rvec, cv::Mat(marker_pose, cv::Rect(0, 0, 3, 3)));
+
+					cv::Mat pose = camera_inverse * marker_pose;
+					tx = pose.at<float>(0, 3);
+					ty = pose.at<float>(1, 3);
+					tz = pose.at<float>(2, 3);
+					Eigen::Matrix3f temp;
+					cv2eigen(pose(cv::Rect(0,0,3,3)), temp);
+					Eigen::Quaternionf quaternion(temp);
+					
+					//std::cout << tx << " " << ty << " " << tz << std::endl;	
+
+					if(to_send){
+						root["obj"]["id"] = markers[i].id;
+						root["obj"]["tx"] = tx;
+						root["obj"]["ty"] = ty;
+						root["obj"]["tz"] = tz;
+						root["obj"]["rw"] = quaternion.w();
+						root["obj"]["rx"] = quaternion.x();
+						root["obj"]["ry"] = quaternion.y();
+						root["obj"]["rz"] = quaternion.z();
+						std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+						root["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
+						message = writer.write(root);
+
+						
+						// Send the message online and store it offline
+						if(online){
+							//std::cout << "Hand detector posting data to the server\n " << std::flush;
+							io.post([&websocket, message]() {
+								websocket.writeData(message);
+								});
+							}
+						websocket.writeLocal(message);
+					}
 				}
 			}
+			
 		}
 
 		if(visualization){

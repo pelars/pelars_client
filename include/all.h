@@ -15,6 +15,7 @@
 #include "qr_creator.h"
 #include "calibrator.h"
 #include "upload.h"
+#include "aliver.h"
 
 
 

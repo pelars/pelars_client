@@ -8,7 +8,7 @@ void calibration(const unsigned int id, const float marker_size){
 
 	cv::FileStorage kinect_file("../../data/calibration_kinect2.xml", cv::FileStorage::WRITE);
 	cv::FileStorage webcam_file("../../data/calibration_webcam.xml", cv::FileStorage::WRITE);
-	cv::Mat kgray, kcolor;
+	cv::Mat kgray, kcolor, wgray;
 
 	const int width = 800;
 	const int height = 448;
@@ -66,6 +66,8 @@ void calibration(const unsigned int id, const float marker_size){
 	aruco::CameraParameters kparam(kcamera_parameters, kdist, cv::Size(1920,1080));
 	aruco::CameraParameters wparam(wcamera_parameters, wdist, cv::Size(width, height));
 
+	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+
 	while(!stop){
 		// Kinect2 grabber
 		kcolor = k2g.getColor();
@@ -75,9 +77,9 @@ void calibration(const unsigned int id, const float marker_size){
 		MDetector.detect(kgray, kmarkers, kcamera_parameters, cv::Mat(), marker_size);
 
 		// Webcam grabber
-		IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 1);
 		gs_grabber.capture(frame);
-		cv::Mat wgray(frame); 
+		cv::Mat wcolor(frame);
+		cvtColor(wcolor, wgray, CV_BGR2GRAY); 
 		MDetector.detect(wgray, wmarkers, wcamera_parameters, cv::Mat(), marker_size);
 
 		// TODO
@@ -105,15 +107,15 @@ void calibration(const unsigned int id, const float marker_size){
 					//std::cout << wmarkers[i].Tvec.at<float>(0) << " " << wmarkers[i].Tvec.at<float>(1) << " " << wmarkers[i].Tvec.at<float>(2) << std::endl;
 					cv::Rodrigues(wmarkers[i].Rvec, cv::Mat(wcalib_matrix, cv::Rect(0, 0, 3, 3)));					
 					wfound = true;
-					wmarkers[i].draw(wgray, cv::Scalar(0, 0, 255), 2);
-					aruco::CvDrawingUtils::draw3dAxis(wgray, wmarkers[i], wparam);
+					wmarkers[i].draw(wcolor, cv::Scalar(0, 0, 255), 2);
+					aruco::CvDrawingUtils::draw3dAxis(wcolor, wmarkers[i], wparam);
 					break;
 				}
 			}		
 		}
 
 		cv::imshow("kinect2", kcolor);
-		cv::imshow("webcam", wgray);
+		cv::imshow("webcam", wcolor);
 		int c = cv::waitKey(1);
 		if((char)c == 'c' && wfound && kfound) {
 			kinect_file << "matrix" << kcalib_matrix;

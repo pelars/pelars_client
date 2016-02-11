@@ -131,6 +131,8 @@ int main(int argc, char * argv[])
 	// Starting status visualization
 	if(p.get("status"))
 		thread_list.push_back(std::thread(drawStatus, std::ref(p)));
+	// Keep alive on server for status update
+	thread_list.push_back(std::thread(keep_alive, session, end_point + "aliver"));
 	
 	//If there are no windows wait for Esc to be pressed
 	checkEscape(visualization, p.get("special"));
