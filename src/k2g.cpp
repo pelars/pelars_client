@@ -1,6 +1,6 @@
 #include "k2g.h"
 
-K2G::K2G(processor p): undistorted_(512, 424, 4), registered_(512, 424, 4), big_mat_(1920, 1082, 4), listener_(libfreenect2::Frame::Color | libfreenect2::Frame::Ir | libfreenect2::Frame::Depth),
+K2G::K2G(Processor p): undistorted_(512, 424, 4), registered_(512, 424, 4), big_mat_(1920, 1082, 4), listener_(libfreenect2::Frame::Color | libfreenect2::Frame::Ir | libfreenect2::Frame::Depth),
 qnan_(std::numeric_limits<float>::quiet_NaN())
 {
 	if(freenect2_.enumerateDevices() == 0)
@@ -46,8 +46,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr K2G::getCloud()
 		libfreenect2::Frame * depth = frames_[libfreenect2::Frame::Depth];
 
 		registration_->apply(rgb, depth, &undistorted_, &registered_, true, &big_mat_);
-		const short w = undistorted_.width;
-		const short h = undistorted_.height;
+		const unsigned short w = undistorted_.width;
+		const unsigned short h = undistorted_.height;
 
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>(w, h));
 

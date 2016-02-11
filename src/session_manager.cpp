@@ -20,7 +20,7 @@ int SessionManager::getNewSession(double time)
 	if(!error_){
 		// Error variables
 		bool error = false;
-		bool parsed_success;
+		bool parsed_success = false;;
 
 		// Json message and content
 		root_.clear();
@@ -32,8 +32,6 @@ int SessionManager::getNewSession(double time)
 			root_["start"] = time;
 		}
 		std::string out_string = writer_.write(root_);
-
-
 
 		std::cout << "Requesting session id " << std::endl;
 		try{
@@ -120,7 +118,8 @@ void SessionManager::createUser(){
 		session_manager_response_ = response_.body();
 		// Read the response and parse the json message to get the session id
 		bool parsedSuccess = reader_.parse(session_manager_response_, root_);
-		user_id_ = root_["id"].asInt();
+		if(parsedSuccess)
+			user_id_ = root_["id"].asInt();
 		if(root_["message"].asString().find(std::string("User already present")) == std::string::npos)
 			std::cout << "\tGot response " << session_manager_response_;
 	}
@@ -153,6 +152,8 @@ void SessionManager::closeSession(int session, double time)
 std::string SessionManager::getToken(){
 	return token_;
 }
+
+
 
 
 

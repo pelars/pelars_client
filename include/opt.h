@@ -23,9 +23,6 @@ void aliver(const boost::system::error_code& /*e*/);
 
 void asiothreadfx();
 
-int uploadData(std::string file_name, std::string endpoint);
-
-
 const std::string currentDateTime();
 
 struct MiniEncapsule{
@@ -35,7 +32,8 @@ struct MiniEncapsule{
 
 	void parse(std::string message){
 		bool parsedSuccess = reader.parse(message, root_, false);
-		out_message_ = writer_.write(root_);
+		if(parsedSuccess)
+			out_message_ = writer_.write(root_);
 	}
 
 	DataWriter & websocket_;
@@ -79,3 +77,4 @@ private:
 
 void printHelp();
 void checkEscape(bool visualization, bool special);
+int sendCalibration(DataWriter & websocket);

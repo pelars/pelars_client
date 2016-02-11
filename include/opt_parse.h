@@ -33,15 +33,17 @@ public:
 				("audio,a", "track audio level")
 				("marker,M",  boost::program_options::value<float>(), "marker size")
 				("hand,h", "track the hands")
-				("particle,p", "track the partile IO sensors")
+				("particle,p", "track the particle.io sensors")
 				("ide,i", "track the Arduino IDE log")
 				("visualization,v", "activate visualization")
 				("object,O", boost::program_options::value<std::string>(), "object template file")
 				("qr,q", "show session as qr code")
 				("server,S", boost::program_options::value<std::string>(), "server endpoint")
 				("session,x", boost::program_options::value<int>(), "session id")
+				("face_camera,F", boost::program_options::value<int>(), "video device id (ex: for /dev/video3 use -f 3)")
 				("calibration,c", "calibrate cameras")
 				("special,s", "special flag for background run")
+				("processor,x", boost::program_options::value<int>(), "kinect2 processor : 0 for CPU, 1 for OPENGL, 2 for OPENGL. default 1")
 				("upload,u", boost::program_options::value<std::string>(), "file name to upload")
 				("status,j", "displays system status");
 
@@ -127,7 +129,6 @@ void drawStatus(Parser & p){
     	offset += 30;
     }
 
-    bool stop = false;
     cv::imshow("status", status);
 	while(!to_stop){
 		int c = cv::waitKey(1);

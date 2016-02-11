@@ -20,27 +20,28 @@ int main(int argc, char * argv[])
 	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it/pelars/";
 	end_point = end_point.back() == '/' ? end_point : end_point + "/";
 	std::cout << "WebServer endpoint : " << end_point << std::endl;
+
+	K2G::Processor processor = (K2G::Processor)(p.get("processor") ? p.getInt("processor") : 1);
 	
 	if(p.get("upload")){
 		int error;
-		error = uploadData(p.getString("upload"), end_point);
+		error = uploadData(p.getString("upload"), end_point, p.get("session") ? p.getInt("session") : 0);
 		io.stop();
 		ws_writer.join();
 		return !error;
 	}
 
-	visualization = p.get("visualization");
+	// Check if video device is different than /dev/video0
+	int face_camera_id = 0;
+	if(p.get("face_camera"))
+		face_camera_id = p.getInt("face_camera");
 
-	// Check if the input template list file is correct
-	std::ifstream infile;
-	if(p.get("object")){
-		infile.open(p.getString("object"));
-		if(!infile)
-		{
-			std::cout << "cannot open template list file: " << p.getString("object") << std::endl;
-			p.printHelp();
-			return -1;
-		}
+	// Calibrate the cameras and exit
+	if(p.get("calibration")){
+		calibration(face_camera_id, p.get("marker") ? p.getFloat("marker") : 0.07);
+		io.stop();
+		ws_writer.join();
+		return 0;
 	}
 
 	// Creating a Session Manager and getting a newsession ID
@@ -55,10 +56,16 @@ int main(int argc, char * argv[])
 	}
 	std::string token = sm.getToken(); 
 
-	std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
 	// Check the endpoint string and connect to the session manager
+	std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
 	std::string session_endpoint = end_point + "session/";
-	std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;     
+	std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;    
+
+	// Websocket manager
+	DataWriter collector(end_point + "collector", session); 
+
+	visualization = p.get("visualization");
+
 
 	// Image grabber
 	ImageSender image_sender_table(session, end_point, token);
@@ -68,7 +75,8 @@ int main(int argc, char * argv[])
 	// Screen grabber
 	ScreenGrabber screen_grabber;
 
-	// Kinect Frame acquisition
+	// Kinect Frame acquisition and check if the input template list file is correct
+	std::ifstream infile;
 	KinectManagerExchange * kinect_manager;
 	if(p.get("object"))
 	{
@@ -78,26 +86,39 @@ int main(int argc, char * argv[])
 		else{
 			return -1;
 		}
+
+		infile.open(p.getString("object"));
+		if(!infile)
+		{
+			std::cout << "cannot open template list file: " << p.getString("object") << std::endl;
+			p.printHelp();
+			return -1;
+		}
 	}
 
-	// Websocket manager
-	DataWriter collector(end_point + "collector", session);
+	// Send the two calibration matrixes. Need to sleep to give the websocket time to connect :/
+	sleep(1);
+	if(sendCalibration(collector) != 0){
+		std::cout << "error sending the calibration. Did you calibrate the cameras with -c ?" << std::endl;
+	}
 
 	// Thread container
 	std::vector<std::thread> thread_list;
+
+	cout << '\a' << std::flush;
 
 	// Starting the linemod thread
 	if(p.get("object"))
 		thread_list.push_back(std::thread(linemodf, std::ref(infile), kinect_manager, std::ref(collector)));
 	// Starting the face detection thread
 	if(p.get("face"))
-		thread_list.push_back(std::thread(detectFaces, std::ref(collector), std::ref(screen_grabber), std::ref(image_sender_people), std::ref(image_sender_screen)));
+		thread_list.push_back(std::thread(detectFaces, std::ref(collector), std::ref(screen_grabber), std::ref(image_sender_people), std::ref(image_sender_screen), face_camera_id));
 	// Starting the particle.io thread
 	if(p.get("particle"))
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
 	// Starting the hand detector
 	if(p.get("hand"))
-		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.033, p.get("calibration"), std::ref(image_sender_table)));
+		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.033, std::ref(image_sender_table), processor));
 	// Starting the ide logger
 	if(p.get("ide"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));
@@ -110,6 +131,8 @@ int main(int argc, char * argv[])
 	// Starting status visualization
 	if(p.get("status"))
 		thread_list.push_back(std::thread(drawStatus, std::ref(p)));
+	// Keep alive on server for status update
+	thread_list.push_back(std::thread(keep_alive, session, end_point + "aliver"));
 	
 	//If there are no windows wait for Esc to be pressed
 	checkEscape(visualization, p.get("special"));

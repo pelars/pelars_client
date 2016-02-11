@@ -14,7 +14,7 @@ void showQr(int session){
 	else
 		std::cout << "No Qr code available since there is no session id" << std::endl;
 
-	bool stop = false;
+	//bool stop = false;
 
 	while(!to_stop){
 		int c = cv::waitKey(1);

@@ -59,35 +59,40 @@ gboolean GstreamerGrabber::initVideoCapture()
 	gst_app_sink_set_emit_signals((GstAppSink*)this->appsink, true);
 	gst_app_sink_set_drop((GstAppSink*)this->appsink, true);
 	gst_app_sink_set_max_buffers((GstAppSink*)this->appsink, 1);
+
 	char buffer[1024];     
-	sprintf(buffer,"video/x-h264, width=(int)%d, height=(int)%d, fframerate=30/1",
-							width_, height_);
+
+	sprintf(buffer,"video/x-h264, width=(int)%d, height=(int)%d, fframerate=30/1", width_, height_);
 	// video/x-h264,width=1920,height=1080,framerate=30/1
-	this->srcdeinterlace_caps = gst_caps_from_string(buffer);        
-	if (!this->srcdeinterlace_caps)
-		g_printerr("1. Could not create media format string.\n");        
+	this->srcdeinterlace_caps = gst_caps_from_string(buffer); 
+
+	if(!this->srcdeinterlace_caps)
+		g_printerr("1. Could not create media format string.\n"); 
+
 	g_object_set (G_OBJECT (this->vsource_capsfilter), "caps", this->srcdeinterlace_caps, NULL);
 	gst_caps_unref(this->srcdeinterlace_caps);
-	sprintf(buffer,"video/x-raw, format=(string)GRAY8, width=(int)%d, height=(int)%d, framerate=(fraction)30/1",
-							width_, height_);
-//    this->cspappsink_caps = gst_caps_from_string("video/x-raw, format=(string)BGR, width=(int)1920, height=(int)1080, framerate=(fraction)30/1");        
-	this->cspappsink_caps = gst_caps_from_string(buffer);        
-	if (!this->cspappsink_caps)
-		g_printerr("3. Could not create media format string.\n");        
-   g_object_set (G_OBJECT (this->cspappsink_capsfilter), "caps", this->cspappsink_caps, NULL);    
+	sprintf(buffer,"video/x-raw, format=(string)BGR, width=(int)%d, height=(int)%d, framerate=(fraction)30/1", width_, height_);
+//    this->cspappsink_caps = gst_caps_from_string("video/x-raw, format=(string)GRAY8, width=(int)1920, height=(int)1080, framerate=(fraction)30/1");        
+	this->cspappsink_caps = gst_caps_from_string(buffer);  
+
+	if(!this->cspappsink_caps)
+		g_printerr("3. Could not create media format string.\n");   
+
+    g_object_set (G_OBJECT (this->cspappsink_capsfilter), "caps", this->cspappsink_caps, NULL);    
 	gst_caps_unref(this->cspappsink_caps);        
 
-	sprintf(buffer,"/dev/video%d",
-							device_id_);
+	sprintf(buffer,"/dev/video%d", device_id_);
 	g_object_set (this->video_source, "device", buffer, NULL);
    // g_object_set (filesink, "location", "/i/do/not/exist", NULL);
 		
 	this->bin_capture = gst_bin_new ("bin_capture");        
 	 
-	gst_bin_add_many (GST_BIN (this->bin_capture), this->video_source, this->vsource_capsfilter,this->parser/*this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2*/,this->decoder, this->appsink, NULL);
-	 
-	 // WE RELY ON THE FACT THAT THE x264 decoder uses YUV420 so we can grab the first HxWx8bit this as grayscale
-	if (gst_element_link_many(this->video_source, this->vsource_capsfilter,this->parser,this->decoder /*this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2*/, this->appsink, NULL) != TRUE)
+	//gst_bin_add_many (GST_BIN (this->bin_capture), this->video_source, this->vsource_capsfilter,this->parser/*this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2*/,this->decoder, this->appsink, NULL);
+	gst_bin_add_many (GST_BIN (this->bin_capture), this->video_source, this->vsource_capsfilter,this->parser,this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2,this->decoder, this->appsink, NULL);
+
+	// WE RELY ON THE FACT THAT THE x264 decoder uses YUV420 so we can grab the first HxWx8bit this as grayscale
+	//if(gst_element_link_many(this->video_source, this->vsource_capsfilter,this->parser,this->decoder /*this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2*/, this->appsink, NULL) != TRUE)
+	if (gst_element_link_many(this->video_source, this->vsource_capsfilter,this->parser,this->decoder, this->colorSpace1,this->cspappsink_capsfilter,this->colorSpace2, this->appsink, NULL) != TRUE)
 	{
 		g_printerr ("video_src linking failed.\n");
 		return FALSE;
@@ -102,7 +107,7 @@ void GstreamerGrabber::deletePipeline()
 	//g_print ("delete_pipeline\n");
 	gst_element_set_state (this->pipeline, GST_STATE_NULL);
 	//g_print ("Pipeline set to NULL\n");
-  //  gst_object_unref (this->bus);
+    //  gst_object_unref (this->bus);
 	gst_object_unref (this->pipeline);
 	//g_print ("Pipeline deleted\n");
 }
@@ -211,12 +216,12 @@ void GstreamerGrabber::capture(IplImage * frame)
 {
 	GstSample * sample = gst_app_sink_pull_sample((GstAppSink*)this->appsink);
 	  
-	GstBuffer*  gstImageBuffer=	gst_sample_get_buffer (sample);	
+	GstBuffer * gstImageBuffer=	gst_sample_get_buffer(sample);	
 
 	GstCaps * c = gst_sample_get_caps(sample);
 	GST_WARNING ("caps are %" GST_PTR_FORMAT, c);
 
-	gst_buffer_extract(gstImageBuffer,0,frame->imageData,frame->imageSize);
+	gst_buffer_extract(gstImageBuffer, 0, frame->imageData, frame->imageSize);
 	gst_buffer_unref(gstImageBuffer);
 }
 

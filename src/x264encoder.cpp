@@ -59,7 +59,7 @@ void x264Encoder::encodeFrame(const char *rgb_buffer, int buffer_size)
 	int slice_size = sws_scale(convert_context_, rgb_buffer_slice,
 							   stride, 0, image_h_, picture_in_.img.plane,
 							   picture_in_.img.i_stride);
-	x264_nal_t* nals ;
+	x264_nal_t* nals;
 	int i_nals = 0;
 	int frame_size = -1;
 	frame_size = x264_encoder_encode(encoder_, &nals, &i_nals,

@@ -36,12 +36,12 @@ cv::Ptr<cv::linemod::Detector> readLinemod(const std::string& filename)
 	return detector;
 }
 
-int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & websocket)
+void linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & websocket)
 {
 	// Some matching parameters for linemod
 	short matching_threshold = 85;
-	short learning_lower_bound = 90;
-	short learning_upper_bound = 95;
+	//short learning_lower_bound = 90;
+	//short learning_upper_bound = 95;
 
 	//CREating data for storing the streams
 	std::vector<uint8_t> rgb_buffer_compressedx_;
@@ -51,9 +51,9 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 
 	//Kinect v1 intrinsic parameters
 	const double focal_x_depth = 5.9421434211923247e+02;
-	const double focal_y_depth = 5.9104053696870778e+02;
+	//const double focal_y_depth = 5.9104053696870778e+02;
 	const double center_x_depth = 3.3930780975300314e+02;
-	const double center_y_depth = 2.4273913761751615e+02;
+	//const double center_y_depth = 2.4273913761751615e+02;
 
 	// Initialize an OpenCV window
 	if(visualization)
@@ -84,7 +84,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 	short template_num = detectors.size();
 	if(!template_num){
 		std::cout << "no models loaded" << std::endl;
-		return -1;
+		return ;
 	}
 
 	// Preapare modalities vector
@@ -114,7 +114,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 	root["obj"]["type"] = "object";
 
 	TimedSender timer(interval);
-	bool to_send;
+	bool to_send = false;
 
 	std::string message;
 
@@ -194,7 +194,7 @@ int linemodf(std::ifstream & infile, KinectManagerExchange * kme, DataWriter & w
 			to_send = timer.needSend();
 		for(int i = 0; i < template_num; i++)
 		{
-			for(int j = 0; j < results[i].size(); j++)
+			for(unsigned int j = 0; j < results[i].size(); j++)
 			{
 				// Get results and display them
 				auto & m = results[i][j].m;

@@ -1,6 +1,6 @@
 #include "upload.h"
 
-int uploadData(std::string file_name, std::string end_point){
+int uploadData(std::string file_name, std::string end_point, int session_id){
 
 	int packet_size = 0;
 	char buffer[1024];
@@ -9,8 +9,13 @@ int uploadData(std::string file_name, std::string end_point){
 	Json::Value root;
 	Json::Reader reader;
 
+	// Remove path prefix to get only name
+	std::size_t found = file_name.find_last_of("/");
+	if(found != std::string::npos)
+		file_name = file_name.substr(found + 1);
+
 	// Open file
-	std::ifstream in(file_name);
+	std::ifstream in("../../backup/" + file_name);
 	if(!in.is_open()){
 		std::cout << "could not open file " << std::endl;
 		return -1;
@@ -18,38 +23,42 @@ int uploadData(std::string file_name, std::string end_point){
 
 	// Read the session id from the file name
 	std::string delimiter = "_";
-	size_t last = 0; size_t next = 0; 
-	next = file_name.find(delimiter, last);
+	size_t last = 0; 
+	size_t next = file_name.find(delimiter, last); 
 	last = next + 1;
 	next = file_name.find(delimiter, last);
 	int s = stoi(file_name.substr(last, next - last));
-	bool new_session = false;
+	//bool new_session = false;
 
-	// Create new session if the session id is not present on the server
 	SessionManager sm(end_point);
-	sm.login();
-	if(s == -1){
 
-		// Read first packet and get time to create the session with the correct time if it was not opened
-		in >> packet_size;
-		in.read(buffer, packet_size);
-		std::string tmp(buffer, packet_size);
-
-		reader.parse(tmp, root, false);
-		if(root["obj"].isArray()){
-			for(const Json::Value& a : root["obj"])
-				time = a["time"].asInt64();
-		}
-		else{
-			time = root["obj"]["time"].asInt64();
-		}
+	if(session_id != 0 ){
+		s = session_id;
+	}else{
+		// Create new session if the session id is not present on the server
 		
-		in.seekg(0);
+		sm.login();
 
-		new_session = true;
-		s = sm.getNewSession(time);
+		if(s == -1){
+			// Read first packet and get time to create the session with the correct time if it was not opened
+			in >> packet_size;
+			in.read(buffer, packet_size);
+			std::string tmp(buffer, packet_size);
+
+			reader.parse(tmp, root, false);
+			if(root["obj"].isArray()){
+				for(Json::Value & a : root["obj"])
+					time = a["time"].asInt64();
+			}
+			else{
+				time = root["obj"]["time"].asInt64();
+			}
+			
+			in.seekg(0);
+			//new_session = true;
+			s = sm.getNewSession(time);
+		}
 	}
-
 	// Connect the websocker on the upload endpoint
 	DataWriter collector(end_point + "upload", s, false);
 	sleep(1); //else the websocket is not initialized
@@ -74,7 +83,7 @@ int uploadData(std::string file_name, std::string end_point){
 			// Get time of the last packet and use it as closing time
 			reader.parse(tmp, root);
 			if(root["obj"].isArray()){
-				for(const Json::Value& a : root["obj"])
+				for(Json::Value& a : root["obj"])
 					time = a["time"].asInt64();
 			}
 			else{
@@ -88,8 +97,8 @@ int uploadData(std::string file_name, std::string end_point){
 
 
 	boost::filesystem::directory_iterator end_itr;
-	std::string image_dir("../snapshots_" + std::to_string(s));
-	ImageSender image_sender(s, "http://pelars.sssup.it:8080/pelars/", sm.getToken());
+	std::string image_dir("../../images/snapshots_" + std::to_string(s));
+	ImageSender image_sender(s, "http://pelars.sssup.it/pelars/", sm.getToken());
 
 	for(boost::filesystem::directory_iterator itr(image_dir); itr != end_itr; ++itr){
 		std::string path = itr->path().string();
@@ -106,10 +115,12 @@ int uploadData(std::string file_name, std::string end_point){
 	    		std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
 	    		std::string type = path.substr(path.size() - 3, path.size());
 	    		std::size_t start = name.find("_") + 1;
+	    		std::string view = name.substr(0, start - 1);
 	    		std::size_t end = name.substr(start, name.size()).find("_") - 1;
 	    		long time_epoch = stol(name.substr(start, end));
 	    		//std::cout << time_epoch << std::endl;
-	    		image_sender.send(code, type, time_epoch);
+	    		//std::cout << "name " << view << " type " << type << std::endl;
+	    		image_sender.send(code, type, view, time_epoch);
 	    		in.close();
 	    }
 	}

@@ -1,8 +1,5 @@
 #include "kinect_grabber.h"
 
-// Asion communication service and Asio keep alive
-boost::asio::io_service io;
-
 KinectManagerExchange::KinectManagerExchange(): shm_obj_(boost::interprocess::open_only, "region", boost::interprocess::read_write)
 {
 	size_ = 640 * 480 * 6 + 4;
@@ -41,7 +38,6 @@ void KinectManagerExchange::start()
 
 bool KinectManagerExchange::getColorRGB(cv::Mat & color)
 {
-	int counter = 0;
 	static int lastframe = -2;
 	while(true)
 	{

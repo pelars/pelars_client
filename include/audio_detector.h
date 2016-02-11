@@ -25,5 +25,5 @@ struct FFT{
 		root_["obj"]["type"] = "audio";
 	}
 
-	float compute(float * buf, int count);
+	float compute(float * buf, unsigned int count);
 };
