@@ -44,7 +44,7 @@ DataWriter::DataWriter(const std::string & uri, const int session, const int ali
 	m_client_.set_access_channels(websocketpp::log::alevel::app);
 
 	m_client_.set_fail_handler(bind(&DataWriter::onFail, this, /*std::placeholders*/::_1));
-
+	std::cout << uri_ << std::endl;
 	if(uri_.find("http://") == 0){
 		// Initialize the Asio transport policy
 		m_client_.init_asio();
@@ -54,6 +54,8 @@ DataWriter::DataWriter(const std::string & uri, const int session, const int ali
 		websocketpp::lib::thread asio_thread(&client::run, &m_client_);
 		thread_.swap(asio_thread);
 		failed_ = false;
+	}else{
+		std::cout << "Invalid aliver endpoint " << uri_ << std::endl;
 	}
 }
 
@@ -67,7 +69,6 @@ void DataWriter::writeLocal(const std::string s) {
 	m_.lock();
 	fs_ << s.size() << s;
 	m_.unlock();
-
 }
 
 void DataWriter::stop()

@@ -22,7 +22,6 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	TimedSender timer(interval / 2);
 	TimedSender timer_minute(60000);
 
-
 	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
 
 	cv::Mat camera_parameters = cv::Mat::eye(3, 3, CV_32F);
@@ -51,9 +50,9 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	while(!to_stop)
 	{
 		color = k2g.getColor();
-		cvtColor(color, grey, CV_BGR2GRAY);
 		cv::flip(color, color, 1);
-		cv::flip(grey, grey, 1);	
+		cvtColor(color, grey, CV_BGR2GRAY);
+
 		if((snapshot_table && image_sender) || timer_minute.needSend()){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());

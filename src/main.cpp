@@ -63,6 +63,8 @@ int main(int argc, char * argv[])
 
 	// Websocket manager
 	DataWriter collector(end_point + "collector", session); 
+	DataWriter alive_socket(end_point + "aliver", session); 
+	std::cout << "opened aliver on " + end_point + "/" + std::to_string(session) << std::endl;
 
 	visualization = p.get("visualization");
 
@@ -118,7 +120,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
 	// Starting the hand detector
 	if(p.get("hand"))
-		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.033, std::ref(image_sender_table), processor));
+		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.035, std::ref(image_sender_table), processor));
 	// Starting the ide logger
 	if(p.get("ide"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));
@@ -132,7 +134,7 @@ int main(int argc, char * argv[])
 	if(p.get("status"))
 		thread_list.push_back(std::thread(drawStatus, std::ref(p)));
 	// Keep alive on server for status update
-	thread_list.push_back(std::thread(keep_alive, session, end_point + "aliver"));
+	thread_list.push_back(std::thread(keep_alive, std::ref(alive_socket)));
 	
 	//If there are no windows wait for Esc to be pressed
 	checkEscape(visualization, p.get("special"));
