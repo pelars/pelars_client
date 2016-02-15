@@ -4,8 +4,9 @@ double std_width = 185.0; //mm
 
 double focal_length_pixel = 589.3588305153235; //489.3;  //pixel
 
+// Returns the distance in meters
 inline double distance(int x1, int x2){
-		return (std_width * focal_length_pixel) / std::abs(x1 - x2);
+		return ((std_width * focal_length_pixel) / std::abs(x1 - x2)) / 1000;
 	}
 
 void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, ImageSender & image_sender_people, const int face_camera_id)
@@ -53,7 +54,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	Json::Value root = Json::arrayValue;
 	Json::Value array;
 
-	float face_distance, tx, ty, tz, tx1, ty1, tx2, ty2, x_unproject, y_unproject;
+	float face_distance, tx, ty, tz, tx1, ty1, tz1, tx2, ty2, tz2, x_unproject, y_unproject;
 	cv::Mat pose;
 	cv::Mat hand_pose = cv::Mat(cv::Size(1, 4), CV_32F);
 	hand_pose.at<float>(0, 3) = 1;
@@ -167,10 +168,11 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			cv::Point center(faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5);
 			cv::ellipse(color, center, cv::Size(faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255), 4, 8, 0);
 
+			// Distance in meters
 			face_distance = distance(faces[i].x, faces[i].x + faces[i].width);
 
-			const float const_x = face_distance / fx;
-			const float const_y = face_distance / fy;
+			const float const_x = (face_distance / fx);
+			const float const_y = (face_distance / fy);
 
 			x_unproject = (faces[i].x - cx) * const_x;
 			y_unproject = (faces[i].y - cy) * const_y;
@@ -198,6 +200,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			pose = camera_inverse * hand_pose;
 			tx1 = pose.at<float>(0, 0);
 			ty1 = pose.at<float>(0, 1);
+			tz1 = pose.at<float>(0, 2);
 
 			// Reuse previous values
 			hand_pose.at<float>(0, 0) = x_unproject;
@@ -206,6 +209,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			pose = camera_inverse * hand_pose;
 			tx2 = pose.at<float>(0, 0);
 			ty2 = pose.at<float>(0, 1);
+			tz2 = pose.at<float>(0, 2);
 
 			// Json message
 			array["type"] = "face";
@@ -217,9 +221,16 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			array["x2"] = tx2;
 			array["y2"] = ty2;
 			array["distance"] = tz;
+			/*
+			cv::circle(color, cv::Point(faces[i].x, faces[i].y), 10, cv::Scalar(0,0,255), -1);
+			cv::circle(color, cv::Point(faces[i].x + faces[i].height, faces[i].y + faces[i].width), 10, cv::Scalar(0,255,0), -1);
+			cv::circle(color, cv::Point(faces[i].x + faces[i].height, faces[i].y ), 10, cv::Scalar(255,0,0), -1);
 
-			//std::cout << "x " << tx << " y " << ty << ", x1 " << tx1 << " y1 " << ty1 << ", x2  " << tx2 << " y2 " << ty2 << ", tz " << tz <<  " distance " << face_distance << std::endl;
-
+			std::cout << "RED x " << tx << " ,y " << ty << ", tz " << tz << std::endl;
+			std::cout << "GREEN x1 " << tx1 << " ,y1 " << ty1 << ", tz " << tz1 << std::endl;
+			std::cout << "BLUE x2 " << tx2 << " ,y2 " << ty2 << ", tz " << tz2 << std::endl;
+			std::cout << face_distance << std::endl;
+*/
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 			root.append(array);

@@ -25,9 +25,9 @@ int SessionManager::getNewSession(double time)
 		// Json message and content
 		root_.clear();
 		root_["user_id"] = user_id_;
-		root_["institution_name"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_name" )->GetText();
-		root_["institution_address"] = data_.FirstChildElement( "Root" )->FirstChildElement( "institution_address" )->GetText();
-		root_["namespace" ] = data_.FirstChildElement( "Root" )->FirstChildElement( "namespace" )->GetText();
+		root_["institution_name"] = data_.FirstChildElement("Root")->FirstChildElement("institution_name")->GetText();
+		root_["institution_address"] = data_.FirstChildElement( "Root")->FirstChildElement("institution_address")->GetText();
+		root_["namespace"] = data_.FirstChildElement("Root")->FirstChildElement("namespace")->GetText();
 		if(time != 0){
 			root_["start"] = time;
 		}
@@ -56,7 +56,7 @@ int SessionManager::getNewSession(double time)
 			session_ = -1;
 		}
 		if(!parsed_success){
-			// error during the parsing step
+			// Error during the parsing step
 			std::cout << "\tError during the session request: Couldn't parse json message; setting session id to -1" <<std::endl;
 			error = true;
 			online = false;

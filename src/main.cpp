@@ -13,7 +13,7 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 
-	// Keep aliver
+	// Keep alive for Asio
 	std::thread ws_writer(asiothreadfx);
 
 	// Check the endpoint string and connect to the collector
