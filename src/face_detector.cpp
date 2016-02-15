@@ -216,11 +216,14 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			array["id"] = i;
 			array["x"] = tx; 
 			array["y"] = ty;
+			array["z"] = tz;
 			array["x1"] = tx1;
 			array["y1"] = ty1;
+			array["z1"] = tz1;
 			array["x2"] = tx2;
 			array["y2"] = ty2;
-			array["distance"] = tz;
+			array["z2"] = tz2;
+			array["distance"] = face_distance;
 			/*
 			cv::circle(color, cv::Point(faces[i].x, faces[i].y), 10, cv::Scalar(0,0,255), -1);
 			cv::circle(color, cv::Point(faces[i].x + faces[i].height, faces[i].y + faces[i].width), 10, cv::Scalar(0,255,0), -1);
