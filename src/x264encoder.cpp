@@ -43,10 +43,11 @@ void x264Encoder::initialize(int w = 640, int h = 480, const bool kinect)
 									  PIX_FMT_YUV420P,
 									  SWS_FAST_BILINEAR, NULL, NULL, NULL);
 	}
-	else{
+	else
+	{
 		convert_context_ = sws_getContext(parameters_.i_width,
 									  parameters_.i_height,
-									  PIX_FMT_BGR32, 
+									  PIX_FMT_RGB32, 
 									  parameters_.i_width,
 									  parameters_.i_height,
 									  PIX_FMT_YUV420P,
@@ -63,10 +64,10 @@ void x264Encoder::unInitilize()
 }
 
 //Encode the rgb frame into a sequence of NALs unit that are stored in a std::vector
-void x264Encoder::encodeFrame(const char *rgb_buffer, int buffer_size)
+void x264Encoder::encodeFrame(const char *rgb_buffer, const unsigned int bytes)
 {
 	const uint8_t * rgb_buffer_slice[1] = {(const uint8_t *)rgb_buffer};
-	int stride[1] = { 3 * image_w_ }; // RGB stride
+	int stride[1] = { bytes * image_w_ }; // RGB stride
 
 	//Convert the frame from RGB to YUV420
 	int slice_size = sws_scale(convert_context_, rgb_buffer_slice,

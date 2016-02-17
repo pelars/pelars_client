@@ -29,7 +29,7 @@ public:
 	x264Encoder(const std::string name = "video.x264"): os_(name, std::ios::binary) {}
 	void initialize(int w, int h, const bool kinect = false);
 	void unInitilize();
-	void encodeFrame(const char *rgb_buffer, int buffer_size);
+	void encodeFrame(const char *rgb_buffer, const unsigned int bytes);
 	bool isNalsAvailableInOutputQueue();
 	int image_h_;
 	int image_w_;

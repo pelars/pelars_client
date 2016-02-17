@@ -25,12 +25,11 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	TimedSender timer_minute(60000);
 
 	x264Encoder * x264encoder;
-	const unsigned int kinect2_size = 1920 * 1080 * 4;
 	if(video){
 		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 		x264encoder = new x264Encoder("kinect2_"+ now + "_" + std::to_string(session) + ".avi");
-		x264encoder->initialize(1920, 1080);
+		x264encoder->initialize(1920, 1080, true);
 	}
 
 	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
@@ -64,7 +63,7 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 		cv::flip(color, color, 1);
 
 		if(video){
-			x264encoder->encodeFrame((const char *)color.data, kinect2_size);
+			x264encoder->encodeFrame((const char *)color.data, 4);
 		}
 
 		cvtColor(color, grey, CV_BGR2GRAY);

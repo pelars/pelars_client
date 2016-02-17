@@ -25,7 +25,6 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	cv::gpu::GpuMat gray_gpu;
 	cv::Mat faces_downloaded, color;
 
-
 	const int session = websocket.getSession();
 
 	const bool findLargestObject_ = false;
@@ -58,7 +57,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 		x264encoder = new x264Encoder("webcam_"+ now + "_" + std::to_string(session) + ".avi");
-		x264encoder->initialize(width, height, true);
+		x264encoder->initialize(width, height);
 	}
 
 	/*
@@ -127,7 +126,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			outputVideo->write(color);
 */	
 		if(video){
-			x264encoder->encodeFrame((const char *)color.data, width * height * 3);
+			x264encoder->encodeFrame((const char *)color.data, 3);
 		}
 
 		cv::gpu::GpuMat color_gpu(color);
