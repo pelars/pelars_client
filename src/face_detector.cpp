@@ -9,7 +9,8 @@ inline double distance(int x1, int x2){
 		return ((std_width * focal_length_pixel) / std::abs(x1 - x2)) / 1000;
 	}
 
-void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, ImageSender & image_sender_people, const int face_camera_id)
+void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, 
+	             ImageSender & image_sender_people, const int face_camera_id, const bool video)
 {
 	// Needed since else opencv does not crete the window (BUG?)
 	if(visualization)
@@ -41,6 +42,24 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	const float cx = 414.1871817694326;
 	const float fy = 588.585116717914;
 	const float cy = 230.3588624031242; 
+/*
+	cv::VideoWriter * outputVideo;
+	if(video){
+		int fourcc = CV_FOURCC('M','J','P','G');
+		int fps = 30;
+		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
+		outputVideo->open("webcam_"+ now + "_" + std::to_string(session) + ".avi", fourcc, fps, cv::Size(width,height));
+	}
+*/
+
+	x264Encoder * x264encoder;
+	if(video){
+		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
+		x264encoder = new x264Encoder("webcam_"+ now + "_" + std::to_string(session) + ".avi");
+		x264encoder->initialize(width, height, true);
+	}
 
 	/*
 	const float k1 = 0.12269303;
@@ -103,6 +122,14 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		color = cv::Mat(frame);
 
 		cv::flip(color, color, 1);
+/*
+		if(video)
+			outputVideo->write(color);
+*/	
+		if(video){
+			x264encoder->encodeFrame((const char *)color.data, width * height * 3);
+		}
+
 		cv::gpu::GpuMat color_gpu(color);
 
 		//cvtColor(color, gray, CV_BGR2GRAY);
@@ -233,7 +260,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			std::cout << "GREEN x1 " << tx1 << " ,y1 " << ty1 << ", tz " << tz1 << std::endl;
 			std::cout << "BLUE x2 " << tx2 << " ,y2 " << ty2 << ", tz " << tz2 << std::endl;
 			std::cout << face_distance << std::endl;
-*/
+			*/
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 			root.append(array);
@@ -267,5 +294,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			}
 		}
 	}
+
+	if(video)
+		x264encoder->unInitilize();
 }
 

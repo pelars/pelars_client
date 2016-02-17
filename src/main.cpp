@@ -36,9 +36,18 @@ int main(int argc, char * argv[])
 	if(p.get("face_camera"))
 		face_camera_id = p.getInt("face_camera");
 
+	float marker_size = p.get("marker") ? p.getFloat("marker") : 0.07;
+
+	if(p.get("marker_id")){
+		show_markers(face_camera_id, marker_size);
+		io.stop();
+		ws_writer.join();
+		return 0;
+	}
+
 	// Calibrate the cameras and exit
 	if(p.get("calibration")){
-		calibration(face_camera_id, p.get("marker") ? p.getFloat("marker") : 0.07);
+		calibration(face_camera_id, marker_size);
 		io.stop();
 		ws_writer.join();
 		return 0;
@@ -68,7 +77,6 @@ int main(int argc, char * argv[])
 
 	visualization = p.get("visualization");
 
-
 	// Image grabber
 	ImageSender image_sender_table(session, end_point, token);
 	ImageSender image_sender_people(session, end_point, token);
@@ -78,6 +86,7 @@ int main(int argc, char * argv[])
 	ScreenGrabber screen_grabber;
 
 	// Kinect Frame acquisition and check if the input template list file is correct
+	/*
 	std::ifstream infile;
 	KinectManagerExchange * kinect_manager;
 	if(p.get("object"))
@@ -97,6 +106,7 @@ int main(int argc, char * argv[])
 			return -1;
 		}
 	}
+	*/
 
 	// Send the two calibration matrixes. Need to sleep to give the websocket time to connect :/
 	sleep(1);
@@ -107,31 +117,37 @@ int main(int argc, char * argv[])
 	// Thread container
 	std::vector<std::thread> thread_list;
 
+	// Should make a sound
 	cout << '\a' << std::flush;
 
 	// Starting the linemod thread
+/*
 	if(p.get("object"))
 		thread_list.push_back(std::thread(linemodf, std::ref(infile), kinect_manager, std::ref(collector)));
+*/
 	// Starting the face detection thread
-	if(p.get("face"))
-		thread_list.push_back(std::thread(detectFaces, std::ref(collector), std::ref(screen_grabber), std::ref(image_sender_people), std::ref(image_sender_screen), face_camera_id));
+	if(p.get("face") || p.get("default"))
+		thread_list.push_back(std::thread(detectFaces, std::ref(collector), std::ref(screen_grabber), 
+			                  std::ref(image_sender_people), std::ref(image_sender_screen), face_camera_id, 
+			                  p.get("video") ? true : false));
 	// Starting the particle.io thread
 	if(p.get("particle"))
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
 	// Starting the hand detector
-	if(p.get("hand"))
-		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.035, std::ref(image_sender_table), processor));
+	if(p.get("hand") || p.get("default"))
+		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.035,
+		                      std::ref(image_sender_table), processor, p.get("video") ? true : false));
 	// Starting the ide logger
-	if(p.get("ide"))
+	if(p.get("ide") || p.get("default"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));
 	// Starting audio detector
-	if(p.get("audio"))
+	if(p.get("audio") || p.get("default"))
 		thread_list.push_back(std::thread(audioDetector, std::ref(collector)));
 	// Starting qr visualization
-	if(p.get("qr"))
+	if(p.get("qr") || p.get("default"))
 		thread_list.push_back(std::thread(showQr, session));
 	// Starting status visualization
-	if(p.get("status"))
+	if(p.get("status") || p.get("default"))
 		thread_list.push_back(std::thread(drawStatus, std::ref(p)));
 	// Keep alive on server for status update
 	thread_list.push_back(std::thread(keep_alive, std::ref(alive_socket)));
@@ -151,8 +167,10 @@ int main(int argc, char * argv[])
 	// Close session
 	sm.closeSession(session);
 	// Stopping the kinect grabber
+/*
 	if(p.get("object"))
 		kinect_manager->stop();
+*/
 	// Stopping the websocket
 	collector.stop();
 	std::cout << "Connection to Collector closed" << std::endl;

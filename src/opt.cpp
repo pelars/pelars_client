@@ -133,3 +133,56 @@ int sendCalibration(DataWriter & websocket){
 
 	return 0;
 }
+
+
+void drawStatus(Parser & p){
+
+	sleep(2);
+	cv::startWindowThread();
+	cv::namedWindow("status");
+
+	int offset = 30;
+	cv::Mat status(240, 320 , CV_8UC1);
+    status.setTo(cv::Scalar(255, 255, 255));
+    if(p.get("face")){
+    	cv::putText(status, "-face tracking", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("audio")){
+    	cv::putText(status, "-audio tracking", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("hand")){
+    	cv::putText(status, "-hand tracking", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("particle")){
+    	cv::putText(status, "-particle tracking", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+ 		offset += 30;
+ 	}
+    if(p.get("qr")){
+    	cv::putText(status, "-qr visualization", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("session")){
+    	cv::putText(status, "-continuing previous session", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("calibration")){
+    	cv::putText(status, "-calibration", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("ide")){
+    	cv::putText(status, "-arduino tracking", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+
+    cv::imshow("status", status);
+	while(!to_stop){
+		int c = cv::waitKey(1);
+		if((char)c == 'q') {
+			to_stop = true;
+			cv::destroyWindow("status");
+		}
+	}
+}

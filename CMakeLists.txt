@@ -42,7 +42,6 @@ find_package(PortAudio REQUIRED)
 find_package(Cairo REQUIRED)
 find_package(Freenect2 REQUIRED)
 
-#pkg_search_module(GLFW REQUIRED glfw3)
 set(Boost_USE_MULTITHREADED ON) 
 
 set(X264 ${X264_LIBRARIES})
@@ -53,10 +52,8 @@ find_library(GSTREAMER_O     NAMES gobject-2.0)
 find_library(GSTREAMER       NAMES gstreamer-1.0)
 find_library(GSTREAMER_A     NAMES gstapp-1.0)
 find_library(GLIB            NAMES glib-2.0)
-#find_library(FREENECT2 NAMES freenect2)
 set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
 set(LINUXEXTRA rt boost_program_options boost_random)
-
 
 include_directories(${JSONCPP_INCLUDE_DIR})
 include_directories(${FFMPEG_INCLUDE_DIRS})
@@ -81,9 +78,9 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/data_writer.cpp 
 								${SRC}/mongoose.cpp 
 								#${SRC}/x264decoder.cpp 
-								#${SRC}/x264encoder.cpp
+								${SRC}/x264encoder.cpp
 								${SRC}/sse_handler.cpp 
-								${SRC}/xn16zdec.cpp
+								#${SRC}/xn16zdec.cpp
 								${SRC}/hand_detector.cpp
 								${SRC}/gstreamer_grabber.cpp
 								${SRC}/opt.cpp
@@ -99,6 +96,8 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/upload.cpp
 								${SRC}/calibrator.cpp
 								${SRC}/aliver.cpp
+								${SRC}/marker_viewer.cpp
+								${SRC}/opt_parse.cpp
 								)
 
 target_link_libraries(sensor_manager 	${OpenCV_LIBS} 

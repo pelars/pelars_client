@@ -1,4 +1,5 @@
 #pragma once
+/*
 #include "xn16zdec.h"
 #include "x264encoder.h"
 #include "x264decoder.h"
@@ -52,3 +53,5 @@ public:
 private:
 	int packRgbData();
 };
+
+*/

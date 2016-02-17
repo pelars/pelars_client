@@ -16,6 +16,7 @@
 #include "calibrator.h"
 #include "upload.h"
 #include "aliver.h"
+#include "marker_viewer.h"
 
 
 

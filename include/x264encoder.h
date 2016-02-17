@@ -1,3 +1,4 @@
+
 #ifndef X264ENCODER_H
 #define X264ENCODER_H
 
@@ -19,12 +20,14 @@ extern "C" {
 	#include <libswscale/swscale.h>
 }
 
+#include <fstream>
 
 class x264Encoder
 {
 
 public:
-	void initialize(int w, int h);
+	x264Encoder(const std::string name = "video.x264"): os_(name, std::ios::binary) {}
+	void initialize(int w, int h, const bool kinect = false);
 	void unInitilize();
 	void encodeFrame(const char *rgb_buffer, int buffer_size);
 	bool isNalsAvailableInOutputQueue();
@@ -41,7 +44,7 @@ private:
 	x264_param_t parameters_;
 	x264_picture_t picture_in_, picture_out_;
 	x264_t* encoder_;
-
+	std::ofstream os_;
 };
 
 #endif // X264ENCODER_H

@@ -11,6 +11,7 @@
 #include "session_manager.h"
 #include "image_sender.h"
 #include <base64.h>
+#include <opt_parse.h>
 
 // Asion communication service and Asio keep alive
 extern boost::asio::io_service io;
@@ -18,10 +19,13 @@ extern bool online;
 extern bool to_stop;
 
 void sig_handler(int signum);
-
 void aliver(const boost::system::error_code& /*e*/);
-
 void asiothreadfx();
+
+void printHelp();
+void checkEscape(bool visualization, bool special);
+int sendCalibration(DataWriter & websocket);
+void drawStatus(Parser & p);
 
 const std::string currentDateTime();
 
@@ -75,6 +79,3 @@ private:
 
 };
 
-void printHelp();
-void checkEscape(bool visualization, bool special);
-int sendCalibration(DataWriter & websocket);
