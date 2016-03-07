@@ -67,8 +67,8 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 		}
 
 		cvtColor(color, grey, CV_BGR2GRAY);
-
-		if((snapshot_table && image_sender) || timer_minute.needSend()){
+		bool send_minute = timer_minute.needSend();
+		if((snapshot_table && image_sender) || send_minute){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 			std::string name = std::string(folder_name + "/workspace_" + now + "_" + std::to_string(session) + ".jpg");
@@ -86,7 +86,10 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 			    std::vector<char> data(fileSize);
 				in.read(&data[0], fileSize);
 				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-				image_sender.send(code, "jpg", "workspace");
+				if(send_minute)
+					image_sender.send(code, "jpg", "workspace", true);
+				else
+					image_sender.send(code, "jpg", "workspace", false);
 			}
 			snapshot_table = false;
 		}

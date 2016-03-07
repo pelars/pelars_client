@@ -74,8 +74,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 	float face_distance, tx, ty, tz, tx1, ty1, tz1, tx2, ty2, tz2, x_unproject, y_unproject;
 	cv::Mat pose;
-	cv::Mat hand_pose = cv::Mat(cv::Size(1, 4), CV_32F);
-	hand_pose.at<float>(0, 3) = 1;
+	cv::Mat face_pose = cv::Mat(cv::Size(1, 4), CV_32F);
+	face_pose.at<float>(0, 3) = 1;
 	int detections_num;
 
 	// Preapare JSON message to send to the Collectorh
@@ -153,7 +153,10 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			    std::vector<char> data(fileSize);
 				in.read(&data[0], fileSize);
 				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-				image_sender_people.send(code, "jpg", "people");
+				if(send_minute)
+					image_sender_people.send(code, "jpg", "people", true);
+				else
+					image_sender_people.send(code, "jpg", "people", false);
 			}
 			snapshot_people = false;
 		}
@@ -176,10 +179,14 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			    std::vector<char> data(fileSize);
 				in.read(&data[0], fileSize);
 				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-				image_sender_screen.send(code, "png", "screen");
+				if(send_minute)
+					image_sender_screen.send(code, "png", "screen", true);
+				else
+					image_sender_screen.send(code, "png", "screen", false);
 			}
 			snapshot_screen = false;
 		}
+		send_minute = false;
 		
 		detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, cv::Size(color.cols,color.rows), cv::Size(), 1.05, (filterRects_ || findLargestObject_) ? 4 : 0);
 
@@ -207,12 +214,12 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 				
 			const float tmp = y_unproject;
 			
-			//hand_pose.at<float>(0, 3) = 1; already done after declaration
-			hand_pose.at<float>(0, 0) = x_unproject;
-			hand_pose.at<float>(0, 1) = y_unproject;
-			hand_pose.at<float>(0, 2) = face_distance;
+			//face_pose.at<float>(0, 3) = 1; already done after declaration
+			face_pose.at<float>(0, 0) = x_unproject;
+			face_pose.at<float>(0, 1) = y_unproject;
+			face_pose.at<float>(0, 2) = face_distance;
 
-			pose = camera_inverse * hand_pose;
+			pose = camera_inverse * face_pose;
 			tx = pose.at<float>(0, 0);
 			ty = pose.at<float>(0, 1);
 			tz = pose.at<float>(0, 2);
@@ -220,19 +227,19 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			x_unproject = (faces[i].x + faces[i].width - cx) * const_x;
 			y_unproject = (faces[i].y + faces[i].height - cy) * const_y;
 
-			hand_pose.at<float>(0, 0) = x_unproject;
-			hand_pose.at<float>(0, 1) = y_unproject;
+			face_pose.at<float>(0, 0) = x_unproject;
+			face_pose.at<float>(0, 1) = y_unproject;
 
-			pose = camera_inverse * hand_pose;
+			pose = camera_inverse * face_pose;
 			tx1 = pose.at<float>(0, 0);
 			ty1 = pose.at<float>(0, 1);
 			tz1 = pose.at<float>(0, 2);
 
 			// Reuse previous values
-			hand_pose.at<float>(0, 0) = x_unproject;
-			hand_pose.at<float>(0, 1) = tmp;
+			face_pose.at<float>(0, 0) = x_unproject;
+			face_pose.at<float>(0, 1) = tmp;
 
-			pose = camera_inverse * hand_pose;
+			pose = camera_inverse * face_pose;
 			tx2 = pose.at<float>(0, 0);
 			ty2 = pose.at<float>(0, 1);
 			tz2 = pose.at<float>(0, 2);
@@ -241,20 +248,21 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			array["type"] = "face";
 			array["id"] = i;
 			array["x"] = tx; 
-			array["y"] = ty;
+			array["y"] = -ty;
 			array["z"] = tz;
 			array["x1"] = tx1;
-			array["y1"] = ty1;
+			array["y1"] = -ty1;
 			array["z1"] = tz1;
 			array["x2"] = tx2;
-			array["y2"] = ty2;
+			array["y2"] = -ty2;
 			array["z2"] = tz2;
 			array["distance"] = face_distance;
-			/*
+			
 			cv::circle(color, cv::Point(faces[i].x, faces[i].y), 10, cv::Scalar(0,0,255), -1);
 			cv::circle(color, cv::Point(faces[i].x + faces[i].height, faces[i].y + faces[i].width), 10, cv::Scalar(0,255,0), -1);
 			cv::circle(color, cv::Point(faces[i].x + faces[i].height, faces[i].y ), 10, cv::Scalar(255,0,0), -1);
-
+			cv::circle(color, cv::Point(faces[i].x, faces[i].y + faces[i].width ), 10, cv::Scalar(255,255,0), -1);
+/*
 			std::cout << "RED x " << tx << " ,y " << ty << ", tz " << tz << std::endl;
 			std::cout << "GREEN x1 " << tx1 << " ,y1 " << ty1 << ", tz " << tz1 << std::endl;
 			std::cout << "BLUE x2 " << tx2 << " ,y2 " << ty2 << ", tz " << tz2 << std::endl;

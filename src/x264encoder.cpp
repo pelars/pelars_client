@@ -83,8 +83,6 @@ void x264Encoder::encodeFrame(const char *rgb_buffer, const unsigned int bytes)
 			//output_queue_.push(nals[i]);
 			os_.write((const char*)nals[i].p_payload, nals[i].i_payload);
 		}
-	
-
 }
 
 bool x264Encoder::isNalsAvailableInOutputQueue()
