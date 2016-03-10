@@ -10,5 +10,4 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include "gstreamer_grabber.h"
 
-
 void calibration(const unsigned int id, const float marker_size);

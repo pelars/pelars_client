@@ -2,6 +2,8 @@
 
 GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id = 0): height_(height), width_(width), device_id_(device_id)
 {
+
+	std::cout << "Opening device /dev/video" << device_id << std::endl;
 	gst_init(NULL, NULL);
 	createPipeline();
 	//std::cout << "Pipeline created" << std::endl;

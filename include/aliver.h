@@ -3,4 +3,4 @@
 #include <json/json.h>
 #include "opt.h"
 
-void keep_alive(int session, std::string url);
+void keep_alive(DataWriter & websocket);

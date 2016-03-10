@@ -61,7 +61,7 @@ void checkEscape(bool visualization, bool special){
 	}
 }
 
-int sendCalibration(DataWriter & websocket){
+int sendCalibration(DataWriter & websocket, bool no_webcam, bool no_kinect2){
 
 	cv::Mat wcalib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 	cv::Mat kcalib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
@@ -71,22 +71,25 @@ int sendCalibration(DataWriter & websocket){
 
 	Json::StyledWriter writer;
 
-	if(wfile.isOpened())
-	{	
-		wfile["matrix"] >> wcalib_matrix;
-		wfile.release();
-	}else{
-		std::cout << "could not find face calibration file; use -c to calibrate the cameras" << std::endl;
-		return -1;
+	if(!no_webcam){
+		if(wfile.isOpened())
+		{	
+			wfile["matrix"] >> wcalib_matrix;
+			wfile.release();
+		}else{
+			std::cout << "could not find face calibration file; use -c to calibrate the cameras" << std::endl;
+			return -1;
+		}
 	}
-
-	if(kfile.isOpened())
-	{	
-		kfile["matrix"] >> kcalib_matrix;
-		kfile.release();
-	}else{
-		std::cout << "could not find hand calibration file; use -c to calibrate the cameras" << std::endl;
-		return -1;
+	if(!no_kinect2){
+		if(kfile.isOpened())
+		{	
+			kfile["matrix"] >> kcalib_matrix;
+			kfile.release();
+		}else{
+			std::cout << "could not find hand calibration file; use -c to calibrate the cameras" << std::endl;
+			return -1;
+		}
 	}
 
 	Json::Value root;
@@ -108,8 +111,8 @@ int sendCalibration(DataWriter & websocket){
 		//std::cout << "Hand detector posting data to the server\n " << std::flush;
 		io.post( [&websocket, message]() {
 			websocket.writeData(message);
-			});
-		}
+		});
+	}
 	websocket.writeLocal(message);
 	
 	Json::Value array2 = Json::arrayValue;
@@ -132,4 +135,57 @@ int sendCalibration(DataWriter & websocket){
 	websocket.writeLocal(message);
 
 	return 0;
+}
+
+
+void drawStatus(Parser & p){
+
+	sleep(2);
+	cv::startWindowThread();
+	cv::namedWindow("status");
+
+	int offset = 30;
+	cv::Mat status(240, 320 , CV_8UC1);
+    status.setTo(cv::Scalar(255, 255, 255));
+    if(p.get("face")){
+    	cv::putText(status, "-face tracking", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("audio")){
+    	cv::putText(status, "-audio tracking", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("hand")){
+    	cv::putText(status, "-hand tracking", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("particle")){
+    	cv::putText(status, "-particle tracking", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+ 		offset += 30;
+ 	}
+    if(p.get("qr")){
+    	cv::putText(status, "-qr visualization", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("session")){
+    	cv::putText(status, "-continuing previous session", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("calibration")){
+    	cv::putText(status, "-calibration", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+    if(p.get("ide")){
+    	cv::putText(status, "-arduino tracking", cv::Point(10, offset), 2, 1, cv::Scalar(0, 0, 0), 1.5, 8);
+    	offset += 30;
+    }
+
+    cv::imshow("status", status);
+	while(!to_stop){
+		int c = cv::waitKey(1);
+		if((char)c == 'q') {
+			to_stop = true;
+			cv::destroyWindow("status");
+		}
+	}
 }

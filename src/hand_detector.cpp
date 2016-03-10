@@ -1,9 +1,11 @@
 #include "hand_detector.h"
 
-void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor)
+void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor, const bool video)
 {
-	aruco::MarkerDetector MDetector;
-	MDetector.setMinMaxSize(0.01, 0.7);
+	aruco::MarkerDetector marker_detector;
+	marker_detector.setMinMaxSize(0.01, 0.1);
+	marker_detector.setDesiredSpeed(3);
+
 	vector<aruco::Marker> markers;
 	if(visualization)
 		cv::namedWindow("hands");
@@ -22,6 +24,13 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	TimedSender timer(interval / 2);
 	TimedSender timer_minute(60000);
 
+	x264Encoder * x264encoder;
+	if(video){
+		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
+		x264encoder = new x264Encoder("kinect2_"+ now + "_" + std::to_string(session) + ".avi");
+		x264encoder->initialize(1920, 1080, true);
+	}
 
 	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
 
@@ -51,10 +60,15 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	while(!to_stop)
 	{
 		color = k2g.getColor();
-		cvtColor(color, grey, CV_BGR2GRAY);
 		cv::flip(color, color, 1);
-		cv::flip(grey, grey, 1);	
-		if((snapshot_table && image_sender) || timer_minute.needSend()){
+
+		if(video){
+			x264encoder->encodeFrame((const char *)color.data, 4);
+		}
+
+		cvtColor(color, grey, CV_BGR2GRAY);
+		bool send_minute = timer_minute.needSend();
+		if((snapshot_table && image_sender) || send_minute){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 			std::string name = std::string(folder_name + "/workspace_" + now + "_" + std::to_string(session) + ".jpg");
@@ -72,12 +86,15 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 			    std::vector<char> data(fileSize);
 				in.read(&data[0], fileSize);
 				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-				image_sender.send(code, "jpg", "workspace");
+				if(send_minute)
+					image_sender.send(code, "jpg", "workspace", true);
+				else
+					image_sender.send(code, "jpg", "workspace", false);
 			}
 			snapshot_table = false;
 		}
 
-		MDetector.detect(grey, markers, camera_parameters, cv::Mat(), marker_size);
+		marker_detector.detect(grey, markers, camera_parameters, cv::Mat(), marker_size);
 
 		if(markers.size() > 0){
 
@@ -87,7 +104,8 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 				if(markers[i].id != 0)
 				{
 					// Get marker position
-					markers[i].draw(color, cv::Scalar(0, 0, 255), 2);
+					if(visualization)
+						markers[i].draw(color, cv::Scalar(0, 0, 255), 2);
 					//aruco::CvDrawingUtils::draw3dCube(grey, markers[i], camera);
 					
 					marker_pose.at<float>(0, 3) = markers[i].Tvec.at<float>(0);
@@ -147,6 +165,8 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	//Destroy the window
 	cvDestroyWindow("hands");
 	k2g.shutDown();
+	if(video)
+		x264encoder->unInitilize();
 	return;
 }
 

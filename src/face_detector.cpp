@@ -4,11 +4,13 @@ double std_width = 185.0; //mm
 
 double focal_length_pixel = 589.3588305153235; //489.3;  //pixel
 
+// Returns the distance in meters
 inline double distance(int x1, int x2){
-		return (std_width * focal_length_pixel) / std::abs(x1 - x2);
+		return ((std_width * focal_length_pixel) / std::abs(x1 - x2)) / 1000;
 	}
 
-void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, ImageSender & image_sender_people, const int face_camera_id)
+void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, 
+	             ImageSender & image_sender_people, const int face_camera_id, const bool video)
 {
 	// Needed since else opencv does not crete the window (BUG?)
 	if(visualization)
@@ -22,7 +24,6 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 	cv::gpu::GpuMat gray_gpu;
 	cv::Mat faces_downloaded, color;
-
 
 	const int session = websocket.getSession();
 
@@ -40,6 +41,24 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	const float cx = 414.1871817694326;
 	const float fy = 588.585116717914;
 	const float cy = 230.3588624031242; 
+/*
+	cv::VideoWriter * outputVideo;
+	if(video){
+		int fourcc = CV_FOURCC('M','J','P','G');
+		int fps = 30;
+		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
+		outputVideo->open("webcam_"+ now + "_" + std::to_string(session) + ".avi", fourcc, fps, cv::Size(width,height));
+	}
+*/
+
+	x264Encoder * x264encoder;
+	if(video){
+		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
+		x264encoder = new x264Encoder("webcam_"+ now + "_" + std::to_string(session) + ".avi");
+		x264encoder->initialize(width, height);
+	}
 
 	/*
 	const float k1 = 0.12269303;
@@ -53,10 +72,10 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	Json::Value root = Json::arrayValue;
 	Json::Value array;
 
-	float face_distance, tx, ty, tz, tx1, ty1, tx2, ty2, x_unproject, y_unproject;
+	float face_distance, tx, ty, tz, tx1, ty1, tz1, tx2, ty2, tz2, x_unproject, y_unproject;
 	cv::Mat pose;
-	cv::Mat hand_pose = cv::Mat(cv::Size(1, 4), CV_32F);
-	hand_pose.at<float>(0, 3) = 1;
+	cv::Mat face_pose = cv::Mat(cv::Size(1, 4), CV_32F);
+	face_pose.at<float>(0, 3) = 1;
 	int detections_num;
 
 	// Preapare JSON message to send to the Collectorh
@@ -102,6 +121,14 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		color = cv::Mat(frame);
 
 		cv::flip(color, color, 1);
+/*
+		if(video)
+			outputVideo->write(color);
+*/	
+		if(video){
+			x264encoder->encodeFrame((const char *)color.data, 3);
+		}
+
 		cv::gpu::GpuMat color_gpu(color);
 
 		//cvtColor(color, gray, CV_BGR2GRAY);
@@ -126,7 +153,10 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			    std::vector<char> data(fileSize);
 				in.read(&data[0], fileSize);
 				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-				image_sender_people.send(code, "jpg", "people");
+				if(send_minute)
+					image_sender_people.send(code, "jpg", "people", true);
+				else
+					image_sender_people.send(code, "jpg", "people", false);
 			}
 			snapshot_people = false;
 		}
@@ -149,10 +179,14 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			    std::vector<char> data(fileSize);
 				in.read(&data[0], fileSize);
 				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-				image_sender_screen.send(code, "png", "screen");
+				if(send_minute)
+					image_sender_screen.send(code, "png", "screen", true);
+				else
+					image_sender_screen.send(code, "png", "screen", false);
 			}
 			snapshot_screen = false;
 		}
+		send_minute = false;
 		
 		detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, cv::Size(color.cols,color.rows), cv::Size(), 1.05, (filterRects_ || findLargestObject_) ? 4 : 0);
 
@@ -167,10 +201,11 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			cv::Point center(faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5);
 			cv::ellipse(color, center, cv::Size(faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255), 4, 8, 0);
 
+			// Distance in meters
 			face_distance = distance(faces[i].x, faces[i].x + faces[i].width);
 
-			const float const_x = face_distance / fx;
-			const float const_y = face_distance / fy;
+			const float const_x = (face_distance / fx);
+			const float const_y = (face_distance / fy);
 
 			x_unproject = (faces[i].x - cx) * const_x;
 			y_unproject = (faces[i].y - cy) * const_y;
@@ -179,12 +214,12 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 				
 			const float tmp = y_unproject;
 			
-			//hand_pose.at<float>(0, 3) = 1; already done after declaration
-			hand_pose.at<float>(0, 0) = x_unproject;
-			hand_pose.at<float>(0, 1) = y_unproject;
-			hand_pose.at<float>(0, 2) = face_distance;
+			//face_pose.at<float>(0, 3) = 1; already done after declaration
+			face_pose.at<float>(0, 0) = x_unproject;
+			face_pose.at<float>(0, 1) = y_unproject;
+			face_pose.at<float>(0, 2) = face_distance;
 
-			pose = camera_inverse * hand_pose;
+			pose = camera_inverse * face_pose;
 			tx = pose.at<float>(0, 0);
 			ty = pose.at<float>(0, 1);
 			tz = pose.at<float>(0, 2);
@@ -192,34 +227,47 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			x_unproject = (faces[i].x + faces[i].width - cx) * const_x;
 			y_unproject = (faces[i].y + faces[i].height - cy) * const_y;
 
-			hand_pose.at<float>(0, 0) = x_unproject;
-			hand_pose.at<float>(0, 1) = y_unproject;
+			face_pose.at<float>(0, 0) = x_unproject;
+			face_pose.at<float>(0, 1) = y_unproject;
 
-			pose = camera_inverse * hand_pose;
+			pose = camera_inverse * face_pose;
 			tx1 = pose.at<float>(0, 0);
 			ty1 = pose.at<float>(0, 1);
+			tz1 = pose.at<float>(0, 2);
 
 			// Reuse previous values
-			hand_pose.at<float>(0, 0) = x_unproject;
-			hand_pose.at<float>(0, 1) = tmp;
+			face_pose.at<float>(0, 0) = x_unproject;
+			face_pose.at<float>(0, 1) = tmp;
 
-			pose = camera_inverse * hand_pose;
+			pose = camera_inverse * face_pose;
 			tx2 = pose.at<float>(0, 0);
 			ty2 = pose.at<float>(0, 1);
+			tz2 = pose.at<float>(0, 2);
 
 			// Json message
 			array["type"] = "face";
 			array["id"] = i;
 			array["x"] = tx; 
-			array["y"] = ty;
+			array["y"] = -ty;
+			array["z"] = tz;
 			array["x1"] = tx1;
-			array["y1"] = ty1;
+			array["y1"] = -ty1;
+			array["z1"] = tz1;
 			array["x2"] = tx2;
-			array["y2"] = ty2;
-			array["distance"] = tz;
-
-			//std::cout << "x " << tx << " y " << ty << ", x1 " << tx1 << " y1 " << ty1 << ", x2  " << tx2 << " y2 " << ty2 << ", tz " << tz <<  " distance " << face_distance << std::endl;
-
+			array["y2"] = -ty2;
+			array["z2"] = tz2;
+			array["distance"] = face_distance;
+			
+			cv::circle(color, cv::Point(faces[i].x, faces[i].y), 10, cv::Scalar(0,0,255), -1);
+			cv::circle(color, cv::Point(faces[i].x + faces[i].height, faces[i].y + faces[i].width), 10, cv::Scalar(0,255,0), -1);
+			cv::circle(color, cv::Point(faces[i].x + faces[i].height, faces[i].y ), 10, cv::Scalar(255,0,0), -1);
+			cv::circle(color, cv::Point(faces[i].x, faces[i].y + faces[i].width ), 10, cv::Scalar(255,255,0), -1);
+/*
+			std::cout << "RED x " << tx << " ,y " << ty << ", tz " << tz << std::endl;
+			std::cout << "GREEN x1 " << tx1 << " ,y1 " << ty1 << ", tz " << tz1 << std::endl;
+			std::cout << "BLUE x2 " << tx2 << " ,y2 " << ty2 << ", tz " << tz2 << std::endl;
+			std::cout << face_distance << std::endl;
+			*/
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 			root.append(array);
@@ -253,5 +301,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			}
 		}
 	}
+
+	if(video)
+		x264encoder->unInitilize();
 }
 
