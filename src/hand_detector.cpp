@@ -24,15 +24,29 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	TimedSender timer(interval / 2);
 	TimedSender timer_minute(60000);
 
+	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
+	std::string video_folder_name = std::string("../../videos");
+	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 
+ 
+
 	x264Encoder * x264encoder;
 	if(video){
+
+		if(!boost::filesystem::exists(video_folder_name)){
+			boost::filesystem::path dir(video_folder_name);
+			boost::filesystem::create_directory(video_folder_name);
+		}
+
+		if(!boost::filesystem::exists(video_subfolder_name)){
+			boost::filesystem::path dir(video_subfolder_name);
+			boost::filesystem::create_directory(video_subfolder_name);
+		}
 		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-		x264encoder = new x264Encoder("kinect2_"+ now + "_" + std::to_string(session) + ".avi");
+		x264encoder = new x264Encoder(video_subfolder_name + "/", "kinect2_"+ now + "_" + std::to_string(session) + ".h264");
 		x264encoder->initialize(1920, 1080, true);
 	}
 
-	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
 
 	cv::Mat camera_parameters = cv::Mat::eye(3, 3, CV_32F);
 	camera_parameters.at<float>(0,0) = k2g.getRgbParameters().fx; 

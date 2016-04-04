@@ -41,4 +41,5 @@ private:
 	int image_w_;
 	int image_h_;
 	int rgb_size_;
+
 };

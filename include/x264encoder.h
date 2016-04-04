@@ -21,13 +21,19 @@ extern "C" {
 }
 
 #include <fstream>
+#include <chrono>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <sstream>
+#include <stdlib.h>
 
 class x264Encoder
 {
 
 public:
-	x264Encoder(const std::string name = "video.x264"): os_(name, std::ios::binary) {}
-	void initialize(int w, int h, const bool kinect = false);
+	x264Encoder(const std::string folder_name = "./", const std::string file_name = "video.mp4"): os_(folder_name + file_name, std::ios::binary), file_name_(file_name), folder_name_(folder_name) {}
+	void initialize(const unsigned int w = 640, const unsigned int h = 480, const bool kinect = false);
 	void unInitilize();
 	void encodeFrame(const char *rgb_buffer, const unsigned int bytes);
 	bool isNalsAvailableInOutputQueue();
@@ -45,6 +51,10 @@ private:
 	x264_picture_t picture_in_, picture_out_;
 	x264_t* encoder_;
 	std::ofstream os_;
+	long int time_base_;
+	bool first_;
+	std::string file_name_, folder_name_;
+	boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::mean>> acc_;
 };
 
 #endif // X264ENCODER_H

@@ -34,8 +34,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	cascade_gpu_.visualizeInPlace = false;
 	cascade_gpu_.findLargestObject = findLargestObject_;
 
-	const int width = 800.0;
-	const int height = 448.0;
+	const unsigned int width = 800;
+	const unsigned int height = 448;
 
 	const float fx = 589.3588305153235;
 	const float cx = 414.1871817694326;
@@ -51,13 +51,29 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		outputVideo->open("webcam_"+ now + "_" + std::to_string(session) + ".avi", fourcc, fps, cv::Size(width,height));
 	}
 */
+	std::string image_folder_name = std::string("../../images");
+	std::string image_subfolder_name = std::string("../../images/snapshots_") + std::to_string(session);
+
+	std::string video_folder_name = std::string("../../videos");
+	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 
+	
 
 	x264Encoder * x264encoder;
 	if(video){
+
+		if(!boost::filesystem::exists(video_folder_name)){
+			boost::filesystem::path dir(video_folder_name);
+			boost::filesystem::create_directory(dir);
+		}
+
+		if(!boost::filesystem::exists(video_subfolder_name)){
+			boost::filesystem::path dir(video_subfolder_name);
+			boost::filesystem::create_directory(dir);
+		}
 		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-		x264encoder = new x264Encoder("webcam_"+ now + "_" + std::to_string(session) + ".avi");
-		x264encoder->initialize(width, height);
+		x264encoder = new x264Encoder(video_subfolder_name + "/", "webcam"+ now + "_" + std::to_string(session) + ".h264");
+		x264encoder->initialize(1920, 1080, true);
 	}
 
 	/*
@@ -112,7 +128,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 	cv::Mat camera_inverse = calib_matrix.inv();
 
-	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
+	
 	while(!to_stop)
 	{	
 
@@ -138,11 +154,18 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		if((snapshot_people && image_sender_people) || send_minute){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-			if(!boost::filesystem::exists(folder_name)){
-				boost::filesystem::path dir(folder_name);
+			
+			if(!boost::filesystem::exists(image_folder_name)){
+				boost::filesystem::path dir(image_folder_name);
 				boost::filesystem::create_directory(dir);
 			}
-			std::string name = std::string(folder_name + "/people_" + now + "_" + std::to_string(session) +".jpg");
+
+			if(!boost::filesystem::exists(image_subfolder_name)){
+				boost::filesystem::path dir(image_subfolder_name);
+				boost::filesystem::create_directory(dir);
+			}
+
+			std::string name = std::string(image_subfolder_name + "/people_" + now + "_" + std::to_string(session) +".jpg");
 			cv::imwrite(name, color);
 			if(online){
 				std::ifstream in(name, std::ifstream::binary);
@@ -163,12 +186,18 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		if((snapshot_screen && image_sender_screen) || send_minute){
 			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-			std::string name = std::string(folder_name + "/screen_" + now + "_" + std::to_string(session) + ".png");
+			std::string name = std::string(image_subfolder_name + "/screen_" + now + "_" + std::to_string(session) + ".png");
 			
-			if(!boost::filesystem::exists(folder_name)){
-				boost::filesystem::path dir(folder_name);
+			if(!boost::filesystem::exists(image_folder_name)){
+				boost::filesystem::path dir(image_folder_name);
 				boost::filesystem::create_directory(dir);
 			}
+
+			if(!boost::filesystem::exists(image_subfolder_name)){
+				boost::filesystem::path dir(image_subfolder_name);
+				boost::filesystem::create_directory(dir);
+			}
+			
 			screen_grabber.grabScreen(name);
 			if(online){
 				std::ifstream in(name, std::ifstream::binary);

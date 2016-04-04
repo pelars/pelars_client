@@ -19,11 +19,11 @@ struct FFT{
 	Json::Value root_;
   	Json::StyledWriter writer_;
   	std::string message_;
-  	TimedSender timer_ = {interval};
+  	TimedSender timer_;
 
-	FFT(DataWriter & websocket): websocket_(websocket){
+	FFT(DataWriter & websocket): websocket_(websocket), timer_(interval / 2.0){
 		root_["obj"]["type"] = "audio";
 	}
 
-	float compute(float * buf, unsigned int count);
+	void compute(float * buf, unsigned int count);
 };
