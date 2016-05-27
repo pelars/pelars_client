@@ -1,6 +1,6 @@
 #include "upload.h"
 
-int uploadData(std::string file_name, std::string end_point, int session_id){
+int uploadData(std::string & file_name, const std::string & end_point, int session_id){
 
 	int packet_size = 0;
 	char buffer[1024];
@@ -30,15 +30,13 @@ int uploadData(std::string file_name, std::string end_point, int session_id){
 	int s = stoi(file_name.substr(last, next - last));
 	//bool new_session = false;
 
-	SessionManager sm(end_point);
+	SessionManager sm(end_point, false);
+	sm.login();
 
-	if(session_id != 0 ){
+	if(session_id != 0){
 		s = session_id;
 	}else{
 		// Create new session if the session id is not present on the server
-		
-		sm.login();
-
 		if(s == -1){
 			// Read first packet and get time to create the session with the correct time if it was not opened
 			in >> packet_size;
@@ -61,13 +59,9 @@ int uploadData(std::string file_name, std::string end_point, int session_id){
 	}
 	// Connect the websocker on the upload endpoint
 	DataWriter collector(end_point + "upload", s, false);
-	sleep(1); //else the websocket is not initialized
 
-	// Initialize data for reading
+	// Read data and send it in chunks of 300 packets every 10s
 	
-	std::cout << "uploading data to " << s << std::endl;
-
-	// Read data and send it in chunks of 300 packets every 30s
 	while(!in.eof()){
 		in >> packet_size;
 		in.read(buffer, packet_size);
@@ -76,14 +70,14 @@ int uploadData(std::string file_name, std::string end_point, int session_id){
 		std::cout << "." << std::flush;
 		num++;
 		if(!(num % 300)){
-			std::cout << "sent 300 packets, sleeping 30s" << std::endl;
-			sleep(30);
+			std::cout << "sent 300 packets, sleeping 10s" << std::endl;
+			sleep(10);
 		}
 		if(in.eof()){
 			// Get time of the last packet and use it as closing time
 			reader.parse(tmp, root);
 			if(root["obj"].isArray()){
-				for(Json::Value& a : root["obj"])
+				for(Json::Value & a : root["obj"])
 					time = a["time"].asInt64();
 			}
 			else{
@@ -91,15 +85,16 @@ int uploadData(std::string file_name, std::string end_point, int session_id){
 			}
 		}
 	}
+		
 	in.close();
 	std::cout << std::endl;
 	std::cout << num << " packet sent" << std::endl;
-
+	collector.stop();
 
 	boost::filesystem::directory_iterator end_itr;
 	std::string image_dir("../../images/snapshots_" + std::to_string(s));
-	ImageSender image_sender(s, "http://pelars.sssup.it/pelars/", sm.getToken());
-
+	ImageSender image_sender(s, "http://pelars.sssup.it/pelars/", sm.getToken(), true);
+	std::cout << "Sending images in " << image_dir << std::endl;
 	for(boost::filesystem::directory_iterator itr(image_dir); itr != end_itr; ++itr){
 		std::string path = itr->path().string();
 		std::string name = itr->path().filename().string();
@@ -116,16 +111,16 @@ int uploadData(std::string file_name, std::string end_point, int session_id){
 	    		std::string type = path.substr(path.size() - 3, path.size());
 	    		std::size_t start = name.find("_") + 1;
 	    		std::string view = name.substr(0, start - 1);
-	    		std::size_t end = name.substr(start, name.size()).find("_") - 1;
+	    		std::size_t end = name.substr(start, name.size()).find("_");
 	    		long time_epoch = stol(name.substr(start, end));
 	    		//std::cout << time_epoch << std::endl;
 	    		//std::cout << "name " << view << " type " << type << std::endl;
-	    		image_sender.send(code, type, view, time_epoch);
+	    		image_sender.send(code, type, view, true, time_epoch);
 	    		in.close();
+	    		sleep(1);
 	    }
 	}
 	// Close websocket and session
-	collector.stop();
 	sm.closeSession(s, time);
 
 	return 0;

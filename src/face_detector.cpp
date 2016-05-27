@@ -73,7 +73,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 		x264encoder = new x264Encoder(video_subfolder_name + "/", "webcam"+ now + "_" + std::to_string(session) + ".h264");
-		x264encoder->initialize(1920, 1080, true);
+		x264encoder->initialize(width, height, false);
 	}
 
 	/*
@@ -224,6 +224,9 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 		
 		//std::cout << " found " << detections_num << " faces" << std::endl;
+		// Take same time for all faces
+		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
+		array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 		for(int i = 0; i < detections_num; ++i)
 		{
 
@@ -297,8 +300,6 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			std::cout << "BLUE x2 " << tx2 << " ,y2 " << ty2 << ", tz " << tz2 << std::endl;
 			std::cout << face_distance << std::endl;
 			*/
-			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
-			array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 			root.append(array);
 		}
 		

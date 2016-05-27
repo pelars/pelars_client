@@ -13,7 +13,7 @@ class SessionManager {
 
 public:
 
-	SessionManager(std::string endpoint);
+	SessionManager(std::string endpoint, const bool test = false);
 	int getNewSession(double time = 0);
 	void closeSession(int session, double time = 0);
 	void createUser();
@@ -31,6 +31,6 @@ private:
 	Json::Value root_;
 	Json::Reader reader_;
 	Json::StyledWriter writer_;
-	bool error_;
+	bool error_, test_;
 
 };

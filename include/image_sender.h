@@ -8,8 +8,8 @@ class ImageSender{
 	
 public:
 
-	ImageSender(int session, std::string endpoint, std::string token);
-	void send(std::string & data, std::string type, std::string what, bool automatic, long time = 0);
+	ImageSender(int session, std::string endpoint, std::string token, bool upload = false);
+	void send(std::string & data, std::string type, std::string what, bool automatic, long time = 0.0);
 	operator bool() const { return sending_complete_;}
 
 private:

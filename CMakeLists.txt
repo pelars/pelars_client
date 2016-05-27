@@ -7,8 +7,6 @@ set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -march=native")
 set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -Wall")
 
 set(CMAKE_BUILD_TYPE   Release) 
-
-set(CMAKE_PREFIX_PATH /prefix)
 set(SRC                ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INCLUDE            ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -98,6 +96,7 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/aliver.cpp
 								${SRC}/marker_viewer.cpp
 								${SRC}/opt_parse.cpp
+								${SRC}/audio_recorder.cpp
 								)
 
 target_link_libraries(sensor_manager 	${OpenCV_LIBS} 

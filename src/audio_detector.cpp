@@ -24,11 +24,13 @@ int portAudioCallback(const void * input, void * output,
 
 void audioDetector(DataWriter & data_writer){
 
+
+	
 	Pa_Initialize();
 
 	int used_device = -1;
 	for(int i = 0; i < Pa_GetDeviceCount(); ++i){
-		//std::cout << Pa_GetDeviceInfo(i)->name << std::endl;
+		std::cout << Pa_GetDeviceInfo(i)->name << std::endl;
 		if(std::string(Pa_GetDeviceInfo(i)->name).find("HD Pro Webcam C920") != std::string::npos)
 			used_device = i;
 	}
