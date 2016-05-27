@@ -6,9 +6,7 @@
 #include <string>
 #include <sstream>
 #include <unistd.h>
-#include <sys/wait.h>
-
-extern int audio_recorder_pid;
+#include <boost/filesystem.hpp>
 
 void audioRecorder(unsigned int session);
 std::string exec(const char* cmd);

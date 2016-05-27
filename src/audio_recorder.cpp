@@ -1,7 +1,5 @@
 #include "audio_recorder.h"
 
-int audio_recorder_pid;
-
 std::string exec(const char* cmd) {
     char buffer[128];
     std::string result = "";
@@ -16,13 +14,21 @@ std::string exec(const char* cmd) {
 
 void audioRecorder(unsigned int session){
 
+		std::string image_folder_name = std::string("../../audio");
+
+		if(!boost::filesystem::exists(image_folder_name)){
+			boost::filesystem::path dir(image_folder_name);
+			boost::filesystem::create_directory(dir);
+		}
+
+		
 		std::string device = exec("pactl list | grep -A2 'Source #' | grep 'Name: ' | cut -d\" \" -f2 | grep C920");
 
 		std::cout << "Recording audio from " << device << std::endl;
 
 		std::stringstream ss;
 
-		ss << "gst-launch-1.0 pulsesrc device=\"" << device << "\" ! audio/x-raw,channels=2 ! avenc_ac3 bitrate=192000 ! filesink location=" << session << ".ac3 &";
+		ss << "gst-launch-1.0 pulsesrc device=\"" << device << "\" ! audio/x-raw,channels=2 ! avenc_ac3 bitrate=192000 ! filesink location=" << image_folder_name << "/"<< session << ".ac3 &";
 		std::string execute = ss.str();
 		std::cout << "Executing " << execute << std::endl;
 		exec(execute.c_str());
