@@ -2,18 +2,16 @@
 
 void calibration(const unsigned int id, const float marker_size){
 
-	std::cout << "press c to calibrate when the marker is seen in both cameras" << std::endl;
-	
-	K2G k2g(K2G::OPENCL);
-
-	cv::FileStorage kinect_file("../../data/calibration_kinect2.xml", cv::FileStorage::WRITE);
-	cv::FileStorage webcam_file("../../data/calibration_webcam.xml", cv::FileStorage::WRITE);
-	cv::Mat kgray, kcolor, wgray;
-
 	const int width = 800;
 	const int height = 448;
 
+	std::cout << "press c to calibrate when the marker is seen in both cameras" << std::endl;
 	GstreamerGrabber gs_grabber(width, height, id);
+	sleep(5);
+
+	K2G k2g(K2G::OPENCL);
+
+	cv::Mat kgray, kcolor, wgray;
 
 	aruco::MarkerDetector MDetector;
 	MDetector.setMinMaxSize(0.01, 0.7);
@@ -68,6 +66,7 @@ void calibration(const unsigned int id, const float marker_size){
 
 	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
 
+
 	while(!stop){
 		// Kinect2 grabber
 		kcolor = k2g.getColor();
@@ -116,8 +115,10 @@ void calibration(const unsigned int id, const float marker_size){
 
 		cv::imshow("kinect2", kcolor);
 		cv::imshow("webcam", wcolor);
-		int c = cv::waitKey(1);
+		int c = cv::waitKey(10);
 		if((char)c == 'c' && wfound && kfound) {
+			cv::FileStorage kinect_file("../../data/calibration_kinect2.xml", cv::FileStorage::WRITE);
+			cv::FileStorage webcam_file("../../data/calibration_webcam.xml", cv::FileStorage::WRITE);
 			kinect_file << "matrix" << kcalib_matrix;
 			kinect_file.release();
 			webcam_file << "matrix" << wcalib_matrix;
@@ -133,5 +134,4 @@ void calibration(const unsigned int id, const float marker_size){
 	cvDestroyWindow("kinect2");
 	cvDestroyWindow("webcam");
 	k2g.shutDown();
-
 }

@@ -30,6 +30,8 @@ void sig_handler(int signum)
 {
 		to_stop = true;
 		printf("Received signal %d\n", signum);
+		kill(0, SIGINT);
+
 }
 
 void asiothreadfx()

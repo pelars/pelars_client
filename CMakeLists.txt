@@ -33,7 +33,6 @@ find_package(Cppnetlib REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Aruco REQUIRED)
 find_package(PkgConfig REQUIRED)
-find_package(FFmpeg REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 find_package(QREncode REQUIRED)
 find_package(PortAudio REQUIRED)
@@ -111,7 +110,6 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${AVFORMAT}
 										${AVUTIL} 
 										${AVCODEC} 
-										${FFMPEG_LIBRARIES} 
 										${AVDEVICE}
 										${CURL_LIBRARIES}
 										${ARUCO_LIBRARIES}

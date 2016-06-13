@@ -154,7 +154,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(drawStatus, std::ref(p)));
 	// Keep alive on server for status update
 	thread_list.push_back(std::thread(keep_alive, std::ref(alive_socket)));
-	std::thread audio_recorder = std::thread(audioRecorder, session);
+	//std::thread audio_recorder = std::thread(audioRecorder, session);
 	
 	//If there are no windows wait for Esc to be pressed
 	checkEscape(visualization, p.get("special"));

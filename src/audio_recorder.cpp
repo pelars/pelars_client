@@ -29,9 +29,9 @@ void audioRecorder(unsigned int session){
 		std::stringstream ss;
 
 		//ss << "gst-launch-1.0 pulsesrc device=\"" << device << "\" ! audio/x-raw,channels=2 ! avenc_ac3 bitrate=192000 ! filesink location=" << image_folder_name << "/"<< session << ".ac3 &";
-		ss << "gst-launch-1.0 alsasrc device=sysdefault:CARD=C920 ! audioconvert ! audioresample ! wavenc ! filesink location=" << image_folder_name << "/"<< session << ".wav &";
+		//ss << "gst-launch-1.0 alsasrc device=sysdefault:CARD=Sensor ! audioconvert ! audioresample ! wavenc ! filesink location=" << image_folder_name << "/"<< session << ".wav &";
 
-		std::string execute = ss.str();
-		std::cout << "Executing " << execute << std::endl;
-		exec(execute.c_str());
+		//std::string execute = ss.str();
+		//std::cout << "Executing " << execute << std::endl;
+		//exec(execute.c_str());
 }

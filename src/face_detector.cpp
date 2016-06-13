@@ -12,6 +12,19 @@ inline double distance(int x1, int x2){
 void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, 
 	             ImageSender & image_sender_people, const int face_camera_id, const bool video)
 {
+
+	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
+
+	cv::FileStorage file("../../data/calibration_webcam.xml", cv::FileStorage::READ);
+	if(file.isOpened())
+	{	
+		file["matrix"] >> calib_matrix;
+		file.release();
+	}else{
+		std::cout << "could not find face calibration file; use -c to calibrate the cameras" << std::endl;
+		to_stop = true;
+	}
+
 	// Needed since else opencv does not crete the window (BUG?)
 	if(visualization)
 		sleep(1);
@@ -97,8 +110,6 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	// Preapare JSON message to send to the Collectorh
 	std::string code;
 
-	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
-
 	Json::StyledWriter writer;
 
 	GstreamerGrabber gs_grabber(width, height, face_camera_id);
@@ -115,16 +126,6 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 	TimedSender timer(interval);
 	TimedSender timer_minute(60000);
-
-	cv::FileStorage file("../../data/calibration_webcam.xml", cv::FileStorage::READ);
-	if(file.isOpened())
-	{	
-		file["matrix"] >> calib_matrix;
-		file.release();
-	}else{
-		std::cout << "could not find face calibration file; use -c to calibrate the cameras" << std::endl;
-		to_stop = true;
-	}
 
 	cv::Mat camera_inverse = calib_matrix.inv();
 

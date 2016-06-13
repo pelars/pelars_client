@@ -2,6 +2,20 @@
 
 void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor, const bool video)
 {
+
+	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
+
+	cv::FileStorage file("../../data/calibration_kinect2.xml", cv::FileStorage::READ);
+	if(file.isOpened())
+	{	
+		file["matrix"] >> calib_matrix;
+		file.release();
+	}else{
+		std::cout << "could not find hand calibration file; use -c to calibrate the cameras" << std::endl;
+		to_stop = true;
+	}
+
+	
 	aruco::MarkerDetector marker_detector;
 	marker_detector.setMinMaxSize(0.01, 0.1);
 	marker_detector.setDesiredSpeed(3);
@@ -28,7 +42,6 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	std::string video_folder_name = std::string("../../videos");
 	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 
  
-
 	x264Encoder * x264encoder;
 	if(video){
 
@@ -56,17 +69,6 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	cv::Mat grey, color;
 	bool to_send;
 
-	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
-
-	cv::FileStorage file("../../data/calibration_kinect2.xml", cv::FileStorage::READ);
-	if(file.isOpened())
-	{	
-		file["matrix"] >> calib_matrix;
-		file.release();
-	}else{
-		std::cout << "could not find hand calibration file; use -c to calibrate the cameras" << std::endl;
-		to_stop = true;
-	}
 	
 	cv::Mat camera_inverse = calib_matrix.inv();
 	cv::Mat marker_pose = cv::Mat::eye(cv::Size(4, 4), CV_32F);
