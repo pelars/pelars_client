@@ -200,7 +200,8 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 
 	//Destroy the window
 	cvDestroyWindow("hands");
-	k2g->shutDown();
+	if(k2g)
+		k2g->shutDown();
 	if(video)
 		x264encoder->unInitilize();
 	return;
