@@ -37,8 +37,10 @@ void audioDetector(DataWriter & data_writer){
 
 	if(used_device == -1){
 		std::cout << "no C920 found" << std::endl;
+		Pa_Terminate();
 		return;
 	}
+	
 	std::cout << "Using device : " << Pa_GetDeviceInfo(used_device)->name << std::endl;
 	
 	const double srate = 32000;

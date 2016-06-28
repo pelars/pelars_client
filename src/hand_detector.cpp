@@ -1,6 +1,7 @@
 #include "hand_detector.h"
 
-void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor, const bool video)
+void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor, const bool video, 
+	              const bool c920, unsigned int camera_id)
 {
 
 	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
@@ -15,7 +16,6 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 		to_stop = true;
 	}
 
-	
 	aruco::MarkerDetector marker_detector;
 	marker_detector.setMinMaxSize(0.01, 0.1);
 	marker_detector.setDesiredSpeed(3);
@@ -33,7 +33,18 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	float tx, ty, tz;
 	std::string message;
 
-	K2G k2g(processor);
+	K2G * k2g;
+	GstreamerGrabber * gs_grabber;
+	IplImage * frame;
+
+	if(c920){
+		gs_grabber = new GstreamerGrabber(1920, 1080, camera_id);
+		frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 3); 
+	}
+	else
+	{
+		k2g = new K2G(processor);
+	}
 
 	TimedSender timer(interval / 2);
 	TimedSender timer_minute(60000);
@@ -57,15 +68,15 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 		x264encoder = new x264Encoder(video_subfolder_name + "/", "kinect2_"+ now + "_" + std::to_string(session) + ".h264");
-		x264encoder->initialize(1920, 1080, true);
+		x264encoder->initialize(1920, 1080, c920 ? false : true);
 	}
 
 
 	cv::Mat camera_parameters = cv::Mat::eye(3, 3, CV_32F);
-	camera_parameters.at<float>(0,0) = k2g.getRgbParameters().fx; 
-	camera_parameters.at<float>(1,1) = k2g.getRgbParameters().fy; 
-	camera_parameters.at<float>(0,2) = k2g.getRgbParameters().cx; 
-	camera_parameters.at<float>(1,2) = k2g.getRgbParameters().cy;
+	camera_parameters.at<float>(0,0) = c920 ? 589.3588305153235 : k2g->getRgbParameters().fx; 
+	camera_parameters.at<float>(1,1) = c920 ? 588.5851167179140 : k2g->getRgbParameters().fy; 
+	camera_parameters.at<float>(0,2) = c920 ? 414.1871817694326 : k2g->getRgbParameters().cx; 
+	camera_parameters.at<float>(1,2) = c920 ? 230.3588624031242 : k2g->getRgbParameters().cy;
 	cv::Mat grey, color;
 	bool to_send;
 
@@ -75,11 +86,20 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 
 	while(!to_stop)
 	{
-		color = k2g.getColor();
-		cv::flip(color, color, 1);
+		if(c920){
+			gs_grabber->capture(frame);
+			color = cv::Mat(frame);
+		} else {
+			color = k2g->getColor();		
+		}
 
+		cv::flip(color, color, 1); 
+		
 		if(video){
-			x264encoder->encodeFrame((const char *)color.data, 4);
+			if(c920)
+				x264encoder->encodeFrame((const char *)color.data, 3);
+			else
+				x264encoder->encodeFrame((const char *)color.data, 4);
 		}
 
 		cvtColor(color, grey, CV_BGR2GRAY);
@@ -180,7 +200,7 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 
 	//Destroy the window
 	cvDestroyWindow("hands");
-	k2g.shutDown();
+	k2g->shutDown();
 	if(video)
 		x264encoder->unInitilize();
 	return;

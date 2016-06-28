@@ -99,8 +99,8 @@ int sendCalibration(DataWriter & websocket, bool no_webcam, bool no_kinect2){
 
 	root["obj"]["type"] = "calibration";
 	root["obj"]["camera"] = "webcam";
-	for(unsigned int i = 0; i < 3; ++i)
-		for(unsigned int j = 0; j < 4; ++j)
+	for(size_t i = 0; i < 3; ++i)
+		for(size_t j = 0; j < 4; ++j)
 			array.append(wcalib_matrix.at<float>(i,j));
 
 	root["obj"]["parameters"] = array; 
@@ -119,8 +119,8 @@ int sendCalibration(DataWriter & websocket, bool no_webcam, bool no_kinect2){
 	
 	Json::Value array2 = Json::arrayValue;
 	root["obj"]["camera"] = "kinect2";
-	for(unsigned int i = 0; i < 3; ++i)
-		for(unsigned int j = 0; j < 4; ++j)
+	for(size_t i = 0; i < 3; ++i)
+		for(size_t j = 0; j < 4; ++j)
 			array2.append(kcalib_matrix.at<float>(i,j));
 
 	root["obj"]["parameters"] = array2; 
