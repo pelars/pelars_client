@@ -22,7 +22,6 @@ Parser::Parser(int argc, char ** argv):argc_(argc), argv_(argv), description_("P
             ("calibration,c", "calibrate cameras")
             ("no_webcam_calib,w", "don't use webcam calibration")
             ("no_kinect2_calib,k", "con't use kinect2 claibration")
-            ("calibration,c", "calibrate cameras")
             ("default,D", "create a session with default flags (-f -h -a -i -j -q")
             ("special,s", "special flag for background run")
             ("processor,X", boost::program_options::value<int>(), "kinect2 processor : 0 for CPU, 1 for OPENCL, 2 for OPENGL. default 1")
