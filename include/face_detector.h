@@ -13,6 +13,7 @@
 #include "image_sender.h"
 #include <base64.h>
 #include "x264encoder.h"
+#include <memory>
 
 
 extern bool to_stop;

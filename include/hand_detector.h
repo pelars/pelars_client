@@ -21,5 +21,5 @@ extern double interval;
 extern bool snapshot_table;
 
 void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, 
-	              K2G::Processor processor, const bool video, const bool c920 = false, unsigned int camera_id = 1);
+	              K2G::Processor processor, const bool video, const bool store_depth = false, const bool c920 = false, unsigned int camera_id = 1);
 

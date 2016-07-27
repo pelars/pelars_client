@@ -59,6 +59,7 @@ int uploadData(std::string & file_name, const std::string & end_point, int sessi
 	}
 	// Connect the websocker on the upload endpoint
 	DataWriter collector(end_point + "upload", s, false);
+	sleep(5);
 
 	// Read data and send it in chunks of 300 packets every 10s
 	
@@ -69,28 +70,25 @@ int uploadData(std::string & file_name, const std::string & end_point, int sessi
 		collector.writeData(tmp);
 		std::cout << "." << std::flush;
 		num++;
-		if(!(num % 300)){
-			std::cout << "sent 300 packets, sleeping 10s" << std::endl;
-			sleep(10);
+		if(!(num % 100)){
+			std::cout << "sent 100 packets, sleeping 2s" << std::endl;
+			sleep(2);
 		}
-		if(in.eof()){
-			// Get time of the last packet and use it as closing time
-			reader.parse(tmp, root);
-			if(root["obj"].isArray()){
-				for(Json::Value & a : root["obj"])
-					time = a["time"].asInt64();
-			}
-			else{
-				time = root["obj"]["time"].asInt64();
-			}
-		}
+	}
+
+	if(root["obj"].isArray()){
+		for(Json::Value & a : root["obj"])
+			time = a["time"].asInt64();
+	}
+	else{
+		time = root["obj"]["time"].asInt64();
 	}
 		
 	in.close();
 	std::cout << std::endl;
 	std::cout << num << " packet sent" << std::endl;
 	collector.stop();
-
+/*
 	boost::filesystem::directory_iterator end_itr;
 	std::string image_dir("../../images/snapshots_" + std::to_string(s));
 	ImageSender image_sender(s, "http://pelars.sssup.it/pelars/", sm.getToken(), true);
@@ -119,7 +117,7 @@ int uploadData(std::string & file_name, const std::string & end_point, int sessi
 	    		in.close();
 	    		sleep(1);
 	    }
-	}
+	}*/
 	// Close websocket and session
 	sm.closeSession(s, time);
 

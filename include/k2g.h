@@ -15,8 +15,9 @@
 #include <Eigen/Core>
 #include <limits>
 
+#include "serialization.h"
+
 extern bool to_stop;
-extern bool TURBO_COLOR;
 
 class K2G {
 
@@ -32,8 +33,8 @@ public:
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr getCloud();
 	void shutDown();
 	cv::Mat getColor();
-	cv::Mat getGrey();
 	void prepareMake3D(const libfreenect2::Freenect2Device::IrCameraParams & depth_p);
+	void get(cv::Mat & color_mat, cv::Mat & depth_mat, const bool full_hd = true, const bool remove_points = false);
 	
 private:
 
@@ -49,4 +50,5 @@ private:
 	Eigen::Matrix<float,424,1> rowmap;
 	int map_[512 * 424]; 
 	float qnan_;
+
 };

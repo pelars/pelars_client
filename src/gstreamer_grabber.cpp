@@ -239,3 +239,29 @@ void GstreamerGrabber::operator >>(IplImage * frame){
 	gst_buffer_extract(gstImageBuffer,0,frame->imageData,frame->imageSize);
 	gst_buffer_unref(gstImageBuffer);
 }
+
+void GstreamerGrabber::capture(std::shared_ptr<IplImage> frame)
+{
+	GstSample * sample = gst_app_sink_pull_sample((GstAppSink*)this->appsink);
+	  
+	GstBuffer * gstImageBuffer=	gst_sample_get_buffer(sample);	
+
+	GstCaps * c = gst_sample_get_caps(sample);
+	GST_WARNING ("caps are %" GST_PTR_FORMAT, c);
+
+	gst_buffer_extract(gstImageBuffer, 0, frame->imageData, frame->imageSize);
+	gst_buffer_unref(gstImageBuffer);
+}
+
+void GstreamerGrabber::operator >>(std::shared_ptr<IplImage> frame){
+
+	GstSample * sample = gst_app_sink_pull_sample((GstAppSink*)this->appsink);
+	  
+	GstBuffer*  gstImageBuffer = gst_sample_get_buffer(sample); 
+
+	GstCaps * c = gst_sample_get_caps(sample);
+	GST_WARNING ("caps are %" GST_PTR_FORMAT, c);
+	
+	gst_buffer_extract(gstImageBuffer,0,frame->imageData,frame->imageSize);
+	gst_buffer_unref(gstImageBuffer);
+}

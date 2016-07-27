@@ -52,7 +52,7 @@ int main(int argc, char * argv[])
 
 	// Calibrate the cameras and exit
 	if(p.get("calibration")){
-		calibration(face_camera_id, marker_size);
+		calibration(face_camera_id, hand_camera_id, marker_size, p.get("C920"), processor);
 		io.stop();
 		ws_writer.join();
 		return 0;
@@ -80,7 +80,7 @@ int main(int argc, char * argv[])
 	// Websocket manager
 	DataWriter collector(end_point + "collector", session); 
 	DataWriter alive_socket(end_point + "aliver", session); 
-	std::cout << "opened aliver on " + end_point + "/" + std::to_string(session) << std::endl;
+	std::cout << "opened aliver on " + end_point + std::to_string(session) << std::endl;
 
 	visualization = p.get("visualization");
 
@@ -108,15 +108,16 @@ int main(int argc, char * argv[])
 	if(p.get("face") || p.get("default"))
 		thread_list.push_back(std::thread(detectFaces, std::ref(collector), std::ref(screen_grabber), 
 			                  std::ref(image_sender_people), std::ref(image_sender_screen), face_camera_id, 
-			                  p.get("video") ? true : false));
+			                  p.get("video")));
 	// Starting the particle.io thread
 	if(p.get("particle"))
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
 	// Starting the hand detector
 	if(p.get("hand") || p.get("default"))
 		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.035,
-		                      std::ref(image_sender_table), processor, p.get("video") ? true : false, p.get("C920") ? true : false, 
-		                      hand_camera_id));
+		                      std::ref(image_sender_table), processor, p.get("video"), p.get("depth") || p.get("default"), 
+		                      p.get("C920"), hand_camera_id));
+	
 	// Starting the ide logger
 	if(p.get("ide") || p.get("default"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));

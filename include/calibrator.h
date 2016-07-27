@@ -10,4 +10,5 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include "gstreamer_grabber.h"
 
-void calibration(const unsigned int id, const float marker_size);
+void calibration(const unsigned int face_camera_id, const unsigned int hand_camera_id, const float marker_size, bool c920, 
+	             K2G::Processor processor = K2G::OPENCL);

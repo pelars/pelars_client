@@ -24,9 +24,10 @@ Parser::Parser(int argc, char ** argv):argc_(argc), argv_(argv), description_("P
             ("calibration,c", "calibrate cameras")
             ("no_webcam_calib,w", "don't use webcam calibration")
             ("no_kinect2_calib,k", "con't use kinect2 claibration")
-            ("default,D", "create a session with default flags (-f -h -a -i -j -q)")
+            ("default,D", "create a session with default flags (-f -h -a -i -j -q -d)")
             ("special,s", "special flag for background run")
             ("test,t", "mark the session as test")
+            ("depth,d", "flag to record depth")
             ("processor,X", boost::program_options::value<int>(), "kinect2 processor : 0 for CPU, 1 for OPENCL, 2 for OPENGL. default 1")
             ("upload,u", boost::program_options::value<std::string>(), "file name to upload")
             ("status,j", "displays system status");
