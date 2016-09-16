@@ -1,4 +1,9 @@
 #include "audio_detector.h"
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include "portaudio.h" 
+#include "lame/lame.h"
 
 const float threshold = 0.0003;
 
@@ -6,18 +11,24 @@ struct Mp3encoder
 {
 	Mp3encoder(int samplerate, int channels, int bitrate, std::string name);
 	~Mp3encoder();
-	void encode_inter(unsigned * s, int samples);
+	void encode_inter(short * s, int samples);
 
 	void flush();
 
 	std::vector<char> buf;
-	std::ostream onf;
+	std::ofstream onf;
 	lame_global_flags *p;
 };
 
 Mp3encoder::Mp3encoder(int samplerate, int channels, int bitrate, std::string name): onf(name.c_str(),std::ios::binary)
 {
+	buf.resize(1024*64);
 	p = lame_init();
+	if(!p)
+	{
+		std::cout << "bad p " << std::endl;
+		exit(0);
+	}
 	lame_set_in_samplerate(p,samplerate); // default is 44100
 	lame_set_num_channels(p,channels);
 	lame_set_out_samplerate(p,0); // automatic
@@ -35,15 +46,15 @@ Mp3encoder::Mp3encoder(int samplerate, int channels, int bitrate, std::string na
 	lame_init_params(p);
 }
 
-void Mp3encoder::encode_inter(unsigned * s, int samples)
+void Mp3encoder::encode_inter( short * s, int samples)
 {
-	int n = lame_encode_buffer_interleaved(p,s,samples,&buf[0],buf.size());
+	int n = lame_encode_buffer_interleaved(p,s,samples,(unsigned char*)&buf[0],buf.size());
 	onf.write(&buf[0],n);
 }
 
 void Mp3encoder::flush()
 {
-	int n = lame_encode_flush(p,&buf[0],buf.size());
+	int n = lame_encode_flush(p,(unsigned char*)&buf[0],buf.size());
 	onf.write(&buf[0],n);
 }
 
@@ -51,8 +62,6 @@ Mp3encoder::~Mp3encoder()
 {
 	lame_close(p);
 }
-
-
 int portAudioCallback(const void * input, void * output, 
 					  unsigned long frameCount, const PaStreamCallbackTimeInfo * timeInfo,
 					  PaStreamCallbackFlags statusFlags, void * userData){
@@ -70,6 +79,8 @@ int portAudioCallback(const void * input, void * output,
 			fft->websocket_.writeLocal(message);  
 		}
 	}
+//	enc->encode_inter((short*)input,frameCount);
+
 	return 0;
 }
 
