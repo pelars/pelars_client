@@ -10,6 +10,7 @@
 
 %LuaLaTex supporting OpenType fonts
 \usepackage{ifluatex}
+%\usepackage{bibtex}
 \ifluatex
 \usepackage{fontspec}
 \setmainfont{Calibri}
@@ -21,10 +22,11 @@
 \fi
 \usepackage{listings}
 \usepackage{xcolor}
-%\usepackage[english]{babel}
-\usepackage[latin1]{inputenc}
+\usepackage[english]{babel}
+%\usepackage[latin1]{inputenc}
 \usepackage{longtable}
 \usepackage{acro}
+\usepackage{cite}
 \usepackage{multirow}
 \usepackage{amsmath}
 \usepackage{array}
@@ -162,7 +164,7 @@ The session manager receives all the JSON messages from the other components, st
 
 
 
-\bibliographystyle{apacite}
+\bibliographystyle{alpha}
 \bibliography{report}
 
 
