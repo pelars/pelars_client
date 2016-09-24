@@ -28,9 +28,9 @@ find_package(Boost 1.58 COMPONENTS random program_options REQUIRED)
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 find_package(cmakego REQUIRED)
-usepackage(opencv gstreamer freenect x11 freenect2 tinyxml2 x264 ffmpeg  portaudio x264 tinyxml2 glfw zeromq)
-usepackage(json libusb REQUIRED)
-usepackage(cairo ffmpeg REQUIRED)
+usepackage(opencv gstreamer freenect freenect2 tinyxml2 x264 ffmpeg  portaudio x264 tinyxml2 glfw zeromq)
+usepackage(json libusb lame REQUIRED)
+usepackage(cairo ffmpeg curl x11 REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 #TODO for cmakego
 #openssl
@@ -41,27 +41,32 @@ find_package(PCL 1.7 REQUIRED)
 find_package(Websocketpp REQUIRED)
 message(NOTE Cppnetlib has to be at least 0.13 using boost::asio)
 find_package(Cppnetlib REQUIRED)
+add_library(p::cppnetlib INTERFACE IMPORTED)
+set_property(TARGET p::cppnetlib PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}")
+set_property(TARGET p::cppnetlib PROPERTY INTERFACE_LINK_LIBRARIES ${CPPNETLIB_LIBRARIES})
 
-#Internal ASIO ISSUE
-#add_definitions(-DASIO_HEADER_ONLY)
-#add_definitions(-DBOOST_NETWORK_ENABLE_HTTPS)
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../deps/asio/asio/include)
+#ADD CURLPP
+find_path ( CURLPP_INCLUDE_DIRS  NAMES   curlpp/cURLpp.hpp )
+find_library ( CURLPP_LIBRARIES  NAMES    curlpp)
+find_package_handle_standard_args ( curlpp DEFAULT_MSG CURLPP_INCLUDE_DIRS  CURLPP_LIBRARIES)
+if(CURLPP_FOUND)
+	add_library(p::curlpp INTERFACE IMPORTED)
+	set_property(TARGET p::curlpp PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${CURLPP_INCLUDE_DIRS}")
+	set_property(TARGET p::curlpp PROPERTY INTERFACE_LINK_LIBRARIES ${CURLPP_LIBRARIES} p::curl)
+endif()		
 
-include_directories(${Boost_LIBRARY_DIRS})
+function(optlibrary NAME FLAG)
 
-if(TARGET p::freenect2)
-add_definitions(-DHAS_FREENECT2)
+if(TARGET ${NAME})
+add_definitions(-D${FLAG})
+set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} ${NAME})
 endif()
-if(TARGET p::curl)
-add_definitions(-DHAS_CURL)
-endif()
-if(TARGET p::qrencode)
-add_definitions(-DHAS_QRENCODE)
-endif()
-if(TARGET p::aruco)
-add_definitions(-DHAS_ARUCO)
-endif()
+endfunction(optlibrary)			
 
+optlibrary(p::curlpp HAS_CURL)
+optlibrary(p::qrencode HAS_QRENCODE)
+optlibrary(p::aruco HAS_ARUCO)
+optlibrary(p::gstreamer HAS_GSTREAMER)
 
 #Should be fixed in the future
 #find_library(GSTREAMER_O     NAMES gobject-2.0)
@@ -70,8 +75,10 @@ endif()
 #find_library(GLIB            NAMES glib-2.0)
 #set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
 if(LINUX)
-set(LINUXEXTRA_LIBRARIES rt boost_program_options boost_random)
+set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES}  rt p::x11)
+else()
 endif()
+set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} boost_program_options boost_random)
 
 
 include_directories(${PCL_INCLUDE_DIRS})
@@ -111,28 +118,22 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 target_link_libraries(sensor_manager 	
 	p::opencv
 	p::tinyxml2
-	#p::boost
 	p::json
-	#p::cppnetlib
-	#p::openssl
 	p::zeromq
 	p::x264
 	p::ffmpeg
-	#p::curl
-	#p::aruco
-	${LINUXEXTRA_LIBRARIES} 
-	${BOOST_LIBRARIES} 
-	${CPPNETLIB_LIBRARIES}
-										
-	p::gstreamer
+	p::ffmpeg::swscale
+	p::lame
 	p::ffmpeg
-	#p::freenect2
 	p::glfw
 	p::portaudio
-	#p::qrencode
 	p::cairo
-	p::x11
+	p::cppnetlib
 	${PCL_LIBRARIES}
+	${BOOST_LIBRARIES} 
+	${EXTRA_LIBRARIES}
+	#p::openssl
+	#p::qrencode
 )
 #display should be display2d
 

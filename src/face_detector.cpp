@@ -9,6 +9,7 @@ inline double distance(int x1, int x2){
 		return ((std_width * focal_length_pixel) / std::abs(x1 - x2)) / 1000;
 	}
 
+#ifdef HAS_GSTREAMER
 void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, 
 	             ImageSender & image_sender_people, const int face_camera_id, const bool video)
 {
@@ -334,4 +335,9 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	if(video)
 		x264encoder->unInitilize();
 }
-
+#else
+void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, 
+	             ImageSender & image_sender_people, const int face_camera_id, const bool video)
+{
+}
+#endif

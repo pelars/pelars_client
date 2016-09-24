@@ -1,4 +1,5 @@
 #pragma once
+#ifdef HAS_GSTREAMER
 #include <gst/gst.h> 
 #include <gst/app/gstappsink.h>
 #include <glib.h>
@@ -45,3 +46,4 @@ private:
     GstMessage * msg_;
     int height_, width_, device_id_;        
 };
+#endif

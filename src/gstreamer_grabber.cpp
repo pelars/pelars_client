@@ -1,5 +1,6 @@
 #include "gstreamer_grabber.h"
 
+#ifdef HAS_GSTREAMER
 GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id = 0): height_(height), width_(width), device_id_(device_id)
 {
 
@@ -239,3 +240,4 @@ void GstreamerGrabber::operator >>(IplImage * frame){
 	gst_buffer_extract(gstImageBuffer,0,frame->imageData,frame->imageSize);
 	gst_buffer_unref(gstImageBuffer);
 }
+#endif
