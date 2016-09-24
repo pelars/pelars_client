@@ -47,4 +47,3 @@ private:
 	void aonFail(websocketpp::connection_hdl);
 
 };
-

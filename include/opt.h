@@ -3,7 +3,9 @@
 #include "data_writer.h"
 #include <json/json.h>
 #include <chrono>
+#ifdef HAS_QRENCODE
 #include <qrencode.h>
+#endif
 #include <opencv2/core/core.hpp>        
 #include <opencv2/highgui/highgui.hpp>
 #include <boost/filesystem.hpp>

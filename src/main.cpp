@@ -1,5 +1,6 @@
 #include "all.h"
 
+
 int main(int argc, char * argv[])
 {
 	// Signal handlers
@@ -21,7 +22,10 @@ int main(int argc, char * argv[])
 	end_point = end_point.back() == '/' ? end_point : end_point + "/";
 	std::cout << "WebServer endpoint : " << end_point << std::endl;
 
+#ifdef HAS_FREENECT2
 	K2G::Processor processor = (K2G::Processor)(p.get("processor") ? p.getInt("processor") : 1);
+#endif
+
 	
 	if(p.get("upload")){
 		int error;
@@ -66,7 +70,7 @@ int main(int argc, char * argv[])
 	std::string token = sm.getToken(); 
 
 	// Check the endpoint string and connect to the session manager
-	std::cout << "Collector endpoint : " << end_point + "collector/" + to_string(session) << std::endl;
+	std::cout << "Collector endpoint : " << end_point + "collector/" + std::to_string(session) << std::endl;
 	std::string session_endpoint = end_point + "session/";
 	std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;    
 
@@ -118,7 +122,7 @@ int main(int argc, char * argv[])
 	std::vector<std::thread> thread_list;
 
 	// Should make a sound
-	cout << '\a' << std::flush;
+	std::cout << '\a' << std::flush;
 
 	// Starting the linemod thread
 /*
@@ -131,12 +135,16 @@ int main(int argc, char * argv[])
 			                  std::ref(image_sender_people), std::ref(image_sender_screen), face_camera_id, 
 			                  p.get("video") ? true : false));
 	// Starting the particle.io thread
+#ifdef HAS_CURL 	
 	if(p.get("particle"))
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
+#endif
+#ifdef HAS_ARUCO
 	// Starting the hand detector
 	if(p.get("hand") || p.get("default"))
 		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.035,
 		                      std::ref(image_sender_table), processor, p.get("video") ? true : false));
+#endif	
 	// Starting the ide logger
 	if(p.get("ide") || p.get("default"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));

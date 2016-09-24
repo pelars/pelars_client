@@ -4,7 +4,9 @@
 #include "tinyxml2.h"
 #include <fstream>
 #include <chrono>
+#ifdef HAS_QRENCODE
 #include <qrencode.h>
+#endif
 
 extern bool to_stop;
 extern bool online;

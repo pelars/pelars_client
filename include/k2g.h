@@ -1,4 +1,5 @@
 #pragma once
+#ifdef HAS_FREENECT2
 #include <libfreenect2/libfreenect2.hpp>
 #include <libfreenect2/frame_listener_impl.h>
 #include <libfreenect2/packet_pipeline.h>
@@ -50,3 +51,5 @@ private:
 	int map_[512 * 424]; 
 	float qnan_;
 };
+
+#endif

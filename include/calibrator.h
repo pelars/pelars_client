@@ -1,4 +1,5 @@
 #pragma once
+#ifdef HAS_ARUCO
 #include "k2g.h"
 #include "opt.h"
 #include <iostream>
@@ -11,3 +12,10 @@
 #include "gstreamer_grabber.h"
 
 void calibration(const unsigned int id, const float marker_size);
+#else
+inline void calibration(const unsigned int id, const float marker_size)
+{
+	
+}
+
+#endif

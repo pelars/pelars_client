@@ -1,4 +1,5 @@
 #pragma once
+#ifdef HAS_CURL
 #include <curlpp/cURLpp.hpp>
 #include <boost/algorithm/string.hpp>
 #include "opt.h"
@@ -58,3 +59,5 @@ public:
 	std::vector<CURL*> curl_vector_;
 
 };
+
+#endif

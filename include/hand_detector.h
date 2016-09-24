@@ -1,4 +1,5 @@
 #pragma once
+#ifdef HAS_ARUCO
 #include "k2g.h"
 #include "opt.h"
 #include <iostream>
@@ -21,3 +22,4 @@ extern bool snapshot_table;
 
 void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor, const bool video);
 
+#endif
