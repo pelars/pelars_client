@@ -1,6 +1,7 @@
 
 #include "sse_handler.h"
 
+#ifdef HAS_CURL
 size_t write_data(void *ptr, size_t size, size_t nmemb, Encapsule * enc) {
 	enc->body_.append((char*)ptr, nmemb);
 	std::vector<std::string> strs;
@@ -81,4 +82,4 @@ void sseHandler(DataWriter & websocket){
 		http.update();
 	}
 }
-
+#endif

@@ -23,10 +23,14 @@ include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
 set(Boost_USE_MULTITHREADED ON) 
 
 find_package(PkgConfig REQUIRED)
-find_package(Boost COMPONENTS random program_options REQUIRED)
+#1.58 is the first with ASIO
+find_package(Boost 1.58 COMPONENTS random program_options REQUIRED)
+link_directories(${Boost_LIBRARY_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
 find_package(cmakego REQUIRED)
-usepackage(opencv asio gstreamer freenect freenect2 ffmpeg tinyxml2 x264 ffmpeg  portaudio cairo x264 tinyxml2 glfw zeromq)
-usepackage(json libusb asio REQUIRED)
+usepackage(opencv gstreamer freenect x11 freenect2 tinyxml2 x264 ffmpeg  portaudio x264 tinyxml2 glfw zeromq)
+usepackage(json libusb REQUIRED)
+usepackage(cairo ffmpeg REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 #TODO for cmakego
 #openssl
@@ -35,6 +39,7 @@ find_package(PCL 1.7 REQUIRED)
 #curl
 #qrencode
 find_package(Websocketpp REQUIRED)
+message(NOTE Cppnetlib has to be at least 0.13 using boost::asio)
 find_package(Cppnetlib REQUIRED)
 
 #Internal ASIO ISSUE
@@ -104,31 +109,30 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								)
 
 target_link_libraries(sensor_manager 	
-	p::opencv2
+	p::opencv
 	p::tinyxml2
-	p::boost
+	#p::boost
 	p::json
-	p::cppnetlib
-	p::openssl
+	#p::cppnetlib
+	#p::openssl
 	p::zeromq
 	p::x264
 	p::ffmpeg
-	p::curl
-	p::aruco
-	p::asio
+	#p::curl
+	#p::aruco
 	${LINUXEXTRA_LIBRARIES} 
 	${BOOST_LIBRARIES} 
 	${CPPNETLIB_LIBRARIES}
 										
 	p::gstreamer
-	p::freenect2
-	p::gflfw
+	p::ffmpeg
+	#p::freenect2
+	p::glfw
 	p::portaudio
-	p::qrencode
+	#p::qrencode
 	p::cairo
-	p::display
+	p::x11
 	${PCL_LIBRARIES}
-	${OpenCV_LIBS} 
 )
 #display should be display2d
 

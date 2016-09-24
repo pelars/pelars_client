@@ -1,5 +1,11 @@
 #include "x264encoder.h"
 
+#ifndef PIX_FMT_RGB32
+#define PIX_FMT_RGB32 AV_PIX_FMT_RGB32
+#define PIX_FMT_BGR24 AV_PIX_FMT_BGR24
+#define PIX_FMT_YUV420P AV_PIX_FMT_YUV420P
+#endif
+
 void x264Encoder::initialize(const unsigned int w, const unsigned int h, const bool kinect)
 {
 	image_w_ = w;
@@ -78,7 +84,7 @@ void x264Encoder::unInitilize()
 void x264Encoder::encodeFrame(const char *rgb_buffer, const unsigned int bytes)
 {
 	const uint8_t * rgb_buffer_slice[1] = {(const uint8_t *)rgb_buffer};
-	int stride[1] = { bytes * image_w_ }; // RGB stride
+	int stride[1] = { (int)bytes * image_w_ }; // RGB stride
 
 	//Convert the frame from RGB to YUV420
 	int slice_size = sws_scale(convert_context_, rgb_buffer_slice,

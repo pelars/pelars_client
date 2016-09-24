@@ -1,7 +1,8 @@
 #include "calibrator.h"
 
-void calibration(const unsigned int id, const float marker_size){
-
+#ifdef HAS_ARUCO
+void calibration(const unsigned int id, const float marker_size)
+{
 	std::cout << "press c to calibrate when the marker is seen in both cameras" << std::endl;
 	
 	K2G k2g(K2G::OPENCL);
@@ -133,5 +134,5 @@ void calibration(const unsigned int id, const float marker_size){
 	cvDestroyWindow("kinect2");
 	cvDestroyWindow("webcam");
 	k2g.shutDown();
-
 }
+#endif

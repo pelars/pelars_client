@@ -2,7 +2,7 @@
 
 void show_markers(const unsigned int id, const float marker_size){
 	
-
+#ifdef HAS_ARUCO
 	const int width = 800;
 	const int height = 448;
 
@@ -60,4 +60,5 @@ void show_markers(const unsigned int id, const float marker_size){
 	}
 
 	cvDestroyWindow("webcam");
+	#endif
 }

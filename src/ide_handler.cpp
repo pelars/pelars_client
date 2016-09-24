@@ -1,3 +1,4 @@
+#include <errno.h>
 #include "ide_handler.h"
 
 void ideHandler(DataWriter & websocket, const char * endpoint,  const char * endpoint2)

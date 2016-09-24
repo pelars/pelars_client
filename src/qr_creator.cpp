@@ -1,5 +1,6 @@
 #include "qr_creator.h"
 
+#ifdef HAS_QRENCODE
 void showQr(int session){
 	sleep(1);
 	cv::startWindowThread();
@@ -54,3 +55,7 @@ cv::Mat drawQr(int width, int repetitions, int session)
 	  				qr.at<char>(y * repetitions + yi + position, x * repetitions + xi + position) = qrcode->data[y * qrcode->width + x] & 1 ? 0 : 255;
 	return qr;  		
 }
+#else
+void showQr(int session){
+}
+#endif

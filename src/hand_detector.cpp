@@ -1,5 +1,6 @@
 #include "hand_detector.h"
 
+#ifdef HAS_ARUCO
 void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor, const bool video)
 {
 	aruco::MarkerDetector marker_detector;
@@ -184,4 +185,5 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	return;
 }
 
+#endif
 		

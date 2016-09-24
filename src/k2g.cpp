@@ -1,5 +1,6 @@
 #include "k2g.h"
 
+#ifdef HAS_FREENECT2
 K2G::K2G(Processor p): undistorted_(512, 424, 4), registered_(512, 424, 4), big_mat_(1920, 1082, 4), listener_(libfreenect2::Frame::Color | libfreenect2::Frame::Ir | libfreenect2::Frame::Depth),
 qnan_(std::numeric_limits<float>::quiet_NaN())
 {
@@ -151,6 +152,7 @@ void K2G::prepareMake3D(const libfreenect2::Freenect2Device::IrCameraParams & de
     }
 }
 
+#endif
 
 
 

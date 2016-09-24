@@ -7,6 +7,7 @@
 #include "omp_parallel_for.h"
 #include "enc_dec.hpp"
 #include "opt.h"
+using namespace std;
 
 extern bool to_stop;
 extern bool visualization;
