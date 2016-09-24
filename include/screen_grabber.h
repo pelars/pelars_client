@@ -1,7 +1,5 @@
 #pragma once
 #include <string>
-#include <chrono>
-#include <algorithm>
 
 class ScreenGrabber{
 

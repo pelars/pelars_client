@@ -6,6 +6,8 @@
 #include <X11/Xlib.h>
 #endif
 #include <iostream>
+#include <chrono>
+#include <algorithm>
 
 ScreenGrabber::ScreenGrabber(){}
 

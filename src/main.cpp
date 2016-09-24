@@ -1,5 +1,5 @@
 #include "all.h"
-
+#include "screen_grabber.h"
 
 int main(int argc, char * argv[])
 {

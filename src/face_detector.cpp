@@ -1,4 +1,18 @@
 #include "face_detector.h"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/gpu/gpu.hpp"
+#include "opencv2/contrib/contrib.hpp"
+#include <data_writer.h>
+#include <boost/network/protocol/http/client.hpp>
+#include <boost/filesystem.hpp>
+#include <json/json.h>
+#include <vector>
+#include "opt.h"
+#include "gstreamer_grabber.h"
+#include "screen_grabber.h"
+#include "image_sender.h"
+#include <base64.h>
+#include "x264encoder.h"
 
 double std_width = 185.0; //mm
 
