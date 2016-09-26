@@ -29,9 +29,8 @@ void x264Encoder::initialize(const unsigned int w, const unsigned int h, const b
 	time_base_ = 0;
 	first_ = true;
 
-	// the following two value you should keep 1
-	parameters_.b_repeat_headers = 1;    // to get header before every I-Frame
-	parameters_.b_annexb = 1; // put start code in front of nal. we will remove start code later
+	parameters_.b_repeat_headers = 1;   
+	parameters_.b_annexb = 1;
 	x264_param_apply_profile(&parameters_, "high");
 
 	encoder_ = x264_encoder_open(&parameters_);
@@ -42,10 +41,12 @@ void x264Encoder::initialize(const unsigned int w, const unsigned int h, const b
 	picture_in_.img.i_csp = X264_CSP_I420;
 	x264_picture_alloc(&picture_in_, X264_CSP_I420, 
 					   parameters_.i_width, parameters_.i_height);
-	if(!kinect){
+
+	if(kinect){
+		std::cout << "Recording Kinect2" << std::endl;
 		convert_context_ = sws_getContext(parameters_.i_width,
 									  parameters_.i_height,
-									  PIX_FMT_BGR24, 
+									  PIX_FMT_RGB32, 
 									  parameters_.i_width,
 									  parameters_.i_height,
 									  PIX_FMT_YUV420P,
@@ -53,9 +54,10 @@ void x264Encoder::initialize(const unsigned int w, const unsigned int h, const b
 	}
 	else
 	{
+		std::cout << "Recording Webcam" << std::endl;
 		convert_context_ = sws_getContext(parameters_.i_width,
 									  parameters_.i_height,
-									  PIX_FMT_RGB32, 
+									  PIX_FMT_BGR24, 
 									  parameters_.i_width,
 									  parameters_.i_height,
 									  PIX_FMT_YUV420P,
@@ -75,13 +77,17 @@ void x264Encoder::unInitilize()
 	std::ostringstream strs;
 	strs << "ffmpeg -r "  << 1000.0/boost::accumulators::mean(acc_) << " -f h264 -i " << input << " -reset_timestamps 1 -y -c copy -an " << folder_name_ + mp4_name;
 	std::string command = strs.str();
-	std::cout << "executing " << command << std::endl;
-	if(std::system(command.c_str()) == 0)
-		std::system((std::string("rm ") + input).c_str());
+	std::cout << "Executing " << command << std::endl;
+	if(std::system(command.c_str()) == 0){
+		std::cout << "h264 converted to mp4 successfully" << std::endl;
+		if(std::system((std::string("rm ") + input).c_str()) == 0)
+			std::cout << "h264 file removed" << std::endl;
+		else
+			std::cout << "Could not remove " << input << std::endl; 
+	}
 }
 
-//Encode the rgb frame into a sequence of NALs unit that are stored in a std::vector
-void x264Encoder::encodeFrame(const char *rgb_buffer, const unsigned int bytes)
+void x264Encoder::encodeFrame(const char *rgb_buffer, const int bytes)
 {
 	const uint8_t * rgb_buffer_slice[1] = {(const uint8_t *)rgb_buffer};
 	int stride[1] = { (int)bytes * image_w_ }; // RGB stride
@@ -93,15 +99,6 @@ void x264Encoder::encodeFrame(const char *rgb_buffer, const unsigned int bytes)
 	x264_nal_t* nals;
 	int i_nals = 0;
 	int frame_size = -1;
-/*
-	if(first_){
-		picture_out_.i_pts = 0;
-		first_ = false;
-	}
-	else{
-		picture_out_.i_pts = time_base_; 
-	}
-*/
 
 	std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 	long int interval = (long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count() - time_base_;
@@ -116,8 +113,6 @@ void x264Encoder::encodeFrame(const char *rgb_buffer, const unsigned int bytes)
 
 	if(frame_size > 0)
 		for(int i = 0; i< i_nals; i++){
-			//output_queue_.push(nals[i]);
-			
 			os_.write((const char*)nals[i].p_payload, nals[i].i_payload);
 		}
 }

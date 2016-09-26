@@ -9,7 +9,6 @@ DataWriter::DataWriter(const std::string & uri, const int session, const bool cr
 
 	m_client_.set_close_handler(bind(&DataWriter::onClose, this,  /*std::placeholders*/::_1));
 	m_client_.set_fail_handler(bind(&DataWriter::onFail, this, /*std::placeholders*/::_1));
-
 	if(uri_.find("http://") == 0){
 		// Initialize the Asio transport policy
 		m_client_.init_asio();
@@ -26,13 +25,13 @@ DataWriter::DataWriter(const std::string & uri, const int session, const bool cr
 		failed_ = true;
 		std::cout << "Invalid collector endpoint " << uri_ << std::endl;
 	}
-
 	if(create_file){
-		file_name_ = std::string("../../backup/session_")+ std::to_string(session);
+		file_name_ = std::string("../../backup/session_") + std::to_string(session);
 		file_extention_ = std::string(".txt");
 		complete_file_name_ = file_name_ + file_extention_;
 		fs_.open(complete_file_name_);
 	}
+
 }
 
 

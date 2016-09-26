@@ -1,7 +1,7 @@
 #include "session_manager.h"
 
 
-SessionManager::SessionManager(std::string endpoint): endpoint_(endpoint), error_(false)
+SessionManager::SessionManager(std::string endpoint, const bool test): endpoint_(endpoint), error_(false), test_(test)
 {	
 	std::cout << "Parsing the input data" << std::endl;
 	auto eResult =  data_.LoadFile( "../../data/personal.xml" );
@@ -28,6 +28,10 @@ int SessionManager::getNewSession(double time)
 		root_["institution_name"] = data_.FirstChildElement("Root")->FirstChildElement("institution_name")->GetText();
 		root_["institution_address"] = data_.FirstChildElement( "Root")->FirstChildElement("institution_address")->GetText();
 		root_["namespace"] = data_.FirstChildElement("Root")->FirstChildElement("namespace")->GetText();
+		
+		if(test_)
+			root_["description"] = "test";
+		
 		if(time != 0){
 			root_["start"] = time;
 		}
@@ -81,7 +85,10 @@ void SessionManager::login(){
 		try{
 			//std::cout << endpoint_ + std::string("password") + std::string("?user="+mail_+"&pwd="+password_) << std::endl;
 			boost::network::http::client::request request(endpoint_ + std::string("password") + std::string("?user="+mail_+"&pwd="+password_));
+
 			boost::network::http::client::response response = client_.post(request);
+			std::cout << response.body() << std::endl;
+
 			if(reader_.parse(response.body(), root_)){
 				token_ = root_["token"].asString();
 				std::cout << "\tSuccess" << std::endl;
@@ -94,6 +101,7 @@ void SessionManager::login(){
 			online = false;
 		}
 	}
+	
 }
 
 void SessionManager::createUser(){
@@ -110,7 +118,6 @@ void SessionManager::createUser(){
 	mail_ = root_["email" ].asString();
 	password_ = root_["password"].asString();
 	std::string out_string = writer_.write(root_);
-
 	try{
 		// Making the put request to create a new session
 		boost::network::http::client::request endpoint(endpoint_ + std::string("user"));
@@ -136,7 +143,7 @@ void SessionManager::closeSession(int session, double time)
 
 	// Json message
 	root_["op_code"] = "close";
-	if(time != 0)
+	if(time != 0.0)
 		root_["time"] = time;
 	std::string out_string = writer_.write(root_);
 

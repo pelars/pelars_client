@@ -1,10 +1,11 @@
 #include "image_sender.h"
 
-ImageSender::ImageSender(int session, std::string endpoint, std::string token): token_(token), sending_complete_(true){
+ImageSender::ImageSender(int session, std::string endpoint, std::string token, bool upload): token_(token), sending_complete_(true){
     root_["id"] = session;
     root_["type"] = "image";
     root_["creator"] = "client";
-  	endpoint_ = endpoint + std::string("multimedia") + std::string("?token=") + token_;
+  	endpoint_ = endpoint + (upload ? std::string("multimediaupload") : std::string("multimedia")) + std::string("?token=") + token_;
+
 }
 
 void ImageSender::send(std::string & data, std::string type, std::string what, bool automatic, long time){
@@ -14,8 +15,7 @@ void ImageSender::send(std::string & data, std::string type, std::string what, b
 	root_["view"] = what;
 	root_["trigger"] = automatic ? "automatic" : "manual";
 	std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
-	root_["time"] = time != 0 ? time : (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
-
+	root_["time"] = time != 0.0 ? time : (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 	out_string_ = writer_.write(root_);
 	try
 	{

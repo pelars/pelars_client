@@ -1,7 +1,4 @@
-
-#ifndef X264ENCODER_H
-#define X264ENCODER_H
-
+#pragma once
 #ifdef __cplusplus
 #define __STDINT_MACROS
 #define __STDC_CONSTANT_MACROS
@@ -32,24 +29,24 @@ class x264Encoder
 {
 
 public:
-	x264Encoder(const std::string folder_name = "./", const std::string file_name = "video.mp4"): os_(folder_name + file_name, std::ios::binary), file_name_(file_name), folder_name_(folder_name) {}
+	x264Encoder(const std::string folder_name = "./", const std::string file_name = "video.mp4"): 
+	            os_(folder_name + file_name, std::ios::binary), file_name_(file_name), folder_name_(folder_name){}
+
 	void initialize(const unsigned int w = 640, const unsigned int h = 480, const bool kinect = false);
 	void unInitilize();
-	void encodeFrame(const char *rgb_buffer, const unsigned int bytes);
+	void encodeFrame(const char *rgb_buffer, const int bytes);
 	bool isNalsAvailableInOutputQueue();
-	int image_h_;
-	int image_w_;
+	int image_h_, image_w_;
 
 	x264_nal_t getNalUnit();
-	x264_t *getx264Encoder() { return encoder_; }
+	x264_t * getx264Encoder() { return encoder_; }
 	int nal_size() { return output_queue_.size(); }
 private:
-	// Use this context to convert your BGR Image to YUV image since x264 do not support RGB input
-	SwsContext* convert_context_ = NULL;
+	SwsContext * convert_context_ = NULL;
 	std::queue<x264_nal_t> output_queue_;
 	x264_param_t parameters_;
 	x264_picture_t picture_in_, picture_out_;
-	x264_t* encoder_;
+	x264_t * encoder_;
 	std::ofstream os_;
 	long int time_base_;
 	bool first_;
@@ -57,4 +54,3 @@ private:
 	boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::mean>> acc_;
 };
 
-#endif // X264ENCODER_H

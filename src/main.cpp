@@ -29,7 +29,8 @@ int main(int argc, char * argv[])
 	
 	if(p.get("upload")){
 		int error;
-		error = uploadData(p.getString("upload"), end_point, p.get("session") ? p.getInt("session") : 0);
+		std::string file_name = p.getString("upload");
+		error = uploadData(file_name, end_point, p.get("session") ? p.getInt("session") : 0);
 		io.stop();
 		ws_writer.join();
 		return !error;
@@ -58,11 +59,13 @@ int main(int argc, char * argv[])
 	}
 
 	// Creating a Session Manager and getting a newsession ID
-	SessionManager sm(end_point);
+	SessionManager sm(end_point, p.get("test"));
 	sm.login();
 	int session;
+	std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+	
 	if(!p.get("session"))
-		session = sm.getNewSession();
+		session = sm.getNewSession((double)std::chrono::duration_cast<std::chrono::milliseconds>(start.time_since_epoch()).count());
 	else{
 		session = p.getInt("session");
 		std::cout << "Using session " << session << std::endl;
@@ -159,6 +162,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(drawStatus, std::ref(p)));
 	// Keep alive on server for status update
 	thread_list.push_back(std::thread(keep_alive, std::ref(alive_socket)));
+	//std::thread audio_recorder = std::thread(audioRecorder, session);
 	
 	//If there are no windows wait for Esc to be pressed
 	checkEscape(visualization, p.get("special"));
@@ -188,5 +192,6 @@ int main(int argc, char * argv[])
 	// Stopping Asio aliver
 	ws_writer.join();
 	std::cout << "writer stopped" << std::endl;
+	kill(0, SIGINT);
 	return 0;
 }
