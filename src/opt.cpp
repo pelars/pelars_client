@@ -29,7 +29,7 @@ void aliver(const boost::system::error_code& /*e*/)
 void sig_handler(int signum)
 {
 		to_stop = true;
-		printf("Received signal %d\n", signum);
+		printf("Received signal %d\n, killing pelars", signum);
 		kill(0, SIGINT);
 
 }
@@ -39,6 +39,14 @@ void asiothreadfx()
 	boost::asio::deadline_timer t(io, boost::posix_time::seconds(100000));
 	t.async_wait(aliver);
 	io.run();
+}
+
+void sessionWriter(int session){
+
+	while(!to_stop){
+		std::cout << "session is " << session << std::endl;
+		sleep(3);
+	}
 }
 
 const std::string currentDateTime() {
@@ -99,8 +107,8 @@ int sendCalibration(DataWriter & websocket, bool no_webcam, bool no_kinect2){
 
 	root["obj"]["type"] = "calibration";
 	root["obj"]["camera"] = "webcam";
-	for(unsigned int i = 0; i < 3; ++i)
-		for(unsigned int j = 0; j < 4; ++j)
+	for(size_t i = 0; i < 3; ++i)
+		for(size_t j = 0; j < 4; ++j)
 			array.append(wcalib_matrix.at<float>(i,j));
 
 	root["obj"]["parameters"] = array; 
@@ -119,8 +127,8 @@ int sendCalibration(DataWriter & websocket, bool no_webcam, bool no_kinect2){
 	
 	Json::Value array2 = Json::arrayValue;
 	root["obj"]["camera"] = "kinect2";
-	for(unsigned int i = 0; i < 3; ++i)
-		for(unsigned int j = 0; j < 4; ++j)
+	for(size_t i = 0; i < 3; ++i)
+		for(size_t j = 0; j < 4; ++j)
 			array2.append(kcalib_matrix.at<float>(i,j));
 
 	root["obj"]["parameters"] = array2; 

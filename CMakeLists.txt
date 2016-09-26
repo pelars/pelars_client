@@ -42,6 +42,7 @@ find_package(PortAudio REQUIRED)
 find_package(Cairo REQUIRED)
 find_package(Freenect2 REQUIRED)
 add_definitions(-DHAS_FREENECT2)
+find_package(Lame REQUIRED)
 
 set(Boost_USE_MULTITHREADED ON) 
 
@@ -66,6 +67,7 @@ include_directories(${INCLUDE})
 include_directories(${GLFW_INCLUDE_DIRS})
 include_directories(${Boost_LIBRARY_DIRS})
 include_directories(${CAIRO_INCLUDE_DIRS})
+include_directories(${LAME_INCLUDE_DIRS})
 
 link_directories(${PCL_LIBRARY_DIRS})
 
@@ -126,6 +128,7 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${PORTAUDIO_LIBRARIES}
 										${QRENCODE_LIBRARY}
 										${CAIRO_LIBRARIES}
+										${LAME_LIBRARIES}
 										X11
 										)
 

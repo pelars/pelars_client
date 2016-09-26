@@ -20,6 +20,7 @@
 #include "aliver.h"
 #include "marker_viewer.h"
 #include "audio_recorder.h"
+#include "mutex.h"
 
 
 

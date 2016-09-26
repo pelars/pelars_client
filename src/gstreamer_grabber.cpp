@@ -21,9 +21,11 @@ GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id = 0): he
 
 GstreamerGrabber::~GstreamerGrabber()
 {
+	std::cout << "Closing gstreamer grabber" << std::endl;
 	deinitVideoLive();    
 	removeBinCaptureFromPipe();
 	deletePipeline();
+	std::cout << "gstreamer closed" << std::endl;
 }
 
 void GstreamerGrabber::createPipeline()
@@ -32,7 +34,7 @@ void GstreamerGrabber::createPipeline()
 	gst_element_set_state (this->pipeline, GST_STATE_NULL);
 }
 
-/// gst-launch-1.0 -v -e v4l2src device=/dev/video0 ! queue ! video/x-h264,width=1920,height=1080,framerate=30/1 ! \ h264parse ! avdec_h264 ! xvimagesink sync=false
+/// gst-launch-1.0 -v -e v4l2src device=/dev/video0 ! queue ! video/x-h264,width=1920,height=1080,framerate=30/1 !  h264parse ! avdec_h264 ! xvimagesink sync=false
 
 gboolean GstreamerGrabber::initVideoCapture()
 {    
@@ -240,4 +242,31 @@ void GstreamerGrabber::operator >>(IplImage * frame){
 	gst_buffer_extract(gstImageBuffer,0,frame->imageData,frame->imageSize);
 	gst_buffer_unref(gstImageBuffer);
 }
+
+void GstreamerGrabber::capture(std::shared_ptr<IplImage> frame)
+{
+	GstSample * sample = gst_app_sink_pull_sample((GstAppSink*)this->appsink);
+	  
+	GstBuffer * gstImageBuffer=	gst_sample_get_buffer(sample);	
+
+	GstCaps * c = gst_sample_get_caps(sample);
+	GST_WARNING ("caps are %" GST_PTR_FORMAT, c);
+
+	gst_buffer_extract(gstImageBuffer, 0, frame->imageData, frame->imageSize);
+	gst_buffer_unref(gstImageBuffer);
+}
+
+void GstreamerGrabber::operator >>(std::shared_ptr<IplImage> frame){
+
+	GstSample * sample = gst_app_sink_pull_sample((GstAppSink*)this->appsink);
+	  
+	GstBuffer*  gstImageBuffer = gst_sample_get_buffer(sample); 
+
+	GstCaps * c = gst_sample_get_caps(sample);
+	GST_WARNING ("caps are %" GST_PTR_FORMAT, c);
+	
+	gst_buffer_extract(gstImageBuffer,0,frame->imageData,frame->imageSize);
+	gst_buffer_unref(gstImageBuffer);
+}
 #endif
+

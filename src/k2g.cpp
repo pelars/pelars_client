@@ -104,24 +104,33 @@ void K2G::shutDown()
 
 cv::Mat K2G::getColor()
 {
-	//TURBO_COLOR = true;
 	listener_.waitForNewFrame(frames_);
 	libfreenect2::Frame * rgb = frames_[libfreenect2::Frame::Color];
 	cv::Mat tmp(rgb->height, rgb->width, CV_8UC4, rgb->data);
 	cv::Mat r = tmp.clone();
 	listener_.release(frames_);
-	return std::move(r);
+	return r;
 }
 
-cv::Mat K2G::getGrey()
-{
-	//TURBO_COLOR = false;
+// Depth and color are aligned and registered 
+void K2G::get(cv::Mat & color_mat, cv::Mat & depth_mat, const bool full_hd, const bool remove_points){
 	listener_.waitForNewFrame(frames_);
-	libfreenect2::Frame * grey = frames_[libfreenect2::Frame::Color];
-	cv::Mat tmp(grey->height, grey->width, CV_8UC1, grey->data);
-	cv::Mat r = tmp.clone();
+	libfreenect2::Frame * rgb = frames_[libfreenect2::Frame::Color];
+	libfreenect2::Frame * depth = frames_[libfreenect2::Frame::Depth];
+
+	registration_->apply(rgb, depth, &undistorted_, &registered_, remove_points, &big_mat_, map_);
+
+	cv::Mat tmp_depth(undistorted_.height, undistorted_.width, CV_32FC1, undistorted_.data);
+	cv::Mat tmp_color;
+	if(full_hd)
+		tmp_color = cv::Mat(rgb->height, rgb->width, CV_8UC4, rgb->data);
+	else
+		tmp_color = cv::Mat(registered_.height, registered_.width, CV_8UC4, registered_.data);
+
+	cv::flip(tmp_depth, depth_mat, 1);
+	color_mat = tmp_color.clone();
+	
 	listener_.release(frames_);
-	return std::move(r);
 }
 
 libfreenect2::Freenect2Device::IrCameraParams K2G::getIrParameters()

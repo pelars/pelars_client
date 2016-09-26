@@ -1,9 +1,11 @@
 #include "hand_detector.h"
 
 #ifdef HAS_ARUCO
-void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor, const bool video)
-{
+void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor, const bool video, 
+	              const bool store_depth, const bool c920, unsigned int camera_id)
+{	
 
+	synchronizer.lock();
 	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
 	cv::FileStorage file("../../data/calibration_kinect2.xml", cv::FileStorage::READ);
@@ -16,7 +18,6 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 		to_stop = true;
 	}
 
-	
 	aruco::MarkerDetector marker_detector;
 	marker_detector.setMinMaxSize(0.01, 0.1);
 	marker_detector.setDesiredSpeed(3);
@@ -34,7 +35,13 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	float tx, ty, tz;
 	std::string message;
 
-	K2G k2g(processor);
+	std::shared_ptr<K2G> k2g;
+	std::shared_ptr<GstreamerGrabber> gs_grabber;
+	IplImage * frame;
+
+	std::ofstream * file_streamer;
+	boost::archive::binary_oarchive * archive;
+	boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
 
 	TimedSender timer(interval / 2);
 	TimedSender timer_minute(60000);
@@ -42,8 +49,17 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
 	std::string video_folder_name = std::string("../../videos");
 	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 
- 
-	x264Encoder * x264encoder;
+	std::string depth_folder_name = std::string("../../depth");
+
+	if(store_depth && !c920){
+		
+		if(!boost::filesystem::exists(depth_folder_name)){
+			boost::filesystem::path dir(depth_folder_name);
+			boost::filesystem::create_directory(depth_folder_name);
+		}
+	}
+
+	std::shared_ptr<x264Encoder> x264encoder;
 	if(video){
 
 		if(!boost::filesystem::exists(video_folder_name)){
@@ -55,32 +71,61 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 			boost::filesystem::path dir(video_subfolder_name);
 			boost::filesystem::create_directory(video_subfolder_name);
 		}
+
 		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-		x264encoder = new x264Encoder(video_subfolder_name + "/", "kinect2_"+ now + "_" + std::to_string(session) + ".h264");
-		x264encoder->initialize(1920, 1080, true);
+		x264encoder = std::make_shared<x264Encoder>(video_subfolder_name + "/", "kinect2_"+ now + "_" + std::to_string(session) + ".h264");
+		x264encoder->initialize(1920, 1080, c920 ? false : true);
 	}
 
+	if(c920){
+		gs_grabber = std::make_shared<GstreamerGrabber>(1920, 1080, camera_id);
+		frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 3); 
+	}
+	else
+	{
+		file_streamer = new std::ofstream(depth_folder_name + std::string("/depth_") + std::to_string(session) + ".bin", 
+			                              std::ios::out | std::ios::binary);
+
+	    out.push(boost::iostreams::zlib_compressor(boost::iostreams::zlib::best_speed));
+	    out.push(*file_streamer);
+		
+		archive = new boost::archive::binary_oarchive(out);
+		k2g = std::make_shared<K2G>(processor);
+	}
 
 	cv::Mat camera_parameters = cv::Mat::eye(3, 3, CV_32F);
-	camera_parameters.at<float>(0,0) = k2g.getRgbParameters().fx; 
-	camera_parameters.at<float>(1,1) = k2g.getRgbParameters().fy; 
-	camera_parameters.at<float>(0,2) = k2g.getRgbParameters().cx; 
-	camera_parameters.at<float>(1,2) = k2g.getRgbParameters().cy;
-	cv::Mat grey, color;
+	camera_parameters.at<float>(0,0) = c920 ? 589.3588305153235 : k2g->getRgbParameters().fx; 
+	camera_parameters.at<float>(1,1) = c920 ? 588.5851167179140 : k2g->getRgbParameters().fy; 
+	camera_parameters.at<float>(0,2) = c920 ? 414.1871817694326 : k2g->getRgbParameters().cx; 
+	camera_parameters.at<float>(1,2) = c920 ? 230.3588624031242 : k2g->getRgbParameters().cy;
+	cv::Mat grey, color, depth;
 	bool to_send;
 
-	
 	cv::Mat camera_inverse = calib_matrix.inv();
 	cv::Mat marker_pose = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
+	synchronizer.unlock();
+
 	while(!to_stop)
 	{
-		color = k2g.getColor();
-		cv::flip(color, color, 1);
+		if(c920){
+			gs_grabber->capture(frame);
+			color = cv::Mat(frame);
+		} else {
+			k2g->get(color, depth);
+			if(store_depth){
+				(*archive) << depth;		
+			}
+		}
 
+		cv::flip(color, color, 1); 
+		
 		if(video){
-			x264encoder->encodeFrame((const char *)color.data, 4);
+			if(c920)
+				x264encoder->encodeFrame((const char *)(color.clone()).data, 3);
+			else
+				x264encoder->encodeFrame((const char *)(color.clone()).data, 4);
 		}
 
 		cvtColor(color, grey, CV_BGR2GRAY);
@@ -170,7 +215,7 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 
 		if(visualization){
 			cv::imshow("hands", color);
-			int c = cv::waitKey(1);
+			int c = cv::waitKey(30);
 			if((char)c == 'q' )
 			{
 				to_stop = true;
@@ -180,10 +225,17 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	}
 
 	//Destroy the window
-	cvDestroyWindow("hands");
-	k2g.shutDown();
+	if(visualization)
+		cvDestroyWindow("hands");
+	if(k2g)
+		k2g->shutDown();
 	if(video)
 		x264encoder->unInitilize();
+	if(store_depth){
+		boost::iostreams::close(out);
+		file_streamer->close();
+	}
+
 	return;
 }
 

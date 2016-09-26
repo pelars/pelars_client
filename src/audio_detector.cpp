@@ -3,12 +3,28 @@
 #include <vector>
 #include <fstream>
 #include "portaudio.h" 
-#include "lame/lame.h"
 #include <unsupported/Eigen/FFT>
 #include "opt.h"
+#include "mutex.h"
+#include "lame/lame.h"
 
-extern bool to_stop;
 extern double interval;
+extern bool to_stop;
+
+
+class Mp3encoder
+{
+public :
+	Mp3encoder(int samplerate, int channels, int bitrate, const std::string & name);
+	~Mp3encoder();
+	void encode_inter(short * s, int samples);
+
+	void flush();
+
+	std::vector<char> buf;
+	std::ofstream onf;
+	lame_global_flags * p;
+};
 
 struct FFT{
 
@@ -22,40 +38,31 @@ struct FFT{
   	Json::StyledWriter writer_;
   	std::string message_;
   	TimedSender timer_;
+  	Mp3encoder mp3encoder;
 
-	FFT(DataWriter & websocket): websocket_(websocket), timer_(interval / 2.0){
+	FFT(DataWriter & websocket, int samplerate, int channels, int bitrate, const std::string & name): 
+	    websocket_(websocket), timer_(interval / 2.0), 
+	    mp3encoder(samplerate, channels, bitrate, name)
+	{
 		root_["obj"]["type"] = "audio";
 	}
 
 	void compute(float * buf, unsigned int count);
 };
-const float threshold = 0.0003;
 
-struct Mp3encoder
-{
-	Mp3encoder(int samplerate, int channels, int bitrate, std::string name);
-	~Mp3encoder();
-	void encode_inter(short * s, int samples);
-
-	void flush();
-
-	std::vector<char> buf;
-	std::ofstream onf;
-	lame_global_flags *p;
-};
-
-Mp3encoder::Mp3encoder(int samplerate, int channels, int bitrate, std::string name): onf(name.c_str(),std::ios::binary)
+Mp3encoder::Mp3encoder(int samplerate, int channels, int bitrate, const std::string & name): 
+                       onf(name.c_str(), std::ios::binary)
 {
 	buf.resize(1024*64);
 	p = lame_init();
 	if(!p)
 	{
-		std::cout << "bad p " << std::endl;
+		std::cout << "bad lame initialization" << std::endl;
 		exit(0);
 	}
-	lame_set_in_samplerate(p,samplerate); // default is 44100
-	lame_set_num_channels(p,channels);
-	lame_set_out_samplerate(p,0); // automatic
+	lame_set_in_samplerate(p, samplerate); // default is 44100
+	lame_set_num_channels(p, channels);
+	lame_set_out_samplerate(p, 0); // automatic
 /*
 	  internal algorithm selection.  True quality is determined by the bitrate
 	  but this variable will effect quality by selecting expensive or cheap algorithms.
@@ -65,30 +72,33 @@ Mp3encoder::Mp3encoder(int samplerate, int channels, int bitrate, std::string na
 	                7     ok quality, really fast
 */
 	//lame_set_quality(p,...)
-	lame_set_brate(p,bitrate);
+	lame_set_brate(p, bitrate);
 
 	lame_init_params(p);
 }
 
-void Mp3encoder::encode_inter( short * s, int samples)
+void Mp3encoder::encode_inter(short * s, int samples)
 {
-	int n = lame_encode_buffer_interleaved(p,s,samples,(unsigned char*)&buf[0],buf.size());
-	onf.write(&buf[0],n);
+	int n = lame_encode_buffer_interleaved(p, s, samples,(unsigned char*)&buf[0], buf.size());
+	onf.write(&buf[0], n);
 }
 
 void Mp3encoder::flush()
 {
 	int n = lame_encode_flush(p,(unsigned char*)&buf[0],buf.size());
-	onf.write(&buf[0],n);
+	onf.write(&buf[0], n);
 }
 
 Mp3encoder::~Mp3encoder()
 {
 	lame_close(p);
 }
+
 int portAudioCallback(const void * input, void * output, 
 					  unsigned long frameCount, const PaStreamCallbackTimeInfo * timeInfo,
 					  PaStreamCallbackFlags statusFlags, void * userData){
+
+
 	FFT * fft = (FFT *)userData;
 	if(frameCount > 1 ){
 		fft->compute((float *)input, frameCount);
@@ -103,47 +113,46 @@ int portAudioCallback(const void * input, void * output,
 			fft->websocket_.writeLocal(message);  
 		}
 	}
-//	enc->encode_inter((short*)input,frameCount);
+	fft->mp3encoder.encode_inter((short*)input, frameCount);
 
 	return 0;
 }
 
 void audioDetector(DataWriter & data_writer){
-
-
 	
 	Pa_Initialize();
 
 	int used_device = -1;
 	for(int i = 0; i < Pa_GetDeviceCount(); ++i){
-		std::cout << Pa_GetDeviceInfo(i)->name << std::endl;
-		if(std::string(Pa_GetDeviceInfo(i)->name).find("HD Pro Webcam C920") != std::string::npos)
-		{
+		//std::cout << Pa_GetDeviceInfo(i)->name << std::endl;
+		//if(std::string(Pa_GetDeviceInfo(i)->name).find("HD Pro Webcam C920") != std::string::npos)
+			//used_device = i;
+		if(std::string(Pa_GetDeviceInfo(i)->name).find("Xbox NUI Sensor") != std::string::npos)
 			used_device = i;
-			break;
-		}
 	}
 
 	if(used_device == -1){
-		std::cout << "no C920 found" << std::endl;
+		std::cout << "Xbox NUI Sensor" << std::endl;
+		Pa_Terminate();
 		return;
 	}
+	
 	std::cout << "Using device : " << Pa_GetDeviceInfo(used_device)->name << std::endl;
 	
-	const double srate = 32000;
+	const double srate = Pa_GetDeviceInfo(used_device)->defaultSampleRate;
+	std::cout << "Sampling @" << srate << "Hz" << std::endl;
 	PaStream * stream;
 	unsigned long framesPerBuffer = paFramesPerBufferUnspecified; 
-	//PaStreamParameters outputParameters;
 	PaStreamParameters inputParameters;
 	inputParameters.channelCount = Pa_GetDeviceInfo(used_device)->maxInputChannels;
+	std::cout << "Device has " << inputParameters.channelCount << " channels" << std::endl;
 	inputParameters.device = used_device;
-	inputParameters.hostApiSpecificStreamInfo = NULL;
-	inputParameters.sampleFormat = paFloat32;
+	inputParameters.hostApiSpecificStreamInfo = nullptr;
+	inputParameters.sampleFormat =  paInt32;//paFloat32;
 	inputParameters.suggestedLatency = Pa_GetDeviceInfo(used_device)->defaultLowInputLatency;
-	inputParameters.hostApiSpecificStreamInfo = NULL; 
 
-	FFT fft(data_writer);
-	if(Pa_OpenStream(&stream, &inputParameters, NULL, srate, framesPerBuffer, paNoFlag, portAudioCallback, &fft) || Pa_StartStream(stream)){
+	FFT fft(data_writer, srate, inputParameters.channelCount, srate, "test.mp3");
+	if(Pa_OpenStream(&stream, &inputParameters, nullptr, srate, framesPerBuffer, paNoFlag, portAudioCallback, &fft) || Pa_StartStream(stream)){
 		std::cout << "error opening stream. Audio won't be available" << std::endl;
 	} else{
 		while(!to_stop)

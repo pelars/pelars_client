@@ -28,6 +28,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	             ImageSender & image_sender_people, const int face_camera_id, const bool video)
 {
 
+	synchronizer.lock();
 	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
 	cv::FileStorage file("../../data/calibration_webcam.xml", cv::FileStorage::READ);
@@ -39,10 +40,6 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		std::cout << "could not find face calibration file; use -c to calibrate the cameras" << std::endl;
 		to_stop = true;
 	}
-
-	// Needed since else opencv does not crete the window (BUG?)
-	if(visualization)
-		sleep(1);
 
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
@@ -86,7 +83,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 
 	
 
-	x264Encoder * x264encoder;
+	std::shared_ptr<x264Encoder> x264encoder;
 	if(video){
 
 		if(!boost::filesystem::exists(video_folder_name)){
@@ -100,7 +97,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		}
 		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-		x264encoder = new x264Encoder(video_subfolder_name + "/", "webcam"+ now + "_" + std::to_string(session) + ".h264");
+		x264encoder = std::make_shared<x264Encoder>(video_subfolder_name + "/", "webcam"+ now + "_" + std::to_string(session) + ".h264");
 		x264encoder->initialize(width, height, false);
 	}
 
@@ -143,8 +140,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	TimedSender timer_minute(60000);
 
 	cv::Mat camera_inverse = calib_matrix.inv();
+	synchronizer.unlock();
 
-	
 	while(!to_stop)
 	{	
 
@@ -152,7 +149,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		gs_grabber.capture(frame);
 		color = cv::Mat(frame);
 
-		cv::flip(color, color, 1);
+		//cv::flip(color, color, 1);
 /*
 		if(video)
 			outputVideo->write(color);
@@ -339,8 +336,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 		// Show what you got
 		if(visualization){
-			cv::imshow( "face", color);
-			int c = cv::waitKey(1);
+			cv::imshow("face", color);
+			int c = cv::waitKey(30);
 			if((char)c == 'q' ) {
 				to_stop = true;
 				std::cout << "stop requested by face detector" << std::endl;
@@ -350,6 +347,10 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 	if(video)
 		x264encoder->unInitilize();
+	if(visualization)
+		cvDestroyWindow("face");
+
+	return;
 }
 #else
 void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, 

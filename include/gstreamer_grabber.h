@@ -5,7 +5,8 @@
 #include <glib.h>
 #include <iostream>
 #include <sstream>
-#include <opencv2/core/core.hpp>        
+#include <opencv2/core/core.hpp>  
+#include <memory>      
 
 class GstreamerGrabber
 {
@@ -27,6 +28,9 @@ public:
     void getPipelineBus();
     void capture(IplImage * frame);
     void operator >>(IplImage * frame);
+
+    void capture(std::shared_ptr<IplImage> frame);
+    void operator >>(std::shared_ptr<IplImage> frame);
 
 
 private:
