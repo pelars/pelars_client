@@ -28,9 +28,12 @@ find_package(Boost 1.58 COMPONENTS random program_options REQUIRED)
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 find_package(cmakego REQUIRED)
+
 usepackage(opencv gstreamer freenect freenect2 tinyxml2 x264 ffmpeg  portaudio x264 tinyxml2 glfw zeromq)
+
 usepackage(json libusb lame REQUIRED)
 usepackage(cairo ffmpeg curl x11 REQUIRED)
+
 find_package(PCL 1.7 REQUIRED)
 #TODO for cmakego
 #openssl
@@ -38,7 +41,9 @@ find_package(PCL 1.7 REQUIRED)
 #cppnetlib
 #curl
 #qrencode
+
 find_package(Websocketpp REQUIRED)
+
 message(NOTE Cppnetlib has to be at least 0.13 using boost::asio)
 find_package(Cppnetlib REQUIRED)
 add_library(p::cppnetlib INTERFACE IMPORTED)
@@ -56,11 +61,10 @@ if(CURLPP_FOUND)
 endif()		
 
 function(optlibrary NAME FLAG)
-
-if(TARGET ${NAME})
-add_definitions(-D${FLAG})
-set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} ${NAME})
-endif()
+	if(TARGET ${NAME})
+		add_definitions(-D${FLAG})
+		set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} ${NAME})
+	endif()
 endfunction(optlibrary)			
 
 optlibrary(p::curlpp HAS_CURL)
