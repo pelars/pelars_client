@@ -14,6 +14,7 @@
 #include <base64.h>
 #include "x264encoder.h"
 #include <memory>
+#include "mutex.h"
 
 
 extern bool to_stop;

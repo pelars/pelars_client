@@ -2,8 +2,9 @@
 
 void handDetector(DataWriter & websocket, float marker_size, ImageSender & image_sender, K2G::Processor processor, const bool video, 
 	              const bool store_depth, const bool c920, unsigned int camera_id)
-{
+{	
 
+	synchronizer.lock();
 	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
 	cv::FileStorage file("../../data/calibration_kinect2.xml", cv::FileStorage::READ);
@@ -103,6 +104,8 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 	cv::Mat camera_inverse = calib_matrix.inv();
 	cv::Mat marker_pose = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
+	synchronizer.unlock();
+
 	while(!to_stop)
 	{
 		if(c920){
@@ -119,9 +122,9 @@ void handDetector(DataWriter & websocket, float marker_size, ImageSender & image
 		
 		if(video){
 			if(c920)
-				x264encoder->encodeFrame((const char *)color.data, 3);
+				x264encoder->encodeFrame((const char *)(color.clone()).data, 3);
 			else
-				x264encoder->encodeFrame((const char *)color.data, 4);
+				x264encoder->encodeFrame((const char *)(color.clone()).data, 4);
 		}
 
 		cvtColor(color, grey, CV_BGR2GRAY);

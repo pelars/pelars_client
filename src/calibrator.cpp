@@ -1,6 +1,7 @@
 #include "calibrator.h"
 
-void calibration(const unsigned int face_camera_id, const unsigned int hand_camera_id, const float marker_size, bool c920, K2G::Processor processor){
+void calibration(const unsigned int face_camera_id, const unsigned int hand_camera_id, const float marker_size, bool c920, 
+	             K2G::Processor processor, bool force){
 
 	const int width = 800;
 	const int height = 448;
@@ -25,7 +26,6 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 	MDetector.setMinMaxSize(0.01, 0.7);
 	std::vector<aruco::Marker> kmarkers;
 	std::vector<aruco::Marker> wmarkers;
-
 
 	// Kinect2 parameters
 	cv::Mat kcamera_parameters = cv::Mat::eye(3, 3, CV_32F);
@@ -81,7 +81,7 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 
 	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
 	IplImage * frame2 = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 3);
-
+	int counter = 0;
 
 	while(!stop){
 		// Kinect2 grabber
@@ -137,26 +137,51 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 			}		
 		}
 
-		cv::imshow("hands", kcolor);
-		cv::imshow("faces", wcolor);
-		int c = cv::waitKey(10);
-		if((char)c == 'c' && wfound && kfound) {
-			cv::FileStorage kinect_file("../../data/calibration_kinect2.xml", cv::FileStorage::WRITE);
-			cv::FileStorage webcam_file("../../data/calibration_webcam.xml", cv::FileStorage::WRITE);
-			kinect_file << "matrix" << kcalib_matrix;
-			kinect_file.release();
-			webcam_file << "matrix" << wcalib_matrix;
-			webcam_file.release();
-			stop = true;	
-			std::cout << "CAMERAS CALIBRATED SUCCESSFULLY" << std::endl;
-		}else{
-			wfound = false;
-			kfound = false;
+		if(!force){
+			cv::imshow("hands", kcolor);
+			cv::imshow("faces", wcolor);
+			int c = cv::waitKey(10);
+			if((char)c == 'c' && wfound && kfound) {
+				store(kcalib_matrix, wcalib_matrix);
+				stop = true;
+			}else{
+				wfound = false;
+				kfound = false;
+			}
+
+		} else{
+
+			if(wfound && kfound){
+				counter++;
+			}else{
+				wfound = false;
+				kfound = false;
+				counter = 0;
+			}
+
+			if(counter > 10) {
+				store(kcalib_matrix, wcalib_matrix);
+				stop = true;
+			}
+
 		}
+
 	}
 
 	cvDestroyWindow("hands");
 	cvDestroyWindow("faces");
 	if(k2g)
 		k2g->shutDown();
+}
+
+void store(const cv::Mat & kcalib_matrix, const cv::Mat & wcalib_matrix){
+
+	cv::FileStorage kinect_file("../../data/calibration_kinect2.xml", cv::FileStorage::WRITE);
+	cv::FileStorage webcam_file("../../data/calibration_webcam.xml", cv::FileStorage::WRITE);
+	kinect_file << "matrix" << kcalib_matrix;
+	kinect_file.release();
+	webcam_file << "matrix" << wcalib_matrix;
+	webcam_file.release();	
+	std::cout << "CAMERAS CALIBRATED SUCCESSFULLY" << std::endl;
+
 }

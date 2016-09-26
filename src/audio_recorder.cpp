@@ -13,7 +13,7 @@ std::string exec(const char* cmd) {
 }
 
 void audioRecorder(unsigned int session){
-
+	
 		std::string image_folder_name = std::string("../../audio");
 
 		if(!boost::filesystem::exists(image_folder_name)){

@@ -26,6 +26,7 @@ void printHelp();
 void checkEscape(bool visualization, bool special);
 int sendCalibration(DataWriter & websocket, bool no_webcam = false, bool no_kinect2 = false);
 void drawStatus(Parser & p);
+void sessionWriter(int session);
 
 const std::string currentDateTime();
 

@@ -13,6 +13,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	             ImageSender & image_sender_people, const int face_camera_id, const bool video)
 {
 
+	synchronizer.lock();
 	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
 	cv::FileStorage file("../../data/calibration_webcam.xml", cv::FileStorage::READ);
@@ -24,10 +25,6 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 		std::cout << "could not find face calibration file; use -c to calibrate the cameras" << std::endl;
 		to_stop = true;
 	}
-
-	// Needed since else opencv does not crete the window (BUG?)
-	if(visualization)
-		sleep(1);
 
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
@@ -128,7 +125,8 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	TimedSender timer_minute(60000);
 
 	cv::Mat camera_inverse = calib_matrix.inv();
-	
+	synchronizer.unlock();
+
 	while(!to_stop)
 	{	
 

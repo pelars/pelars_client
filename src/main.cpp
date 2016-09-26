@@ -1,5 +1,7 @@
 #include "all.h"
 
+std::mutex synchronizer;
+
 int main(int argc, char * argv[])
 {
 	// Signal handlers
@@ -52,7 +54,7 @@ int main(int argc, char * argv[])
 
 	// Calibrate the cameras and exit
 	if(p.get("calibration")){
-		calibration(face_camera_id, hand_camera_id, marker_size, p.get("C920"), processor);
+		calibration(face_camera_id, hand_camera_id, marker_size, p.get("C920"), processor, p.get("no_calib_video"));
 		io.stop();
 		ws_writer.join();
 		return 0;
@@ -101,17 +103,16 @@ int main(int argc, char * argv[])
 	// Thread container
 	std::vector<std::thread> thread_list;
 
-	// Should make a sound
-	cout << '\a' << std::flush;
-
 	// Starting the face detection thread
 	if(p.get("face") || p.get("default"))
 		thread_list.push_back(std::thread(detectFaces, std::ref(collector), std::ref(screen_grabber), 
 			                  std::ref(image_sender_people), std::ref(image_sender_screen), face_camera_id, 
 			                  p.get("video")));
+
 	// Starting the particle.io thread
 	if(p.get("particle"))
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
+
 	// Starting the hand detector
 	if(p.get("hand") || p.get("default"))
 		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.035,
@@ -121,21 +122,30 @@ int main(int argc, char * argv[])
 	// Starting the ide logger
 	if(p.get("ide") || p.get("default"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));
+	
 	// Starting audio detector
-	if(p.get("audio") || p.get("default"))
+	if(p.get("audio"))
 		thread_list.push_back(std::thread(audioDetector, std::ref(collector)));
+
 	// Starting qr visualization
 	if(p.get("qr") || p.get("default"))
 		thread_list.push_back(std::thread(showQr, session));
+	
 	// Starting status visualization
-	if(p.get("status") || p.get("default"))
+	if(p.get("status"))
 		thread_list.push_back(std::thread(drawStatus, std::ref(p)));
+
 	// Keep alive on server for status update
 	thread_list.push_back(std::thread(keep_alive, std::ref(alive_socket)));
+	thread_list.push_back(std::thread(sessionWriter, session));
 	//std::thread audio_recorder = std::thread(audioRecorder, session);
 	
 	//If there are no windows wait for Esc to be pressed
 	checkEscape(visualization, p.get("special"));
+
+
+
+
 
 	// Wait for the termination of all threads
 	for(auto & thread : thread_list)
@@ -158,6 +168,7 @@ int main(int argc, char * argv[])
 	// Stopping Asio aliver
 	ws_writer.join();
 	std::cout << "writer stopped" << std::endl;
+
 	kill(0, SIGINT);
 	return 0;
 }

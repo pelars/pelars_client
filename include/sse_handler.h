@@ -2,6 +2,7 @@
 #include <curlpp/cURLpp.hpp>
 #include <boost/algorithm/string.hpp>
 #include "opt.h"
+#include "mutex.h"
 
 extern bool to_stop;
 extern bool online;
@@ -46,7 +47,7 @@ struct Encapsule{
 class Http{
 private:
 
-	CURLM* multi_handle; 
+	CURLM * multi_handle; 
 	int handle_count;
 
 public:

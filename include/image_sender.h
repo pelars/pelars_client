@@ -3,6 +3,7 @@
 #include <boost/network/protocol/http/client.hpp>
 #include <json/json.h>
 #include <chrono>
+#include "mutex.h"
 
 class ImageSender{
 	
