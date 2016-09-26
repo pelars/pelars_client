@@ -17,7 +17,7 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 {
 	std::cout << "press c to calibrate when the marker is seen in both cameras" << std::endl;
 	
-	K2G k2g(K2G::OPENCL);
+
 
 	const int width = 800;
 	const int height = 448;
