@@ -1,5 +1,8 @@
 #include "k2g.h"
 
+libfreenect2::Freenect2Device::ColorCameraParams kinect2parameters;
+
+
 #ifdef HAS_FREENECT2
 K2G::K2G(Processor p): undistorted_(512, 424, 4), registered_(512, 424, 4), big_mat_(1920, 1082, 4), listener_(libfreenect2::Frame::Color | libfreenect2::Frame::Ir | libfreenect2::Frame::Depth),
 qnan_(std::numeric_limits<float>::quiet_NaN())
@@ -35,9 +38,13 @@ qnan_(std::numeric_limits<float>::quiet_NaN())
 	dev_->setIrAndDepthFrameListener(&listener_);
 	dev_->start();
 
+
 	prepareMake3D(dev_->getIrCameraParams());
 
 	registration_ = new libfreenect2::Registration(dev_->getIrCameraParams(), dev_->getColorCameraParams());
+
+	kinect2parameters = getRgbParameters();
+
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr K2G::getCloud()

@@ -77,21 +77,16 @@ add_definitions(${PCL_DEFINITIONS})
 add_executable(sensor_manager   ${SRC}/main.cpp 
 								${SRC}/session_manager.cpp 
 								${SRC}/face_detector.cpp
-								${SRC}/linemod.cpp 
-								${SRC}/kinect_grabber.cpp 
+								${SRC}/kinect2publisher.cpp 
 								${SRC}/data_writer.cpp 
 								${SRC}/mongoose.cpp 
-								#${SRC}/x264decoder.cpp 
 								${SRC}/x264encoder.cpp
 								${SRC}/sse_handler.cpp 
-								#${SRC}/xn16zdec.cpp
 								${SRC}/hand_detector.cpp
 								${SRC}/gstreamer_grabber.cpp
 								${SRC}/opt.cpp
-								#${SRC}/gstreamer_grabber2.cpp
 								${SRC}/ide_handler.cpp
 								${SRC}/audio_detector.cpp
-								#${SRC}/end_dec.cpp
 								${SRC}/k2g.cpp
 								${SRC}/screen_grabber.cpp
 								${SRC}/image_sender.cpp
@@ -103,6 +98,11 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/marker_viewer.cpp
 								${SRC}/opt_parse.cpp
 								${SRC}/audio_recorder.cpp
+								${SRC}/trigger.cpp
+								${SRC}/webcam_publisher.cpp
+								${SRC}/termination.cpp
+								${SRC}/screen_shotter.cpp
+								${SRC}/video_saver.cpp
 								)
 
 target_link_libraries(sensor_manager 	${OpenCV_LIBS} 

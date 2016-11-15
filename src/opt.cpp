@@ -1,7 +1,5 @@
 #include "opt.h"
 
-// To stop all the threads if one receives a stop signal
-bool to_stop = false;
 // Take a camera snapshot of the table
 bool snapshot_table = false;
 // Take a camera snapshot of the people
@@ -23,15 +21,6 @@ boost::asio::io_service io;
 void aliver(const boost::system::error_code& /*e*/)
 {
 	
-}
-
-// Signal handler
-void sig_handler(int signum)
-{
-		to_stop = true;
-		printf("Received signal %d\n, killing pelars", signum);
-		kill(0, SIGINT);
-
 }
 
 void asiothreadfx()
@@ -66,7 +55,7 @@ void checkEscape(bool visualization, bool special){
 				break;
 			}
 		}
-		to_stop = true;
+		terminateMe();
 		std::cout << "Stopping" << std::endl;
 	}
 }
@@ -194,7 +183,7 @@ void drawStatus(Parser & p){
 	while(!to_stop){
 		int c = cv::waitKey(1);
 		if((char)c == 'q') {
-			to_stop = true;
+			terminateMe();
 			cv::destroyWindow("status");
 		}
 	}

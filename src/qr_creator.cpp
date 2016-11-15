@@ -20,7 +20,7 @@ void showQr(int session){
 	while(!to_stop){
 		int c = cv::waitKey(1);
 		if((char)c == 'q') {
-			to_stop = true;
+			terminateMe();
 			cv::destroyWindow("qr");
 		}
 	}

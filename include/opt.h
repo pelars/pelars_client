@@ -14,13 +14,12 @@
 #include "image_sender.h"
 #include <base64.h>
 #include <opt_parse.h>
+#include "termination.h"
 
 // Asion communication service and Asio keep alive
 extern boost::asio::io_service io;
 extern bool online;
-extern bool to_stop;
 
-void sig_handler(int signum);
 void aliver(const boost::system::error_code& /*e*/);
 void asiothreadfx();
 
@@ -76,6 +75,7 @@ public:
 	}
 
 private:
+
 	double step_;
 	bool inited_;
 	std::chrono::time_point<std::chrono::system_clock> last_;

@@ -8,9 +8,11 @@
 
 void x264Encoder::initialize(const unsigned int w, const unsigned int h, const bool kinect)
 {
+
 	image_w_ = w;
 	image_h_ = h;
 	x264_param_default_preset(&parameters_, "veryfast", "zerolatency");
+
 	parameters_.i_log_level = X264_LOG_INFO;
 	parameters_.i_threads = 1;
 	parameters_.i_width = image_w_;
@@ -35,6 +37,7 @@ void x264Encoder::initialize(const unsigned int w, const unsigned int h, const b
 
 	encoder_ = x264_encoder_open(&parameters_);
 
+
 	picture_in_.i_qpplus1         = 0;
 	picture_in_.img.i_plane       = 1;
 	picture_in_.i_type = X264_TYPE_AUTO;
@@ -51,6 +54,7 @@ void x264Encoder::initialize(const unsigned int w, const unsigned int h, const b
 									  parameters_.i_height,
 									  PIX_FMT_YUV420P,
 									  SWS_FAST_BILINEAR, NULL, NULL, NULL);
+		bytes_ = 4;
 	}
 	else
 	{
@@ -62,6 +66,7 @@ void x264Encoder::initialize(const unsigned int w, const unsigned int h, const b
 									  parameters_.i_height,
 									  PIX_FMT_YUV420P,
 									  SWS_FAST_BILINEAR, NULL, NULL, NULL);
+		bytes_ = 3;
 	}
 
 }
@@ -87,10 +92,10 @@ void x264Encoder::unInitilize()
 	}
 }
 
-void x264Encoder::encodeFrame(const char *rgb_buffer, const int bytes)
+void x264Encoder::encodeFrame(const char *rgb_buffer)
 {
 	const uint8_t * rgb_buffer_slice[1] = {(const uint8_t *)rgb_buffer};
-	int stride[1] = { (int)bytes * image_w_ }; // RGB stride
+	int stride[1] = { (int)bytes_ * image_w_ }; // RGB stride
 
 	//Convert the frame from RGB to YUV420
 	int slice_size = sws_scale(convert_context_, rgb_buffer_slice,

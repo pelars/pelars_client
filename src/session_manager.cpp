@@ -7,8 +7,8 @@ SessionManager::SessionManager(std::string endpoint, const bool test): endpoint_
 	auto eResult =  data_.LoadFile( "../../data/personal.xml" );
 	if(eResult != 0){
 		std::cout << "\tError parsing personal.xml or file not present in /data/" << std::endl;
-		to_stop = true;
-		error_ = true;;
+		terminateMe();
+		error_ = true;
 	}else{
 		std::cout << "\tParsed the input data" << std::endl;
 		createUser();
@@ -85,7 +85,7 @@ void SessionManager::login(){
 		try{
 			//std::cout << endpoint_ + std::string("password") + std::string("?user="+mail_+"&pwd="+password_) << std::endl;
 			boost::network::http::client::request request(endpoint_ + std::string("password") + std::string("?user="+mail_+"&pwd="+password_));
-
+			std::cout << endpoint_ + std::string("password") + std::string("?user="+mail_+"&pwd="+password_) << std::endl;
 			boost::network::http::client::response response = client_.post(request);
 			std::cout << response.body() << std::endl;
 
@@ -93,8 +93,9 @@ void SessionManager::login(){
 				token_ = root_["token"].asString();
 				std::cout << "\tSuccess" << std::endl;
 				std::cout << "\tToken: " << token_ << std::endl;
-			}else
+			}else{
 				std::cout << "Failed" << std::endl;
+			}
 		}catch (std::exception& e){
 			// Generic error during the request
 			std::cout << "\tError during the login request: " << e.what()  << "; setting offline mode" <<std::endl;

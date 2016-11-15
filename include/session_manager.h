@@ -4,6 +4,7 @@
 #include "tinyxml2.h"
 #include <fstream>
 #include <chrono>
+#include "termination.h"
 #ifdef HAS_QRENCODE
 #include <qrencode.h>
 #endif

@@ -1,18 +1,4 @@
 #include "face_detector.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/gpu/gpu.hpp"
-#include "opencv2/contrib/contrib.hpp"
-#include <data_writer.h>
-#include <boost/network/protocol/http/client.hpp>
-#include <boost/filesystem.hpp>
-#include <json/json.h>
-#include <vector>
-#include "opt.h"
-#include "gstreamer_grabber.h"
-#include "screen_grabber.h"
-#include "image_sender.h"
-#include <base64.h>
-#include "x264encoder.h"
 
 double std_width = 185.0; //mm
 
@@ -24,8 +10,7 @@ inline double distance(int x1, int x2){
 	}
 
 #ifdef HAS_GSTREAMER
-void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, 
-	             ImageSender & image_sender_people, const int face_camera_id, const bool video)
+void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pcw, const bool video)
 {
 
 	synchronizer.lock();
@@ -43,12 +28,12 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 	cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
 
-	//std::string face_cascade_name_ = "../../data/haarcascade_frontalface_alt.xml";
-	std::string face_cascade_name_gpu_ = "../../data/haarcascade_frontalface_alt2.xml";
+	std::string face_cascade_name_gpu_("../../data/haarcascade_frontalface_alt2.xml");
 	cv::CascadeClassifier face_cascade_;
 
 	cv::gpu::GpuMat gray_gpu;
 	cv::Mat faces_downloaded, color;
+	std::shared_ptr<ImageFrame> color_frame = std::make_shared<ImageFrame>();
 
 	const int session = websocket.getSession();
 
@@ -59,48 +44,15 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	cascade_gpu_.visualizeInPlace = false;
 	cascade_gpu_.findLargestObject = findLargestObject_;
 
-	const unsigned int width = 800;
-	const unsigned int height = 448;
 
 	const float fx = 589.3588305153235;
 	const float cx = 414.1871817694326;
 	const float fy = 588.585116717914;
 	const float cy = 230.3588624031242; 
-/*
-	cv::VideoWriter * outputVideo;
-	if(video){
-		int fourcc = CV_FOURCC('M','J','P','G');
-		int fps = 30;
-		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
-		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-		outputVideo->open("webcam_"+ now + "_" + std::to_string(session) + ".avi", fourcc, fps, cv::Size(width,height));
-	}
-*/
-	std::string image_folder_name = std::string("../../images");
-	std::string image_subfolder_name = std::string("../../images/snapshots_") + std::to_string(session);
 
 	std::string video_folder_name = std::string("../../videos");
 	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 
 	
-
-	std::shared_ptr<x264Encoder> x264encoder;
-	if(video){
-
-		if(!boost::filesystem::exists(video_folder_name)){
-			boost::filesystem::path dir(video_folder_name);
-			boost::filesystem::create_directory(dir);
-		}
-
-		if(!boost::filesystem::exists(video_subfolder_name)){
-			boost::filesystem::path dir(video_subfolder_name);
-			boost::filesystem::create_directory(dir);
-		}
-		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
-		std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-		x264encoder = std::make_shared<x264Encoder>(video_subfolder_name + "/", "webcam"+ now + "_" + std::to_string(session) + ".h264");
-		x264encoder->initialize(width, height, false);
-	}
-
 	/*
 	const float k1 = 0.12269303;
 	const float k2 = -0.26618881;
@@ -124,9 +76,6 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 
 	Json::StyledWriter writer;
 
-	GstreamerGrabber gs_grabber(width, height, face_camera_id);
-	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3); 
-
 	if(!cascade_gpu_.load(face_cascade_name_gpu_))
 	{ 
 		std::cout << "--(!)Error loading " << face_cascade_name_gpu_ << std::endl; 
@@ -140,97 +89,27 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 	TimedSender timer_minute(60000);
 
 	cv::Mat camera_inverse = calib_matrix.inv();
+	
 	synchronizer.unlock();
 
 	while(!to_stop)
 	{	
 
 		cv::gpu::GpuMat facesBuf_gpu;
-		gs_grabber.capture(frame);
-		color = cv::Mat(frame);
+		if(pcw->readNoWait(color_frame))
+			continue;
+
+		color = color_frame->color;
 
 		//cv::flip(color, color, 1);
-/*
-		if(video)
-			outputVideo->write(color);
-*/	
-		if(video){
-			x264encoder->encodeFrame((const char *)color.data, 3);
-		}
 
 		cv::gpu::GpuMat color_gpu(color);
 
 		//cvtColor(color, gray, CV_BGR2GRAY);
 		cv::gpu::cvtColor(color_gpu, gray_gpu, CV_BGR2GRAY);
-
-		bool send_minute = timer_minute.needSend();
-		if((snapshot_people && image_sender_people) || send_minute){
-			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
-			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-			
-			if(!boost::filesystem::exists(image_folder_name)){
-				boost::filesystem::path dir(image_folder_name);
-				boost::filesystem::create_directory(dir);
-			}
-
-			if(!boost::filesystem::exists(image_subfolder_name)){
-				boost::filesystem::path dir(image_subfolder_name);
-				boost::filesystem::create_directory(dir);
-			}
-
-			std::string name = std::string(image_subfolder_name + "/people_" + now + "_" + std::to_string(session) +".jpg");
-			cv::imwrite(name, color);
-			if(online){
-				std::ifstream in(name, std::ifstream::binary);
-				in.unsetf(std::ios::skipws);
-			    in.seekg(0, std::ios::end);
-			    std::streampos fileSize = in.tellg();
-			    in.seekg(0, std::ios::beg);
-			    std::vector<char> data(fileSize);
-				in.read(&data[0], fileSize);
-				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-				if(send_minute)
-					image_sender_people.send(code, "jpg", "people", true);
-				else
-					image_sender_people.send(code, "jpg", "people", false);
-			}
-			snapshot_people = false;
-		}
-		if((snapshot_screen && image_sender_screen) || send_minute){
-			std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
-			std::string now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
-			std::string name = std::string(image_subfolder_name + "/screen_" + now + "_" + std::to_string(session) + ".png");
-			
-			if(!boost::filesystem::exists(image_folder_name)){
-				boost::filesystem::path dir(image_folder_name);
-				boost::filesystem::create_directory(dir);
-			}
-
-			if(!boost::filesystem::exists(image_subfolder_name)){
-				boost::filesystem::path dir(image_subfolder_name);
-				boost::filesystem::create_directory(dir);
-			}
-			
-			screen_grabber.grabScreen(name);
-			if(online){
-				std::ifstream in(name, std::ifstream::binary);
-				in.unsetf(std::ios::skipws);
-			    in.seekg(0, std::ios::end);
-			    std::streampos fileSize = in.tellg();
-			    in.seekg(0, std::ios::beg);
-			    std::vector<char> data(fileSize);
-				in.read(&data[0], fileSize);
-				std::string code = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-				if(send_minute)
-					image_sender_screen.send(code, "png", "screen", true);
-				else
-					image_sender_screen.send(code, "png", "screen", false);
-			}
-			snapshot_screen = false;
-		}
-		send_minute = false;
 		
-		detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, cv::Size(color.cols,color.rows), cv::Size(), 1.05, (filterRects_ || findLargestObject_) ? 4 : 0);
+		detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, cv::Size(color.cols, color.rows), cv::Size(), 
+														1.05, (filterRects_ || findLargestObject_) ? 4 : 0);
 
 		facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
 		cv::Rect * faces = faces_downloaded.ptr<cv::Rect>();
@@ -307,12 +186,7 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			cv::circle(color, cv::Point(faces[i].x + faces[i].height, faces[i].y + faces[i].width), 10, cv::Scalar(0,255,0), -1);
 			cv::circle(color, cv::Point(faces[i].x + faces[i].height, faces[i].y ), 10, cv::Scalar(255,0,0), -1);
 			cv::circle(color, cv::Point(faces[i].x, faces[i].y + faces[i].width ), 10, cv::Scalar(255,255,0), -1);
-/*
-			std::cout << "RED x " << tx << " ,y " << ty << ", tz " << tz << std::endl;
-			std::cout << "GREEN x1 " << tx1 << " ,y1 " << ty1 << ", tz " << tz1 << std::endl;
-			std::cout << "BLUE x2 " << tx2 << " ,y2 " << ty2 << ", tz " << tz2 << std::endl;
-			std::cout << face_distance << std::endl;
-			*/
+
 			root.append(array);
 		}
 		
@@ -339,19 +213,21 @@ void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSe
 			cv::imshow("face", color);
 			int c = cv::waitKey(30);
 			if((char)c == 'q' ) {
-				to_stop = true;
+				terminateMe();
 				std::cout << "stop requested by face detector" << std::endl;
 			}
 		}
 	}
-
+/*
 	if(video)
 		x264encoder->unInitilize();
+		*/
 	if(visualization)
 		cvDestroyWindow("face");
 
 	return;
 }
+
 #else
 void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, 
 	             ImageSender & image_sender_people, const int face_camera_id, const bool video)

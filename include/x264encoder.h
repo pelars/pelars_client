@@ -34,15 +34,17 @@ public:
 
 	void initialize(const unsigned int w = 640, const unsigned int h = 480, const bool kinect = false);
 	void unInitilize();
-	void encodeFrame(const char *rgb_buffer, const int bytes);
+	void encodeFrame(const char *rgb_buffer);
 	bool isNalsAvailableInOutputQueue();
 	int image_h_, image_w_;
 
 	x264_nal_t getNalUnit();
 	x264_t * getx264Encoder() { return encoder_; }
 	int nal_size() { return output_queue_.size(); }
+
 private:
-	SwsContext * convert_context_ = NULL;
+
+	SwsContext * convert_context_ = nullptr;
 	std::queue<x264_nal_t> output_queue_;
 	x264_param_t parameters_;
 	x264_picture_t picture_in_, picture_out_;
@@ -50,6 +52,7 @@ private:
 	std::ofstream os_;
 	long int time_base_;
 	bool first_;
+	int bytes_;
 	std::string file_name_, folder_name_;
 	boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::mean>> acc_;
 };

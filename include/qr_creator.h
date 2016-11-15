@@ -1,7 +1,6 @@
 #pragma once
 #include "opt.h"
-
-extern bool to_stop;
+#include "termination.h"
 
 cv::Mat drawQr(int width, int repetitions, int session);
 void showQr(int session);

@@ -5,9 +5,14 @@ std::mutex synchronizer;
 
 int main(int argc, char * argv[])
 {
+
 	// Signal handlers
 	signal(SIGHUP, sig_handler);
 	signal(SIGTERM, sig_handler);
+	initTermination();
+
+	static int trigger_time = 60;
+
 
 	// Parse input arguments
 	Parser p(argc, argv);
@@ -20,12 +25,12 @@ int main(int argc, char * argv[])
 	std::thread ws_writer(asiothreadfx);
 
 	// Check the endpoint string and connect to the collector
-	std::string end_point = p.get("Server") ? p.getString("Server") : "http://pelars.sssup.it/pelars/";
+	std::string end_point = p.get("server") ? p.getString("server") : "http://pelars.sssup.it/pelars/";
 	end_point = end_point.back() == '/' ? end_point : end_point + "/";
 	std::cout << "WebServer endpoint : " << end_point << std::endl;
 
 #ifdef HAS_FREENECT2
-	K2G::Processor processor = static_cast<K2G::Processor>(p.get("processor") ? p.getInt("processor") : 1);
+	K2G::Processor processor = static_cast<K2G::Processor>(p.get("processor") ? p.getInt("processor") : 2);
 #endif
 	
 	if(p.get("upload")){
@@ -91,16 +96,8 @@ int main(int argc, char * argv[])
 
 	visualization = p.get("visualization");
 
-	// Image grabber
-	ImageSender image_sender_table(session, end_point, token);
-	ImageSender image_sender_people(session, end_point, token);
-	ImageSender image_sender_screen(session, end_point, token);
-
-	// Screen grabber
-	ScreenGrabber screen_grabber;
-
 	// Send the two calibration matrixes. Need to sleep to give the websocket time to connect :/
-	sleep(1);
+	//sleep(1);
 	if(sendCalibration(collector) != 0){
 		std::cout << "error sending the calibration. Did you calibrate the cameras with -c ?" << std::endl;
 	}
@@ -108,26 +105,60 @@ int main(int argc, char * argv[])
 	// Thread container
 	std::vector<std::thread> thread_list;
 
+	// Webcam frames message channels
+	std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_webcam = makeChannel<ImageFrame>(3, to_stop, 3);
+
+	// Kinect frames message channels
+	std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_kinect = makeChannel<ImageFrame>(3, to_stop, 3);
+
+	// Triggers
+	std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<Trigger>>>> pc_trigger = makeChannel<Trigger>(3, to_stop, 3);
+
+
+	thread_list.push_back(std::thread(sendTrigger, std::ref(pc_trigger), trigger_time));
+
+	// Screen frames message channel
+	std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_screen = makeChannel<ImageFrame>(1, to_stop, 3);
+
+	thread_list.push_back(std::thread(screenShotter, std::ref(pc_screen)));
+	thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), std::ref(token), pc_screen[0], pc_trigger[2], false));
+
 
 	// Starting the face detection thread
-	if(p.get("face") || p.get("default"))
-		thread_list.push_back(std::thread(detectFaces, std::ref(collector), std::ref(screen_grabber), 
-			                  std::ref(image_sender_people), std::ref(image_sender_screen), face_camera_id, 
-			                  p.get("video")));
+	if(p.get("face") || p.get("default")){
+		thread_list.push_back(std::thread(webcamPublisher, face_camera_id, std::ref(pc_webcam)));
+		thread_list.push_back(std::thread(detectFaces, std::ref(collector), pc_webcam[0], p.get("video")));
+		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
+			                              std::ref(token), pc_webcam[1], pc_trigger[1], false));
+		if(p.get("video")){
+			thread_list.push_back(std::thread(saveVideo, session, pc_webcam[2]));
+		}
+	}
 
-	// Starting the particle.io thread
-#ifdef HAS_CURL 	
+	// Starting the kinect grabber
+	if(p.get("hand") || p.get("default")){
+		
+		thread_list.push_back(std::thread(kinect2publisher, processor, std::ref(pc_kinect)));
+		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
+			                              std::ref(token), pc_kinect[1], pc_trigger[0], false));
+#ifdef HAS_ARUCO
+		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.035, 
+								pc_kinect[0], p.get("C920"), hand_camera_id));
+#endif	
+
+		if(p.get("video")){
+			thread_list.push_back(std::thread(saveVideo, session, pc_kinect[2]));
+		}
+	}
+
+	
+
+#ifdef HAS_CURL
+	// Starting the particle.io thread 	
 	if(p.get("particle"))
 		thread_list.push_back(std::thread(sseHandler, std::ref(collector)));
 #endif
-#ifdef HAS_ARUCO
-	// Starting the hand detector
-	if(p.get("hand") || p.get("default"))
-		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.035,
-		                      std::ref(image_sender_table), processor, p.get("video"), p.get("depth") || p.get("default"), 
-		                      p.get("C920"), hand_camera_id));
-#endif	
-	
+
 	// Starting the ide logger
 	if(p.get("ide") || p.get("default"))
 		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));
@@ -151,10 +182,6 @@ int main(int argc, char * argv[])
 	
 	//If there are no windows wait for Esc to be pressed
 	checkEscape(visualization, p.get("special"));
-
-
-
-
 
 	// Wait for the termination of all threads
 	for(auto & thread : thread_list)
