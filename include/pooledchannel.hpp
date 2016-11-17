@@ -11,6 +11,7 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
+#include <chrono>
 
 /// Conceptual Life of pools
 /// [*] -> free -> writing -> ready -> reading -> free
@@ -98,7 +99,7 @@ class PooledChannel
 	bool alwayslast_;  /// always return last value 
 	bool unlimited_;   /// unlimited
 	mutable std::mutex mutex_;
-	mutable std::condition_variable write_ready_var_,read_ready_var_;
+	mutable std::condition_variable write_ready_var,read_ready_var;
 	const bool dummyterminate_ = false; 
 	const bool *terminate_ = &dummyterminate_;
 
@@ -150,7 +151,7 @@ public:
 				{
 					if(!dowait)
 						return 0;
-					write_ready_var_.wait(lk, [this]{return is_terminated() || !this->free_list_.empty();});
+					write_ready_var.wait(lk, [this]{return is_terminated() || !this->free_list_.empty();});
 					if(is_terminated())
 						return 0; // FAIL
 				}
@@ -180,12 +181,19 @@ public:
 		return true;
 	}
 
+	void notify_all(){
+		write_ready_var.notify_all();
+		read_ready_var.notify_all();
+	}
+
 	/// simple read
 	bool read(T & x)
 	{
 		T * p = 0;
 		readerGet(p);
+		std::cout << "returned" << std::endl;
 		if(!p){
+			std::cout << "returning false" << std::endl;
 			return false;
 		}
 		x = *p;
@@ -226,7 +234,7 @@ public:
 			std::unique_lock<std::mutex> lk(mutex_);
 			ready_list_.push_back(x);
 		}
-		read_ready_var_.notify_one();
+		read_ready_var.notify_one();
 
 	}
 
@@ -250,11 +258,14 @@ public:
 	void readerGet(T * & out)
 	{
 		std::unique_lock<std::mutex> lk(mutex_);
-	    read_ready_var_.wait(lk, [this]{return is_terminated() || !this->ready_list_.empty();});
+		std::cout << "reading" << std::endl;
+	    read_ready_var.wait(lk, [this]{return is_terminated() || !this->ready_list_.empty();});
+	    std::cout <<!this->ready_list_.empty() << is_terminated() << std::endl;
+		std::cout << "read" << std::endl;
 		if(is_terminated())
 			return;
 	    readerGetReady(out);
-
+	    std::cout << "done" << std::endl;
 	}
 
 	/// releases a buffer provided by the readerGet
@@ -267,7 +278,7 @@ public:
 			std::unique_lock<std::mutex> lk(mutex_);
 			free_list_.push_back(in);
 		}
-		write_ready_var_.notify_one();
+		write_ready_var.notify_one();
 	}
 
 	/*
@@ -340,7 +351,7 @@ private:
 				ready_list_.pop_front();
 				free_list_.push_front(tmp);				
 			} while(--n > 1);
-			write_ready_var_.notify_one(); // because we have freed resources
+			write_ready_var.notify_one(); // because we have freed resources
 		}
 		out = ready_list_.front();
 		ready_list_.pop_front();

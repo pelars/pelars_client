@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <opencv2/core/core.hpp>  
 #include <opencv2/highgui/highgui.hpp>
+#include <memory>
+#include <unistd.h>
 
 
 class ScreenGrabber{
@@ -19,11 +21,12 @@ class ScreenGrabber{
 public:
 	
 	ScreenGrabber();
-	void grabScreen(cv::Mat & in);
+	cv::Mat grabScreen();
+	~ScreenGrabber();
 
 private:
 
-    int scr_, width_, height_;
+    int width_, height_;
     Display * disp_;
     Window root_;
     XImage * img_;

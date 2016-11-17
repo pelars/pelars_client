@@ -24,6 +24,7 @@ public:
 	void writeLocal(const std::string s);
 	void writeData(const std::string s);
 	int getSession();
+	std::string getUri() const;
 
 private:
 

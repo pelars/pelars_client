@@ -24,5 +24,6 @@ void webcamPublisher(int face_camera_id, const std::vector<std::shared_ptr<Poole
 			channel->write(image);
 		}
 	}
+	std::cout << "temrinating webcam publisher" << std::endl;
 
 }

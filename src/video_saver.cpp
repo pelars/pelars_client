@@ -3,7 +3,6 @@
 void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc){
 
 	bool inited = false;
-	std::string now;
 	std::chrono::high_resolution_clock::time_point p;
 
 	std::string video_folder_name = std::string("../../videos");
@@ -28,10 +27,9 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 		if(pc->readNoWait(frames)){
 
 			p = std::chrono::high_resolution_clock::now();
-			now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count());
 
 			if(!inited){
-				std::string name = video_subfolder_name + "/" + frames->type + "_" + now + "_" + std::to_string(session) + ".h264";
+				std::string name = video_subfolder_name + "/" + frames->type + "_" + time2string(p) + "_" + std::to_string(session) + ".h264";
 				x264encoder = std::make_shared<x264Encoder>(name);
 				unsigned int width = frames->color.cols;
 				unsigned int height = frames->color.rows;
@@ -43,9 +41,8 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 			}
 
 			if(frames->color.rows > 0){
-				//TODO: flicker in video sometimes with kinect2
 				x264encoder->encodeFrame((const char *)(frames->color).data);
-				*out << now << "\n";
+				*out << time2string(p) << "\n";
 			}
 			
 		}		

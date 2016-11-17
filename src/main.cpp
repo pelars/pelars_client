@@ -3,13 +3,24 @@
 
 std::mutex synchronizer;
 
+// Triggers
+std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<Trigger>>>> pc_trigger;
+
+// Webcam frames message channels
+std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_webcam;
+
+// Kinect frames message channels
+std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_kinect;
+
+// Screen frames message channel
+std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_screen;
+
 int main(int argc, char * argv[])
 {
 
 	// Signal handlers
 	signal(SIGHUP, sig_handler);
 	signal(SIGTERM, sig_handler);
-	initTermination();
 
 	static int trigger_time = 60;
 
@@ -86,11 +97,12 @@ int main(int argc, char * argv[])
 
 	// Check the endpoint string and connect to the session manager
 	std::cout << "Collector endpoint : " << end_point + "collector/" + std::to_string(session) << std::endl;
-	std::string session_endpoint = end_point + "session/";
-	std::cout << "Session Manager endpoint : " << session_endpoint  << std::endl;    
+	std::string session_endpoint = end_point + "session/";   
 
 	// Websocket manager
 	DataWriter collector(end_point + "collector", session); 
+		sleep(3);
+
 	DataWriter alive_socket(end_point + "aliver", session); 
 	std::cout << "opened aliver on " + end_point + std::to_string(session) << std::endl;
 
@@ -105,22 +117,22 @@ int main(int argc, char * argv[])
 	// Thread container
 	std::vector<std::thread> thread_list;
 
+	// Triggers
+	pc_trigger = makeChannel<Trigger>(3, to_stop, 3);
+
 	// Webcam frames message channels
-	std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_webcam = makeChannel<ImageFrame>(3, to_stop, 3);
+	pc_webcam = makeChannel<ImageFrame>(3, to_stop, 3);
 
 	// Kinect frames message channels
-	std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_kinect = makeChannel<ImageFrame>(3, to_stop, 3);
+	pc_kinect = makeChannel<ImageFrame>(3, to_stop, 3);
 
-	// Triggers
-	std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<Trigger>>>> pc_trigger = makeChannel<Trigger>(3, to_stop, 3);
-
+	// Screen frames message channel
+	pc_screen = makeChannel<ImageFrame>(1, to_stop, 3);
 
 	thread_list.push_back(std::thread(sendTrigger, std::ref(pc_trigger), trigger_time));
 
-	// Screen frames message channel
-	std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_screen = makeChannel<ImageFrame>(1, to_stop, 3);
-
 	thread_list.push_back(std::thread(screenShotter, std::ref(pc_screen)));
+
 	thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), std::ref(token), pc_screen[0], pc_trigger[2], false));
 
 
@@ -160,8 +172,11 @@ int main(int argc, char * argv[])
 #endif
 
 	// Starting the ide logger
-	if(p.get("ide") || p.get("default"))
-		thread_list.push_back(std::thread(ideHandler, std::ref(collector), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));
+	if(p.get("ide") || p.get("default")){
+		IdeTrigger ide_trigger(pc_trigger);
+		ide_trigger.data_writer_ = &collector;
+		thread_list.push_back(std::thread(ideHandler, std::ref(ide_trigger), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));
+	}
 	
 	// Starting audio detector
 	if(p.get("audio"))
@@ -186,6 +201,8 @@ int main(int argc, char * argv[])
 	// Wait for the termination of all threads
 	for(auto & thread : thread_list)
 		thread.join();
+
+	std::cout << "TERMINATING MAIN" << std::endl;
 	
 	// Create a local file for data acquisition and backup
 	std::string tmp = collector.file_name_ + std::string(online ? "_backup_" : "_local_") + currentDateTime() + collector.file_extention_;

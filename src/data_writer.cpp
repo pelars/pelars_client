@@ -59,15 +59,20 @@ DataWriter::DataWriter(const std::string & uri, const int session, const int ali
 }
 
 void DataWriter::writeData(const std::string s)
-{ 
-	if(con_ && online)
+{ 	
+	if(con_ && online){
 		m_client_.send(m_hdl_, s , websocketpp::frame::opcode::text, ec_);
+	}
 }
 
 void DataWriter::writeLocal(const std::string s) {
 	m_.lock();
 	fs_ << s.size() << s;
 	m_.unlock();
+}
+
+std::string DataWriter::getUri() const{
+	return uri_;
 }
 
 void DataWriter::stop()

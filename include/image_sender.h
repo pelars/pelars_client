@@ -11,6 +11,8 @@
 #include "screen_grabber.h"
 
 extern bool online;
+extern std::mutex synchronizer;
+
 
 class ImageSender{
 	
@@ -36,3 +38,5 @@ void sendImage(int session, const std::string & end_point, const std::string & t
 
 void sendScreenshot(int session, const std::string & end_point, const std::string & token, 
 	           std::shared_ptr<PooledChannel<std::shared_ptr<Trigger>>> pc_trigger, bool upload);
+
+void encodeImage(const std::string & name, std::string & encode);

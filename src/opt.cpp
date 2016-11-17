@@ -38,6 +38,10 @@ void sessionWriter(int session){
 	}
 }
 
+std::string time2string(std::chrono::high_resolution_clock::time_point tp){
+	return std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count());
+}
+
 const std::string currentDateTime() {
 	time_t     now = time(0);
 	struct tm  tstruct;

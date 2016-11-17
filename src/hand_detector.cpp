@@ -125,7 +125,6 @@ void handDetector(DataWriter & websocket, float marker_size,
 						std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 						root["obj"]["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
 						message = writer.write(root);
-
 						
 						// Send the message online and store it offline
 						if(online){

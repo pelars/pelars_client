@@ -8,9 +8,6 @@
 #include "mutex.h"
 #include "lame/lame.h"
 
-extern double interval;
-extern bool to_stop;
-
 
 class Mp3encoder
 {

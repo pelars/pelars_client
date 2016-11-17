@@ -33,16 +33,27 @@ void ImageSender::send(std::string & data, std::string type, std::string what, b
 }
 
 
+void encodeImage(const std::string & name, std::string & content){
+	
+	std::ifstream in(name, std::ifstream::binary);
+	in.unsetf(std::ios::skipws);
+    in.seekg(0, std::ios::end);
+    std::streampos fileSize = in.tellg();
+    in.seekg(0, std::ios::beg);
+    std::vector<char> data(fileSize);
+	in.read(&data[0], fileSize);
+	content = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
+
+}
+
+
 void sendImage(int session, const std::string & end_point, const std::string & token, 
 	           std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc_kinect,
 	           std::shared_ptr<PooledChannel<std::shared_ptr<Trigger>>> pc_trigger, bool upload){
 
 	ImageSender image_sender(session, end_point, token, upload);
 
-	std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
-	std::shared_ptr<Trigger> trigger = std::make_shared<Trigger>();
-
-	std::string now, name;
+	std::string name, base64_image, type;
 
 	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
 	if(!boost::filesystem::exists(folder_name)){
@@ -50,36 +61,30 @@ void sendImage(int session, const std::string & end_point, const std::string & t
 		boost::filesystem::create_directory(dir);
 	}
 
-	//Workaround: try to use signal handler
-
 	while(!to_stop){
 
-		while(pc_trigger->readNoWait(trigger) == false && !to_stop){
-			sleep(1);
-		}
+		std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
+		std::shared_ptr<Trigger> trigger = std::make_shared<Trigger>();
 
-		if(pc_kinect->readNoWait(frames)){
+		pc_trigger->read(trigger);
+		pc_kinect->read(frames);
+		std::cout <<"SENDING IMAGE " << std::endl;
 
-			now = std::to_string((long)std::chrono::duration_cast<std::chrono::milliseconds>(trigger->time_.time_since_epoch()).count());
-			name = std::string(folder_name + "/" + frames->type + "_" + now + "_" + std::to_string(session) + ".jpg");
+		if(!to_stop){
+
+			name = std::string(folder_name + "/" + frames->type + "_" + time2string(trigger->time_) + "_" + std::to_string(session) + ".jpg");
+			type = frames->type;
 
 			if(frames->color.rows > 0){
 				cv::imwrite(name, frames->color);
 
 				if(online){
-					std::ifstream in(name, std::ifstream::binary);
-					in.unsetf(std::ios::skipws);
-				    in.seekg(0, std::ios::end);
-				    std::streampos fileSize = in.tellg();
-				    in.seekg(0, std::ios::beg);
-				    std::vector<char> data(fileSize);
-					in.read(&data[0], fileSize);
-					std::string image = base64_encode((unsigned char*)&data[0], (unsigned int)data.size());
-
-					image_sender.send(image, "jpg", frames->type, trigger->automatic_, now);		
+					encodeImage(name, base64_image);
+					image_sender.send(base64_image, "jpg", frames->type, trigger->automatic_, time2string(trigger->time_));		
 				}
 			}
 			
 		}		
 	}
+	std::cout << "terminating image sender " << type << std::endl;
 }

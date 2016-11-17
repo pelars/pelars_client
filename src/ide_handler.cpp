@@ -1,7 +1,7 @@
 #include <errno.h>
 #include "ide_handler.h"
 
-void ideHandler(DataWriter & websocket, const char * endpoint,  const char * endpoint2)
+void ideHandler(IdeTrigger & websocket, const char * endpoint,  const char * endpoint2)
 {
 	// Mongoose websocket listener and message structure
 	struct mg_mgr mgr;
@@ -28,7 +28,8 @@ void ev_handler(struct mg_connection * nc, int ev, void * ev_data)
 	switch (ev) {
 		case NS_WEBSOCKET_FRAME:
 			{
-				DataWriter * writer = (DataWriter *)nc->mgr->user_data;
+				IdeTrigger * ide_writer = (IdeTrigger *)nc->mgr->user_data;
+				DataWriter * writer = ide_writer->data_writer_;
 				struct websocket_message * wm = (struct websocket_message *)ev_data;
 				std::string message((char *)(wm->data), wm->size);
 				
@@ -52,15 +53,21 @@ void button_handler(struct mg_connection * nc, int ev, void * ev_data)
 		case NS_WEBSOCKET_FRAME:
 			{
 				//std::cout << "pressed button" << std::endl;
-				DataWriter * writer = (DataWriter *)nc->mgr->user_data;
+				IdeTrigger * ide_writer = (IdeTrigger *)nc->mgr->user_data;
+				DataWriter * writer = ide_writer->data_writer_;
 				struct websocket_message * wm = (struct websocket_message *)ev_data;
 				std::string message((char *)(wm->data), wm->size);
-				snapshot_table = true;
-				snapshot_people = true;
-				snapshot_screen = true;
-				//std::cout << "SENDING " << message << std::endl;
+
+				//send triggers
+				std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+
+				for(auto & q : ide_writer->queues_){
+					std::shared_ptr<Trigger> trigger = std::make_shared<Trigger>(now, false);
+					q->write(trigger);
+				}
+
 				if(online){
-						io.post( [&writer, message]() {
+						io.post([&writer, message]() {
 							writer->writeData(message);
 							});
 						}

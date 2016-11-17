@@ -6,6 +6,7 @@
 #include "image_frame.h"
 #include <boost/filesystem.hpp>
 #include <chrono>
+#include "opt.h"
 
 extern bool to_stop;
 

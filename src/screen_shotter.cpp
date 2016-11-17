@@ -12,12 +12,13 @@ void screenShotter(const std::vector<std::shared_ptr<PooledChannel<std::shared_p
 
 		std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
 		frames->type = std::string("screen");
-		screen_grabber.grabScreen(frames->color);
 
+		frames->color = screen_grabber.grabScreen();
+	
 		for(auto & channel : pc){
 			channel->write(frames);
 		}
-
 	}
+	std::cout << "terminating screen shotter" << std::endl;
 	
 }

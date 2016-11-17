@@ -4,8 +4,10 @@
 #include <pooledchannel.hpp>
 #include <memory>
 #include <unistd.h>
+#include <condition_variable>
 
 extern bool to_stop;
+extern std::condition_variable timed_stopper;
 
 class Trigger{
 

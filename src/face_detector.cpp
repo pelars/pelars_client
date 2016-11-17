@@ -86,7 +86,6 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 		cv::namedWindow("face");
 
 	TimedSender timer(interval);
-	TimedSender timer_minute(60000);
 
 	cv::Mat camera_inverse = calib_matrix.inv();
 	
@@ -96,7 +95,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 	{	
 
 		cv::gpu::GpuMat facesBuf_gpu;
-		if(pcw->readNoWait(color_frame))
+		if(!pcw->read(color_frame))
 			continue;
 
 		color = color_frame->color;
@@ -225,7 +224,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 	if(visualization)
 		cvDestroyWindow("face");
 
-	return;
+	std::cout << "terminating face detector" << std::endl;
 }
 
 #else
