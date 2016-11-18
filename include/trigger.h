@@ -1,7 +1,7 @@
 #pragma once
 #include <chrono>
 #include <vector>
-#include <pooledchannel.hpp>
+#include "channel_wrapper.hpp"
 #include <memory>
 #include <unistd.h>
 #include <condition_variable>
@@ -21,4 +21,4 @@ public:
 
 };
 
-void sendTrigger(const std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<Trigger>>>> & pc_trigger, int interval);
+void sendTrigger(ChannelWrapper<Trigger> & pc_trigger, int interval);

@@ -25,6 +25,8 @@
 #include "screen_shotter.h"
 #include "video_saver.h"
 #include "make_channel.h"
+#include "screen_grabber.h"
+#include "channel_wrapper.hpp"
 
 
 

@@ -9,6 +9,9 @@
 void x264Encoder::initialize(const unsigned int w, const unsigned int h, const bool kinect)
 {
 
+	folder_name_ = folder_name_.back() == '/' ? folder_name_ : folder_name_ + "/";
+	os_.open(folder_name_ + file_name_, std::ios::binary);
+
 	image_w_ = w;
 	image_h_ = h;
 	x264_param_default_preset(&parameters_, "veryfast", "zerolatency");
@@ -77,8 +80,9 @@ void x264Encoder::unInitilize()
 	sws_freeContext(convert_context_);
 	os_.close();
 	std::string input = folder_name_ + file_name_;
-	file_name_.erase (file_name_.end() - 5, file_name_.end());
-	std::string mp4_name = file_name_ + std::string(".mp4");
+	file_name_.erase (file_name_.end() - 4, file_name_.end());
+	std::cout << "FILE NAME " << file_name_ << std::endl;
+	std::string mp4_name = file_name_ + std::string("mp4");
 	std::ostringstream strs;
 	strs << "ffmpeg -r "  << 1000.0/boost::accumulators::mean(acc_) << " -f h264 -i " << input << " -reset_timestamps 1 -y -c copy -an " << folder_name_ + mp4_name;
 	std::string command = strs.str();

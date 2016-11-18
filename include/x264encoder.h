@@ -30,7 +30,7 @@ class x264Encoder
 
 public:
 	x264Encoder(const std::string folder_name = "./", const std::string file_name = "video.mp4"): 
-	            os_(folder_name + file_name, std::ios::binary), file_name_(file_name), folder_name_(folder_name){}
+	            file_name_(file_name), folder_name_(folder_name){}
 
 	void initialize(const unsigned int w = 640, const unsigned int h = 480, const bool kinect = false);
 	void unInitilize();

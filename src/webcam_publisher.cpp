@@ -1,6 +1,6 @@
 #include "webcam_publisher.h"
 
-void webcamPublisher(int face_camera_id, const std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> & pc_webcam){
+void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam){
 
 	synchronizer.lock();
 
@@ -17,13 +17,13 @@ void webcamPublisher(int face_camera_id, const std::vector<std::shared_ptr<Poole
 		gs_grabber.capture(frame);
 
 		std::shared_ptr<ImageFrame> image = std::make_shared<ImageFrame>();
-		image->color = cv::Mat(frame);
-		image->type = std::string("people");
+		image->color_ = cv::Mat(frame);
+		image->type_ = std::string("people");
+		image->time_stamp_ = std::chrono::high_resolution_clock::now();
 
-		for(auto & channel : pc_webcam){
-			channel->write(image);
-		}
+		pc_webcam.write(image);
+		
 	}
-	std::cout << "temrinating webcam publisher" << std::endl;
+	std::cout << "terminating webcam publisher" << std::endl;
 
 }

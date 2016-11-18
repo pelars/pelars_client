@@ -1,6 +1,6 @@
 #include "kinect2publisher.h"
 
-void kinect2publisher(const K2G::Processor processor, const std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> & pc){
+void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame> & pc){
 
 	synchronizer.lock();
 
@@ -10,12 +10,16 @@ void kinect2publisher(const K2G::Processor processor, const std::vector<std::sha
 	
 	while(!to_stop){
 
-		std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
-		frames->type = std::string("workspace");
-		k2g.get(frames->color, frames->depth);
+		cv::Mat color, depth;
+		k2g.get(color, depth);
 
-		for(auto & channel : pc){
-			channel->write(frames);
+		for(auto & ch : pc.getChannels()){
+			std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
+			frames->type_ = std::string("workspace");
+			frames->time_stamp_ = std::chrono::high_resolution_clock::now();
+			frames->color_ = color;
+			frames->depth_ = depth;
+			ch->write(frames);
 		}
 
 	}

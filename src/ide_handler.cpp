@@ -61,10 +61,9 @@ void button_handler(struct mg_connection * nc, int ev, void * ev_data)
 				//send triggers
 				std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
 
-				for(auto & q : ide_writer->queues_){
-					std::shared_ptr<Trigger> trigger = std::make_shared<Trigger>(now, false);
-					q->write(trigger);
-				}
+				std::shared_ptr<Trigger> trigger = std::make_shared<Trigger>(now, false);
+
+				ide_writer->queues_.write(trigger);
 
 				if(online){
 						io.post([&writer, message]() {

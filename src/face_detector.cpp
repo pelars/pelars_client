@@ -33,7 +33,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 
 	cv::gpu::GpuMat gray_gpu;
 	cv::Mat faces_downloaded, color;
-	std::shared_ptr<ImageFrame> color_frame = std::make_shared<ImageFrame>();
+	std::shared_ptr<ImageFrame> color_frame;
 
 	const int session = websocket.getSession();
 
@@ -98,7 +98,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 		if(!pcw->read(color_frame))
 			continue;
 
-		color = color_frame->color;
+		color = color_frame->color_;
 
 		//cv::flip(color, color, 1);
 

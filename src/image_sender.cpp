@@ -61,26 +61,25 @@ void sendImage(int session, const std::string & end_point, const std::string & t
 		boost::filesystem::create_directory(dir);
 	}
 
-	while(!to_stop){
+	std::shared_ptr<ImageFrame> frames;
+	std::shared_ptr<Trigger> trigger;
 
-		std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
-		std::shared_ptr<Trigger> trigger = std::make_shared<Trigger>();
+	while(!to_stop){
 
 		pc_trigger->read(trigger);
 		pc_kinect->read(frames);
-		std::cout <<"SENDING IMAGE " << std::endl;
 
 		if(!to_stop){
+			type = frames->type_;
+			name = std::string(folder_name + "/" + type + "_" + time2string(trigger->time_) + "_" + std::to_string(session) + ".jpg");
+			
 
-			name = std::string(folder_name + "/" + frames->type + "_" + time2string(trigger->time_) + "_" + std::to_string(session) + ".jpg");
-			type = frames->type;
-
-			if(frames->color.rows > 0){
-				cv::imwrite(name, frames->color);
+			if(frames->hasColor()){
+				cv::imwrite(name, frames->color_);
 
 				if(online){
 					encodeImage(name, base64_image);
-					image_sender.send(base64_image, "jpg", frames->type, trigger->automatic_, time2string(trigger->time_));		
+					image_sender.send(base64_image, "jpg", type, trigger->automatic_, time2string(trigger->time_));		
 				}
 			}
 			

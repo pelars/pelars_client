@@ -5,9 +5,9 @@
 struct IdeTrigger
 {
 
-	IdeTrigger(std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<Trigger>>>> & q) : queues_(q){}
+	IdeTrigger(ChannelWrapper<Trigger> & q) : queues_(q){}
 
 	DataWriter * data_writer_;
-	std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<Trigger>>>>  & queues_;
+	ChannelWrapper<Trigger> & queues_;
 
 };

@@ -113,9 +113,9 @@ public:
 		detailpool::pooltrait<CT>::initandpopulate(data_,nn,free_list_);
 	}
 
-	bool is_terminated() const { return *terminate_; }
+	bool isTerminated() const { return *terminate_; }
 
-	void set_termination(const bool * p) { terminate_ = p ? p : &dummyterminate_;}
+	void setTermination(const bool * p) { terminate_ = p ? p : &dummyterminate_;}
 
 	/// returns the count of data ready
 	int readySize() const 
@@ -151,8 +151,8 @@ public:
 				{
 					if(!dowait)
 						return 0;
-					write_ready_var.wait(lk, [this]{return is_terminated() || !this->free_list_.empty();});
-					if(is_terminated())
+					write_ready_var.wait(lk, [this]{return isTerminated() || !this->free_list_.empty();});
+					if(isTerminated())
 						return 0; // FAIL
 				}
 				else
@@ -191,9 +191,7 @@ public:
 	{
 		T * p = 0;
 		readerGet(p);
-		std::cout << "returned" << std::endl;
 		if(!p){
-			std::cout << "returning false" << std::endl;
 			return false;
 		}
 		x = *p;
@@ -258,14 +256,10 @@ public:
 	void readerGet(T * & out)
 	{
 		std::unique_lock<std::mutex> lk(mutex_);
-		std::cout << "reading" << std::endl;
-	    read_ready_var.wait(lk, [this]{return is_terminated() || !this->ready_list_.empty();});
-	    std::cout <<!this->ready_list_.empty() << is_terminated() << std::endl;
-		std::cout << "read" << std::endl;
-		if(is_terminated())
+	    read_ready_var.wait(lk, [this]{return isTerminated() || !this->ready_list_.empty();});
+		if(isTerminated())
 			return;
 	    readerGetReady(out);
-	    std::cout << "done" << std::endl;
 	}
 
 	/// releases a buffer provided by the readerGet

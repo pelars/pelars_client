@@ -1,19 +1,18 @@
 #include "all.h"
-#include "screen_grabber.h"
 
 std::mutex synchronizer;
 
 // Triggers
-std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<Trigger>>>> pc_trigger;
+ChannelWrapper<Trigger> pc_trigger(to_stop, 3);
 
 // Webcam frames message channels
-std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_webcam;
+ChannelWrapper<ImageFrame> pc_webcam(to_stop, 3);
 
 // Kinect frames message channels
-std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_kinect;
+ChannelWrapper<ImageFrame> pc_kinect(to_stop, 3);
 
 // Screen frames message channel
-std::vector<std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>>> pc_screen;
+ChannelWrapper<ImageFrame> pc_screen(to_stop, 3);
 
 int main(int argc, char * argv[])
 {
@@ -22,7 +21,8 @@ int main(int argc, char * argv[])
 	signal(SIGHUP, sig_handler);
 	signal(SIGTERM, sig_handler);
 
-	static int trigger_time = 60;
+	static unsigned int trigger_time = 60;
+	static unsigned int milliseconds = 100;
 
 
 	// Parse input arguments
@@ -100,8 +100,9 @@ int main(int argc, char * argv[])
 	std::string session_endpoint = end_point + "session/";   
 
 	// Websocket manager
-	DataWriter collector(end_point + "collector", session); 
-		sleep(3);
+	DataWriter collector(end_point + "collector", session);
+	//Wait for websocket to connect 
+	sleep(1);
 
 	DataWriter alive_socket(end_point + "aliver", session); 
 	std::cout << "opened aliver on " + end_point + std::to_string(session) << std::endl;
@@ -109,7 +110,6 @@ int main(int argc, char * argv[])
 	visualization = p.get("visualization");
 
 	// Send the two calibration matrixes. Need to sleep to give the websocket time to connect :/
-	//sleep(1);
 	if(sendCalibration(collector) != 0){
 		std::cout << "error sending the calibration. Did you calibrate the cameras with -c ?" << std::endl;
 	}
@@ -117,33 +117,20 @@ int main(int argc, char * argv[])
 	// Thread container
 	std::vector<std::thread> thread_list;
 
-	// Triggers
-	pc_trigger = makeChannel<Trigger>(3, to_stop, 3);
+	thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), std::ref(token), pc_screen.getNewChannel(), 
+									  pc_trigger.getNewChannel(), false));
 
-	// Webcam frames message channels
-	pc_webcam = makeChannel<ImageFrame>(3, to_stop, 3);
-
-	// Kinect frames message channels
-	pc_kinect = makeChannel<ImageFrame>(3, to_stop, 3);
-
-	// Screen frames message channel
-	pc_screen = makeChannel<ImageFrame>(1, to_stop, 3);
-
-	thread_list.push_back(std::thread(sendTrigger, std::ref(pc_trigger), trigger_time));
-
-	thread_list.push_back(std::thread(screenShotter, std::ref(pc_screen)));
-
-	thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), std::ref(token), pc_screen[0], pc_trigger[2], false));
+	thread_list.push_back(std::thread(screenShotter, std::ref(pc_screen), milliseconds));
 
 
 	// Starting the face detection thread
 	if(p.get("face") || p.get("default")){
 		thread_list.push_back(std::thread(webcamPublisher, face_camera_id, std::ref(pc_webcam)));
-		thread_list.push_back(std::thread(detectFaces, std::ref(collector), pc_webcam[0], p.get("video")));
+		thread_list.push_back(std::thread(detectFaces, std::ref(collector), pc_webcam.getNewChannel(), p.get("video")));
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
-			                              std::ref(token), pc_webcam[1], pc_trigger[1], false));
+			                              std::ref(token), pc_webcam.getNewChannel(), pc_trigger.getNewChannel(), false));
 		if(p.get("video")){
-			thread_list.push_back(std::thread(saveVideo, session, pc_webcam[2]));
+			thread_list.push_back(std::thread(saveVideo, session, pc_webcam.getNewChannel()));
 		}
 	}
 
@@ -152,16 +139,19 @@ int main(int argc, char * argv[])
 		
 		thread_list.push_back(std::thread(kinect2publisher, processor, std::ref(pc_kinect)));
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
-			                              std::ref(token), pc_kinect[1], pc_trigger[0], false));
+			                              std::ref(token), pc_kinect.getNewChannel(), pc_trigger.getNewChannel(), false));
 #ifdef HAS_ARUCO
 		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.035, 
-								pc_kinect[0], p.get("C920"), hand_camera_id));
+								pc_kinect.getNewChannel(), p.get("C920"), hand_camera_id));
 #endif	
 
 		if(p.get("video")){
-			thread_list.push_back(std::thread(saveVideo, session, pc_kinect[2]));
+			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel()));
 		}
 	}
+
+
+	thread_list.push_back(std::thread(sendTrigger, std::ref(pc_trigger), trigger_time));
 
 	
 
@@ -201,8 +191,6 @@ int main(int argc, char * argv[])
 	// Wait for the termination of all threads
 	for(auto & thread : thread_list)
 		thread.join();
-
-	std::cout << "TERMINATING MAIN" << std::endl;
 	
 	// Create a local file for data acquisition and backup
 	std::string tmp = collector.file_name_ + std::string(online ? "_backup_" : "_local_") + currentDateTime() + collector.file_extention_;

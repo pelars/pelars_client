@@ -62,7 +62,7 @@ void handDetector(DataWriter & websocket, float marker_size,
 	cv::Mat camera_inverse = calib_matrix.inv();
 	cv::Mat marker_pose = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
-	std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
+	std::shared_ptr<ImageFrame> frames;
 
 	synchronizer.unlock();
 
@@ -74,7 +74,7 @@ void handDetector(DataWriter & websocket, float marker_size,
 		} else {
 			// Could return since it is terminated
 			pc->read(frames);
-			color = frames->color.clone();
+			color = frames->color_.clone();
 			if(to_stop){
 				break;
 			}
