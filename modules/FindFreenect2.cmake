@@ -8,7 +8,7 @@
 
 find_path(FREENECT2_INCLUDE_DIRS NAMES libfreenect2.hpp
 	HINTS
-	${CMAKE_PREFIX_PATH}/include
+	${CMAKE_PREFIX_PATH}/include/libfreenect2/
 	/usr/local/include/libfreenect2/
 	/usr/include/libfreenect2
 	/usr/local/include/
