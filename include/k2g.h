@@ -15,7 +15,7 @@
 #include <iostream>
 #include <Eigen/Core>
 #include <limits>
-
+#include <libfreenect2/logger.h>
 #include "serialization.h"
 
 extern bool to_stop;
@@ -36,13 +36,16 @@ public:
 	cv::Mat getColor();
 	void prepareMake3D(const libfreenect2::Freenect2Device::IrCameraParams & depth_p);
 	void get(cv::Mat & color_mat, cv::Mat & depth_mat, const bool full_hd = true, const bool remove_points = false);
-	
+	void disableLog();
+	void enableLog();
+
 private:
 
 	libfreenect2::Freenect2 freenect2_;
-	libfreenect2::Freenect2Device * dev_ = 0;
-	libfreenect2::PacketPipeline * pipeline_ = 0;
-	libfreenect2::Registration * registration_ = 0;
+	libfreenect2::Freenect2Device * dev_ = nullptr;
+	libfreenect2::PacketPipeline * pipeline_ = nullptr;
+	libfreenect2::Registration * registration_ = nullptr;
+	libfreenect2::Logger * logger_ = nullptr;
 	libfreenect2::FrameMap frames_;
 	libfreenect2::Frame undistorted_, registered_, big_mat_;
 	libfreenect2::SyncMultiFrameListener listener_;

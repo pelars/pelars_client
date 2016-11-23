@@ -7,6 +7,7 @@
 #include <boost/filesystem.hpp>
 #include <chrono>
 #include "opt.h"
+#include "oni_compressor.h"
 
 extern bool to_stop;
 

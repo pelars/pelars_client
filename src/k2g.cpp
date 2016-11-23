@@ -152,6 +152,15 @@ libfreenect2::Freenect2Device::ColorCameraParams K2G::getRgbParameters()
 	return rgb;
 }
 
+void K2G::disableLog() {
+		logger_ = libfreenect2::getGlobalLogger();
+		libfreenect2::setGlobalLogger(nullptr);
+	}
+
+void K2G::enableLog() {
+	libfreenect2::setGlobalLogger(logger_);
+}
+
 void K2G::prepareMake3D(const libfreenect2::Freenect2Device::IrCameraParams & depth_p)
 {
 	const int w = 512;

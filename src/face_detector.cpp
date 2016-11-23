@@ -2,7 +2,7 @@
 
 double std_width = 185.0; //mm
 
-double focal_length_pixel = 589.3588305153235; //489.3;  //pixel
+double focal_length_pixel = 1468.0; //589.3588305153235 * (1920/800);//FIX 
 
 // Returns the distance in meters
 inline double distance(int x1, int x2){
@@ -103,7 +103,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 		if(!pcw->read(color_frame))
 			continue;
 
-		color = color_frame->color_;
+		color = color_frame->color_.clone();
 
 		//cv::flip(color, color, 1);
 

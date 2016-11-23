@@ -31,6 +31,8 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 
+	bool delete_h264 = p.get("h264") ? false : true;
+
 	// Keep alive for Asio
 	std::thread ws_writer(asiothreadfx);
 
@@ -129,7 +131,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_webcam.getNewChannel(), pc_trigger.getNewChannel(), false));
 		if(p.get("video")){
-			thread_list.push_back(std::thread(saveVideo, session, pc_webcam.getNewChannel(), p.get("h264") ? true : false));
+			thread_list.push_back(std::thread(saveVideo, session, pc_webcam.getNewChannel(), delete_h264));
 		}
 	}
 
@@ -145,7 +147,7 @@ int main(int argc, char * argv[])
 #endif	
 
 		if(p.get("video")){
-			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel(), p.get("h264") ? true : false));
+			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel(), delete_h264));
 		}
 	}
 
@@ -169,7 +171,7 @@ int main(int argc, char * argv[])
 	}
 	
 	// Starting audio detector
-	if(p.get("audio"))
+	if(p.get("audio") || p.get("default"))
 		thread_list.push_back(std::thread(audioDetector, std::ref(collector)));
 
 	// Starting qr visualization
@@ -177,12 +179,12 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(showQr, session));
 	
 	// Starting status visualization
-	if(p.get("status"))
+	if(p.get("status") || p.get("default"))
 		thread_list.push_back(std::thread(drawStatus, std::ref(p)));
 
 	// Keep alive on server for status update
 	thread_list.push_back(std::thread(keep_alive, std::ref(alive_socket)));
-	thread_list.push_back(std::thread(sessionWriter, session));
+	//thread_list.push_back(std::thread(sessionWriter, session));
 	//std::thread audio_recorder = std::thread(audioRecorder, session);
 	
 	//If there are no windows wait for Esc to be pressed

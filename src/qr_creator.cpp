@@ -45,7 +45,7 @@ cv::Mat drawQr(int width, int repetitions, int session)
 	// Create actual qr code from data
 	if(QR_width * repetitions > width)
 	{
-		std::cout << "overflow" << std::endl;
+		std::cout << "overflow in QR" << std::endl;
 		return cv::Mat();
 	}
 	for(int y = 0; y < QR_width; ++y)

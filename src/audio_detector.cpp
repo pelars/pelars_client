@@ -122,10 +122,10 @@ void audioDetector(DataWriter & data_writer){
 	int used_device = -1;
 	for(int i = 0; i < Pa_GetDeviceCount(); ++i){
 		//std::cout << Pa_GetDeviceInfo(i)->name << std::endl;
-		//if(std::string(Pa_GetDeviceInfo(i)->name).find("HD Pro Webcam C920") != std::string::npos)
-			//used_device = i;
-		if(std::string(Pa_GetDeviceInfo(i)->name).find("Xbox NUI Sensor") != std::string::npos)
+		if(std::string(Pa_GetDeviceInfo(i)->name).find("HD Pro Webcam C920") != std::string::npos)
 			used_device = i;
+		//if(std::string(Pa_GetDeviceInfo(i)->name).find("Xbox NUI Sensor") != std::string::npos)
+			//used_device = i;
 	}
 
 	if(used_device == -1){
@@ -145,7 +145,7 @@ void audioDetector(DataWriter & data_writer){
 	std::cout << "Device has " << inputParameters.channelCount << " channels" << std::endl;
 	inputParameters.device = used_device;
 	inputParameters.hostApiSpecificStreamInfo = nullptr;
-	inputParameters.sampleFormat =  paInt32;//paFloat32;
+	inputParameters.sampleFormat =  paFloat32;
 	inputParameters.suggestedLatency = Pa_GetDeviceInfo(used_device)->defaultLowInputLatency;
 
 	FFT fft(data_writer, srate, inputParameters.channelCount, srate, "test.mp3");

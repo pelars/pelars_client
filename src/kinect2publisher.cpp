@@ -5,6 +5,7 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 	synchronizer.lock();
 
 	K2G k2g(processor);
+	k2g.disableLog();
 
 	synchronizer.unlock();
 	
