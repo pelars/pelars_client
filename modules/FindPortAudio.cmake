@@ -63,6 +63,7 @@ else (PORTAUDIO_LIBRARIES AND PORTAUDIO_INCLUDE_DIRS)
       NAMES
         portaudio
       PATHS
+        ${CMAKE_PREFIX_PATH}/lib
         /usr/lib
         /usr/local/lib
         /opt/local/lib
