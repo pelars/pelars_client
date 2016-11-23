@@ -1,6 +1,6 @@
 #include "video_saver.h"
 
-void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc){
+void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc, bool del){
 
 	bool inited = false;
 
@@ -31,7 +31,7 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 				x264encoder = std::make_shared<x264Encoder>(video_subfolder_name, name);
 				unsigned int width = frames->color_.cols;
 				unsigned int height = frames->color_.rows;
-				x264encoder->initialize(width, height, frames->type_ == "people" ? false : true);
+				x264encoder->initialize(width, height, frames->type_ == "people" ? false : true, del);
 				name = video_subfolder_name + "/time_stamps_" + frames->type_ + ".txt";
 				out = std::make_shared<std::ofstream>(name, std::ios::binary);
 

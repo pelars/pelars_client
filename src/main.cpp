@@ -24,7 +24,6 @@ int main(int argc, char * argv[])
 	static unsigned int trigger_time = 60;
 	static unsigned int milliseconds = 100;
 
-
 	// Parse input arguments
 	Parser p(argc, argv);
 	if(p.get("help") || argc == 1){
@@ -130,7 +129,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_webcam.getNewChannel(), pc_trigger.getNewChannel(), false));
 		if(p.get("video")){
-			thread_list.push_back(std::thread(saveVideo, session, pc_webcam.getNewChannel()));
+			thread_list.push_back(std::thread(saveVideo, session, pc_webcam.getNewChannel(), p.get("h264") ? true : false));
 		}
 	}
 
@@ -142,11 +141,11 @@ int main(int argc, char * argv[])
 			                              std::ref(token), pc_kinect.getNewChannel(), pc_trigger.getNewChannel(), false));
 #ifdef HAS_ARUCO
 		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.035, 
-								pc_kinect.getNewChannel(), p.get("C920"), hand_camera_id));
+								          pc_kinect.getNewChannel(), p.get("C920"), hand_camera_id));
 #endif	
 
 		if(p.get("video")){
-			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel()));
+			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel(), p.get("h264") ? true : false));
 		}
 	}
 
@@ -165,7 +164,8 @@ int main(int argc, char * argv[])
 	if(p.get("ide") || p.get("default")){
 		IdeTrigger ide_trigger(pc_trigger);
 		ide_trigger.data_writer_ = &collector;
-		thread_list.push_back(std::thread(ideHandler, std::ref(ide_trigger), p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));
+		thread_list.push_back(std::thread(ideHandler, std::ref(ide_trigger), 
+			                              p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));
 	}
 	
 	// Starting audio detector

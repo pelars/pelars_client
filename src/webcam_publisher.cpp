@@ -4,8 +4,8 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam)
 
 	synchronizer.lock();
 
-	const unsigned int width = 800;
-	const unsigned int height = 448;
+	const unsigned int width = 1920;
+	const unsigned int height = 1080;
 
 	GstreamerGrabber gs_grabber(width, height, face_camera_id);
 	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);

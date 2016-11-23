@@ -19,8 +19,8 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 	
 
 
-	const int width = 800;
-	const int height = 448;
+	const int width = 1920;
+	const int height = 1080;
 
 	std::cout << "press c to calibrate when the marker is seen in both cameras" << std::endl;
 	GstreamerGrabber gs_grabber(width, height, face_camera_id);

@@ -58,6 +58,8 @@ void button_handler(struct mg_connection * nc, int ev, void * ev_data)
 				struct websocket_message * wm = (struct websocket_message *)ev_data;
 				std::string message((char *)(wm->data), wm->size);
 
+				// message example { obj: {name:"b2",type:"button",time:1463054797193,data:"b2"}}
+
 				//send triggers
 				std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
 

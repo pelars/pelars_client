@@ -6,9 +6,10 @@
 #define PIX_FMT_YUV420P AV_PIX_FMT_YUV420P
 #endif
 
-void x264Encoder::initialize(const unsigned int w, const unsigned int h, const bool kinect)
+void x264Encoder::initialize(const unsigned int w, const unsigned int h, const bool kinect, const bool del)
 {
 
+	delete_ = del;
 	folder_name_ = folder_name_.back() == '/' ? folder_name_ : folder_name_ + "/";
 	os_.open(folder_name_ + file_name_, std::ios::binary);
 
@@ -89,7 +90,7 @@ void x264Encoder::unInitilize()
 	std::cout << "Executing " << command << std::endl;
 	if(std::system(command.c_str()) == 0){
 		std::cout << "h264 converted to mp4 successfully" << std::endl;
-		if(std::system((std::string("rm ") + input).c_str()) == 0)
+		if(delete_ && std::system((std::string("rm ") + input).c_str()) == 0)
 			std::cout << "h264 file removed" << std::endl;
 		else
 			std::cout << "Could not remove " << input << std::endl; 

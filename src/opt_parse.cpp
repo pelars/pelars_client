@@ -31,6 +31,7 @@ Parser::Parser(int argc, char ** argv):argc_(argc), argv_(argv), description_("P
             ("processor,X", boost::program_options::value<int>(), "kinect2 processor : 0 for CPU, 1 for OPENCL, 2 for OPENGL. default 1")
             ("upload,u", boost::program_options::value<std::string>(), "file name to upload")
             ("no_calib_video,y", "No video during calibration")
+            ("h264", "do not delete h264")
             ("status,j", "displays system status");
 
     boost::program_options::options_description hidden("Hidden options");

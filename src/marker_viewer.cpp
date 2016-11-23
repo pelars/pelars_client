@@ -11,8 +11,8 @@
 void show_markers(const unsigned int id, const float marker_size){
 	
 #ifdef HAS_ARUCO
-	const int width = 800;
-	const int height = 448;
+	const int width = 1920;
+	const int height = 1080;
 
 	GstreamerGrabber gs_grabber(width, height, id);
 
@@ -21,10 +21,15 @@ void show_markers(const unsigned int id, const float marker_size){
 	vector<aruco::Marker> kmarkers;
 	vector<aruco::Marker> wmarkers;
 
-	const float fx = 589.3588305153235;
-	const float cx = 414.1871817694326;
-	const float fy = 588.585116717914;
-	const float cy = 230.3588624031242; 
+	//const float fx = 589.3588305153235;
+	//const float cx = 414.1871817694326;
+	//const float fy = 588.585116717914;
+	//const float cy = 230.3588624031242;
+
+	const float fx = 2102.85441;
+	const float cx = 949.50000;
+	const float fy = 2178.28254;
+	const float cy = 724.50000;  
 
 	cv::Mat wcamera_parameters = cv::Mat::eye(3, 3, CV_32F);
 	wcamera_parameters.at<float>(0,0) = fx; 

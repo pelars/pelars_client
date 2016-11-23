@@ -32,7 +32,7 @@ public:
 	x264Encoder(const std::string folder_name = "./", const std::string file_name = "video.mp4"): 
 	            file_name_(file_name), folder_name_(folder_name){}
 
-	void initialize(const unsigned int w = 640, const unsigned int h = 480, const bool kinect = false);
+	void initialize(const unsigned int w, const unsigned int h, const bool kinect, const bool del);
 	void unInitilize();
 	void encodeFrame(const char *rgb_buffer);
 	bool isNalsAvailableInOutputQueue();
@@ -51,7 +51,7 @@ private:
 	x264_t * encoder_;
 	std::ofstream os_;
 	long int time_base_;
-	bool first_;
+	bool first_, delete_;
 	int bytes_;
 	std::string file_name_, folder_name_;
 	boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::mean>> acc_;

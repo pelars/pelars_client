@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 Project (sensor_manager CXX)
 
+option(DOCKER_BUILD "Build in docker container" OFF)
+if (DOCKER_BUILD)
+	set(CMAKE_PREFIX_PATH "/prefix")
+endif()
+
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -std=c++11") 
 set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -march=native")
-set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -Wall")
+#set(CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -Wall")
 
 set(CMAKE_BUILD_TYPE   Release) 
 set(SRC                ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -26,7 +31,7 @@ find_package(Websocketpp REQUIRED)
 find_package(Gstreamer-1.0 REQUIRED)
 add_definitions(-DHAS_GSTREAMER)
 find_package(Freenect REQUIRED)
-find_package(FFmpeg REQUIRED)
+find_package(FFmpeg REQUIRED) # ./configure --enable-swscale --enable-shared --enable-gpl --enable-libx264 --prefix=
 find_package(TinyXML2 REQUIRED)
 find_package(JsonCpp REQUIRED)
 find_package(x264 REQUIRED)
@@ -131,6 +136,7 @@ target_link_libraries(sensor_manager 	${OpenCV_LIBS}
 										${CAIRO_LIBRARIES}
 										${LAME_LIBRARIES}
 										X11
+										portaudio
 										)
 
 #add_executable(freenect-camshare ${SRC}/camshare.cpp)

@@ -45,10 +45,15 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 	cascade_gpu_.findLargestObject = findLargestObject_;
 
 
-	const float fx = 589.3588305153235;
-	const float cx = 414.1871817694326;
-	const float fy = 588.585116717914;
-	const float cy = 230.3588624031242; 
+	//const float fx = 589.3588305153235;
+	//const float cx = 414.1871817694326;
+	//const float fy = 588.585116717914;
+	//const float cy = 230.3588624031242; 
+
+	const float fx = 2102.85441;
+	const float cx = 949.50000;
+	const float fy = 2178.28254;
+	const float cy = 724.50000;  
 
 	std::string video_folder_name = std::string("../../videos");
 	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 

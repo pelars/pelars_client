@@ -10,17 +10,12 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 	
 	while(!to_stop){
 
-		cv::Mat color, depth;
-		k2g.get(color, depth);
+		std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
+		frames->type_ = std::string("workspace");
+		frames->time_stamp_ = std::chrono::high_resolution_clock::now();
+		k2g.get(frames->color_, frames->depth_);
 
-		for(auto & ch : pc.getChannels()){
-			std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
-			frames->type_ = std::string("workspace");
-			frames->time_stamp_ = std::chrono::high_resolution_clock::now();
-			frames->color_ = color;
-			frames->depth_ = depth;
-			ch->write(frames);
-		}
+		pc.write(frames);
 
 	}
 	
