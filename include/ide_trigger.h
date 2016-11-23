@@ -5,9 +5,8 @@
 struct IdeTrigger
 {
 
-	IdeTrigger(ChannelWrapper<Trigger> & q) : queues_(q){}
+	IdeTrigger(ChannelWrapper<Trigger> & q, DataWriter * data_writer) : queues_(q), data_writer_(data_writer){}
 
-	DataWriter * data_writer_;
 	ChannelWrapper<Trigger> & queues_;
-
+	DataWriter * data_writer_;
 };

@@ -22,7 +22,11 @@ int main(int argc, char * argv[])
 	signal(SIGTERM, sig_handler);
 
 	static unsigned int trigger_time = 60;
-	static unsigned int milliseconds = 100;
+	static unsigned int scree_shotter_timer_ms = 100;
+	int session;
+
+	// Thread container
+	std::vector<std::thread> thread_list;
 
 	// Parse input arguments
 	Parser p(argc, argv);
@@ -32,6 +36,7 @@ int main(int argc, char * argv[])
 	}
 
 	bool delete_h264 = p.get("h264") ? false : true;
+	bool store_video = p.get("video");
 
 	// Keep alive for Asio
 	std::thread ws_writer(asiothreadfx);
@@ -46,27 +51,20 @@ int main(int argc, char * argv[])
 #endif
 	
 	if(p.get("upload")){
-		int error;
-		std::string file_name = p.getString("upload");
-		error = uploadData(file_name, end_point, p.get("session") ? p.getInt("session") : 0);
+		std::string upload = p.getString("upload");
+		int error = uploadData(upload, end_point, p.get("session") ? p.getInt("session") : 0);
 		io.stop();
 		ws_writer.join();
 		return !error;
 	}
 
 	// Check if video device is different than /dev/video0
-	int face_camera_id = 0;
-	int hand_camera_id = 1;
-	if(p.get("face_camera"))
-		face_camera_id = p.getInt("face_camera");
-
-	if(p.get("hand_camera"))
-		hand_camera_id = p.getInt("hand_camera");
-
+	int face_camera_id = p.get("face_camera") ? p.getInt("face_camera") : 0;
+	int hand_camera_id = p.get("hand_camera") ? p.getInt("hand_camera") : 1;
 	float marker_size = p.get("marker") ? p.getFloat("marker") : 0.07;
 
 	if(p.get("marker_id")){
-		show_markers(face_camera_id, marker_size);
+		show_markers(face_camera_id, marker_size, pc_webcam.getNewChannel());
 		io.stop();
 		ws_writer.join();
 		return 0;
@@ -85,7 +83,6 @@ int main(int argc, char * argv[])
 	// Creating a Session Manager and getting a newsession ID
 	SessionManager sm(end_point, p.get("test"));
 	sm.login();
-	int session;
 	std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 	
 	if(!p.get("session"))
@@ -98,15 +95,14 @@ int main(int argc, char * argv[])
 
 	// Check the endpoint string and connect to the session manager
 	std::cout << "Collector endpoint : " << end_point + "collector/" + std::to_string(session) << std::endl;
-	std::string session_endpoint = end_point + "session/";   
 
 	// Websocket manager
 	DataWriter collector(end_point + "collector", session);
-	//Wait for websocket to connect 
-	sleep(1);
-
 	DataWriter alive_socket(end_point + "aliver", session); 
 	std::cout << "opened aliver on " + end_point + std::to_string(session) << std::endl;
+	//Wait for websockets to connect 
+	sleep(1);
+
 
 	visualization = p.get("visualization");
 
@@ -115,13 +111,12 @@ int main(int argc, char * argv[])
 		std::cout << "error sending the calibration. Did you calibrate the cameras with -c ?" << std::endl;
 	}
 
-	// Thread container
-	std::vector<std::thread> thread_list;
-
+	//Image sender for the screenshots
 	thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), std::ref(token), pc_screen.getNewChannel(), 
 									  pc_trigger.getNewChannel(), false));
 
-	thread_list.push_back(std::thread(screenShotter, std::ref(pc_screen), milliseconds));
+	//Image grabber for the screenshots
+	thread_list.push_back(std::thread(screenShotter, std::ref(pc_screen), scree_shotter_timer_ms));
 
 
 	// Starting the face detection thread
@@ -130,7 +125,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(detectFaces, std::ref(collector), pc_webcam.getNewChannel(), p.get("video")));
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_webcam.getNewChannel(), pc_trigger.getNewChannel(), false));
-		if(p.get("video")){
+		if(store_video){
 			thread_list.push_back(std::thread(saveVideo, session, pc_webcam.getNewChannel(), delete_h264));
 		}
 	}
@@ -145,16 +140,12 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(handDetector, std::ref(collector), p.get("marker") ? p.getFloat("marker") : 0.035, 
 								          pc_kinect.getNewChannel(), p.get("C920"), hand_camera_id));
 #endif	
-
-		if(p.get("video")){
+		if(store_video){
 			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel(), delete_h264));
 		}
 	}
 
-
 	thread_list.push_back(std::thread(sendTrigger, std::ref(pc_trigger), trigger_time));
-
-	
 
 #ifdef HAS_CURL
 	// Starting the particle.io thread 	
@@ -164,8 +155,7 @@ int main(int argc, char * argv[])
 
 	// Starting the ide logger
 	if(p.get("ide") || p.get("default")){
-		IdeTrigger ide_trigger(pc_trigger);
-		ide_trigger.data_writer_ = &collector;
+		IdeTrigger ide_trigger(pc_trigger, &collector);
 		thread_list.push_back(std::thread(ideHandler, std::ref(ide_trigger), 
 			                              p.get("mongoose") ? p.getString("mongoose").c_str() : "8081", "8082"));
 	}
@@ -184,7 +174,8 @@ int main(int argc, char * argv[])
 
 	// Keep alive on server for status update
 	thread_list.push_back(std::thread(keep_alive, std::ref(alive_socket)));
-	//thread_list.push_back(std::thread(sessionWriter, session));
+	if(p.get("video_session"))
+		thread_list.push_back(std::thread(sessionWriter, session));
 	//std::thread audio_recorder = std::thread(audioRecorder, session);
 	
 	//If there are no windows wait for Esc to be pressed

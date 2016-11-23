@@ -8,13 +8,11 @@
 #include "gstreamer_grabber.h"
 #include <opencv2/imgproc/imgproc.hpp>
 
-void show_markers(const unsigned int id, const float marker_size){
+void show_markers(const unsigned int id, const float marker_size, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pcw){
 	
 #ifdef HAS_ARUCO
 	const int width = 1920;
 	const int height = 1080;
-
-	GstreamerGrabber gs_grabber(width, height, id);
 
 	aruco::MarkerDetector MDetector;
 	MDetector.setMinMaxSize(0.01, 0.7);
@@ -37,7 +35,7 @@ void show_markers(const unsigned int id, const float marker_size){
 	wcamera_parameters.at<float>(0,2) = cx; 
 	wcamera_parameters.at<float>(1,2) = cy;
 
-	cv::namedWindow("webcam");
+	cv::namedWindow("aruco ids");
 
 	cv::Mat wdist = cv::Mat(cv::Size(4, 1), CV_32F);
 	wdist.at<float>(0) = 0.1161538110871388; 
@@ -47,15 +45,18 @@ void show_markers(const unsigned int id, const float marker_size){
 
 	aruco::CameraParameters wparam(wcamera_parameters, wdist, cv::Size(width, height));
 
-	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
-
 	bool stop = false;
-	cv::Mat wgray;
+	cv::Mat wgray, wcolor;
+
+	std::shared_ptr<ImageFrame> color_frame;
 
 	while(!stop){
-		// Webcam grabber
-		gs_grabber.capture(frame);
-		cv::Mat wcolor(frame);
+
+		if(!pcw->read(color_frame))
+			continue;
+
+		wcolor = color_frame->color_.clone();
+
 		cvtColor(wcolor, wgray, CV_BGR2GRAY); 
 		MDetector.detect(wgray, wmarkers, wcamera_parameters, cv::Mat(), marker_size);
 
@@ -65,13 +66,13 @@ void show_markers(const unsigned int id, const float marker_size){
 			}		
 		}
 
-		cv::imshow("webcam", wcolor);
-		int c = cv::waitKey(1);
+		cv::imshow("aruco ids", wcolor);
+		int c = cv::waitKey(30);
 		if((char)c == 'q') {
 			stop = true;	
 		}
 	}
 
-	cvDestroyWindow("webcam");
+	cvDestroyWindow("aruco ids");
 	#endif
 }
