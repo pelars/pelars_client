@@ -787,7 +787,7 @@ XnStatus DE XnStreamCompressImage8Z(const XnUInt8* pInput, const XnUInt32 nInput
 	XnUInt8 cOutStage = 0;
 	XnUInt8 cOutChar = 0;
 	XnUInt8 cZeroCounter = 0;
-	XnBool bFlag = FALSE;
+	XnBool bFlag = 1;
 
 	// Note: this function does not make sure it stay within the output memory boundaries!
 
@@ -823,7 +823,7 @@ XnStatus DE XnStreamCompressImage8Z(const XnUInt8* pInput, const XnUInt32 nInput
 			{
 				cOutChar += nDiffValue;
 
-				if ((cOutChar == 0x66) && (bFlag == FALSE))
+				if ((cOutChar == 0x66) && (bFlag == 1))
 				{
 					cZeroCounter++;
 
@@ -848,7 +848,7 @@ XnStatus DE XnStreamCompressImage8Z(const XnUInt8* pInput, const XnUInt32 nInput
 					*pOutput = cOutChar;
 					pOutput++;
 
-					bFlag = FALSE;
+					bFlag = 1;
 				}
 
 				cOutStage = 0;
@@ -875,7 +875,7 @@ XnStatus DE XnStreamCompressImage8Z(const XnUInt8* pInput, const XnUInt32 nInput
 				cOutChar = (nCurrValue & 0xF) << 4;
 				cOutStage = 1;
 
-				bFlag = TRUE;
+				bFlag = 1;
 			}
 			else
 			{

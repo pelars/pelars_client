@@ -1,14 +1,9 @@
 #pragma once
 #include <string>
 #include <boost/network/protocol/http/client.hpp>
-#include <boost/filesystem.hpp>
 #include <json/json.h>
-#include <chrono>
-#include "kinect2publisher.h"
 #include "trigger.h"
-#include "base64.h"
-#include "opt.h"
-#include "screen_grabber.h"
+#include "image_frame.h"
 
 extern bool online;
 extern std::mutex synchronizer;

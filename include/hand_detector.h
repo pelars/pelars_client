@@ -1,6 +1,8 @@
 #pragma once
 #ifdef HAS_ARUCO
 #include "kinect2publisher.h"
+#include "termination.h"
+#include "image_frame.h"
 #include "opt.h"
 #include <iostream>
 #include <aruco/aruco.h>
@@ -11,8 +13,7 @@
 #include "x264encoder.h"
 #include "gstreamer_grabber.h"
 #include "mutex.h"
-#include "termination.h"
-#include "image_frame.h"
+#include <Eigen/Core>
 
 extern bool to_stop;
 extern bool online;

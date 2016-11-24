@@ -1,7 +1,5 @@
 #pragma once
 #include "mongoose.h"
-#include <iostream>
-#include "opt.h"
 #include "ide_trigger.h"
 
 void ideHandler(IdeTrigger & websocket, const char * endpoint, const char * endpoint2);

@@ -2,11 +2,7 @@
 #ifdef HAS_GSTREAMER
 #include <gst/gst.h> 
 #include <gst/app/gstappsink.h>
-#include <glib.h>
-#include <iostream>
-#include <sstream>
-#include <opencv2/core/core.hpp>  
-#include <memory>      
+#include <memory>   
 
 class GstreamerGrabber
 {

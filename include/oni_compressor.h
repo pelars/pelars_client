@@ -6,9 +6,7 @@ typedef signed char XnInt8;
 typedef unsigned int XnUInt32;
 typedef unsigned short XnUInt16;
 typedef signed short XnInt16;
-//#define NULL 0
-#define TRUE 1
-#define FALSE 1
+
 #define XN_MAX_UINT16 65536
 #define XN_VALIDATE_INPUT_PTR(x)
 #define xnLogError(a,b)

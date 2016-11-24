@@ -1,4 +1,9 @@
 #include "param_storage.h"
+#include <yaml-cpp/yaml.h>
+#include <iostream>
+#include <string>
+#include <fstream>
+
 
 YAML::Node ParameterServer::solveparent(std::string path)
 {
@@ -21,6 +26,12 @@ YAML::Node ParameterServer::solveparent(std::string path)
   	return parent;
 }
 
+void ParameterServer::dump(std::string out_file){
+
+	std::ofstream fout(out_file);
+	fout << top;
+}
+
 YAML::Node ParameterServer::solve(std::string path)
 {
 	std::stringstream ss(path[0] == '/' ? path.substr(1) : path);
@@ -40,22 +51,6 @@ YAML::Node ParameterServer::solve(std::string path)
   	return c;
 }
 
-template <class T>
-bool ParameterServer::param(std::string path, T & v, T def)
-{
-	YAML::Node s = solve(path[0] == '/' ? path.substr(1) : path);
-	if(!s)
-	{
-		v = def;
-		return false;
-	}
-	else
-	{
-		v = s.as<T>();
-		return true;
-	}
-}
-
 bool ParameterServer::param(std::string path, YAML::Node & v)
 {
 	YAML::Node s = solve(path);
@@ -69,23 +64,6 @@ bool ParameterServer::param(std::string path, YAML::Node & v)
 		return false;	
 	}
 }
-
-
-template <class T>
-bool ParameterServer::param(std::string path, T & v)
-{
-	YAML::Node s = solve(path);
-	if(!s)
-	{
-		return false;
-	}
-	else
-	{
-		v = s.as<T>();
-		return true;
-	}
-}
-
 
 bool ParameterServer::append(std::string path, std::string prefix)
 {

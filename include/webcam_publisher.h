@@ -7,8 +7,10 @@
 #include <memory>
 #include <mutex>
 #include "opt.h"
+#include "param_storage.h"
 
 extern bool to_stop;
 extern std::mutex synchronizer;
+extern ParameterSpace parameters;
 
 void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam);

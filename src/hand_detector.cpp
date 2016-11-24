@@ -1,3 +1,4 @@
+
 #include "hand_detector.h"
 
 #ifdef HAS_ARUCO
@@ -45,16 +46,20 @@ void handDetector(DataWriter & websocket, float marker_size,
 
 	if(c920){
 		gs_grabber = std::make_shared<GstreamerGrabber>(1920, 1080, camera_id);
+		frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 3); 
 	}
 	
-	frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 3); 
-
 	cv::Mat camera_parameters = cv::Mat::eye(3, 3, CV_32F);
 
-	camera_parameters.at<float>(0,0) = c920 ? 589.3588305153235 : kinect2parameters.fx; 
-	camera_parameters.at<float>(1,1) = c920 ? 588.5851167179140 : kinect2parameters.fy; 
-	camera_parameters.at<float>(0,2) = c920 ? 414.1871817694326 : kinect2parameters.cx; 
-	camera_parameters.at<float>(1,2) = c920 ? 230.3588624031242 : kinect2parameters.cy;
+	const float fx = 1352.73;
+	const float cx = 985.184;
+	const float fy = 1352.73;
+	const float cy = 985.184; 
+
+	camera_parameters.at<float>(0,0) = c920 ? fx : kinect2parameters.fx; 
+	camera_parameters.at<float>(1,1) = c920 ? fy : kinect2parameters.fy; 
+	camera_parameters.at<float>(0,2) = c920 ? cx : kinect2parameters.cx; 
+	camera_parameters.at<float>(1,2) = c920 ? cy : kinect2parameters.cy;
 	cv::Mat grey, color;
 	bool to_send;
 

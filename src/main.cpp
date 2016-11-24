@@ -1,6 +1,8 @@
 #include "all.h"
 
 std::mutex synchronizer;
+ParameterServer parameter_server;
+ParameterSpace parameters(parameter_server, "pelars");
 
 // Triggers
 ChannelWrapper<Trigger> pc_trigger(to_stop, 3);
@@ -202,6 +204,8 @@ int main(int argc, char * argv[])
 	// Stopping Asio aliver
 	ws_writer.join();
 	std::cout << "writer stopped" << std::endl;
+
+	//parameter_server.dump("pelars_config.yaml");
 
 	kill(0, SIGINT);
 	return 0;

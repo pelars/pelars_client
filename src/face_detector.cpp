@@ -1,8 +1,20 @@
+#include <opencv2/core/core.hpp>  
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/gpu/gpu.hpp>
+#include <opencv2/contrib/contrib.hpp>
+#include <data_writer.h>
+#include <boost/network/protocol/http/client.hpp>
+#include <json/json.h>
+#include <vector>
+#include "opt.h"
+#include "x264encoder.h"
+#include "termination.h"
+#include "image_frame.h"
 #include "face_detector.h"
 
 double std_width = 185.0; //mm
 
-double focal_length_pixel = 1468.0; //589.3588305153235 * (1920/800);//FIX 
+double focal_length_pixel = 1352.73; //589.3588305153235 * (1920/800);//FIX 
 
 // Returns the distance in meters
 inline double distance(int x1, int x2){
@@ -50,10 +62,22 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 	//const float fy = 588.585116717914;
 	//const float cy = 230.3588624031242; 
 
-	const float fx = 2102.85441;
-	const float cx = 949.50000;
-	const float fy = 2178.28254;
-	const float cy = 724.50000;  
+	const float fx = 1352.73;
+	const float cx = 985.184;
+	const float fy = 1352.73;
+	const float cy = 985.184; 
+
+/*
+	Frames used for calibration: 24 	 RMS = 0.198513
+	F = 1352.73 +- 19.6846
+	Cx = 985.184 +- 4.96863 	Cy = 544.005 +- 4.08948
+	K1 = 0.0973597 +- 0.0185098
+	K2 = -0.165152 +- 0.0509721
+	K3 = 0.027335 +- 0.0517209
+	TD1 = 0 +- 0
+	TD2 = 0 +- 0
+	*/
+ 
 
 	std::string video_folder_name = std::string("../../videos");
 	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 

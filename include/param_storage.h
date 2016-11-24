@@ -2,6 +2,7 @@
 #include <yaml-cpp/yaml.h>
 #include <iostream>
 #include <string>
+#include <fstream>
 
 
 class ParameterServer
@@ -15,16 +16,18 @@ public:
 	template <class T>
 	bool param(std::string path, T & v);
 
-	// TODO write
-
-	YAML::Node top;
-
 	// append config
 	bool append(std::string path, std::string prefix = "");
 
 	YAML::Node solve(std::string path);
 
 	YAML::Node solveparent(std::string path);
+
+	void dump(std::string out_file="config.yaml");
+
+private:
+
+		YAML::Node top;
 
 };
 
@@ -63,3 +66,35 @@ public:
 	ParameterServer & srv_;
 	std::string prefix_; 
 };
+
+
+template <class T>
+bool ParameterServer::param(std::string path, T & v)
+{
+	YAML::Node s = solve(path);
+	if(!s)
+	{
+		return false;
+	}
+	else
+	{
+		v = s.as<T>();
+		return true;
+	}
+}
+
+template <class T>
+bool ParameterServer::param(std::string path, T & v, T def)
+{
+	YAML::Node s = solve(path[0] == '/' ? path.substr(1) : path);
+	if(!s)
+	{
+		v = def;
+		return false;
+	}
+	else
+	{
+		v = s.as<T>();
+		return true;
+	}
+}

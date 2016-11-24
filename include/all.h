@@ -1,4 +1,5 @@
 #pragma once
+#include "param_storage.h"
 #include "session_manager.h"
 #ifdef HAS_CURL
 #include "sse_handler.h"

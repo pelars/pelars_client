@@ -74,6 +74,8 @@ include_directories(${GLFW_INCLUDE_DIRS})
 include_directories(${Boost_LIBRARY_DIRS})
 include_directories(${CAIRO_INCLUDE_DIRS})
 include_directories(${LAME_INCLUDE_DIRS})
+include_directories(${OpenCV_INCLUDE_DIRS})
+
 
 link_directories(${PCL_LIBRARY_DIRS})
 
@@ -102,7 +104,6 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/aliver.cpp
 								${SRC}/marker_viewer.cpp
 								${SRC}/opt_parse.cpp
-								${SRC}/audio_recorder.cpp
 								${SRC}/trigger.cpp
 								${SRC}/webcam_publisher.cpp
 								${SRC}/termination.cpp

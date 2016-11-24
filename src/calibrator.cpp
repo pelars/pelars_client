@@ -10,7 +10,10 @@
 #include "opencv2/calib3d/calib3d.hpp"
 #include "opencv2/core/eigen.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/core.hpp>  
 #include "gstreamer_grabber.h"
+
+
 
 void calibration(const unsigned int face_camera_id, const unsigned int hand_camera_id, const float marker_size, bool c920, 
 	             K2G::Processor processor, bool force)
@@ -44,10 +47,11 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 	// Kinect2 parameters
 	cv::Mat kcamera_parameters = cv::Mat::eye(3, 3, CV_32F);
 
-	const float fx = 2102.85441;
-	const float cx = 949.50000;
-	const float fy = 2178.28254;
-	const float cy = 724.50000; 
+
+	const float fx = 1352.73;
+	const float cx = 985.184;
+	const float fy = 1352.73;
+	const float cy = 985.184;
 
 	cv::Mat wcamera_parameters = cv::Mat::eye(3, 3, CV_32F);
 	wcamera_parameters.at<float>(0,0) = fx; 

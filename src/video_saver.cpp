@@ -61,6 +61,7 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 				depth = frames->depth_.clone();
 				depth.convertTo(depth_16, CV_16U);
 				XnStreamCompressDepth16Z((const XnUInt16*)depth_16.data, 512*424*2, depth_8, &depth_8_size);
+				*out_oni << depth_8_size;
 				out_oni->write((const char*)depth_8, depth_8_size);
 			}
 

@@ -6,6 +6,13 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 
 	K2G k2g(processor);
 	k2g.disableLog();
+	/*
+	ParameterSpace kinect_params(parameters, "kinect2");
+	kinect_params.param("fx", kinect2parameters.fx);
+	kinect_params.param("fy", kinect2parameters.fy);
+	kinect_params.param("cx", kinect2parameters.cx);
+	kinect_params.param("cy", kinect2parameters.cy);
+	*/
 
 	synchronizer.unlock();
 	

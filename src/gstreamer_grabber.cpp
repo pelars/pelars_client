@@ -1,3 +1,8 @@
+#pragma once
+#include <glib.h>
+#include <iostream>
+#include <sstream>
+#include <opencv2/core/core.hpp>   
 #include "gstreamer_grabber.h"
 
 #ifdef HAS_GSTREAMER

@@ -24,10 +24,11 @@ void show_markers(const unsigned int id, const float marker_size, std::shared_pt
 	//const float fy = 588.585116717914;
 	//const float cy = 230.3588624031242;
 
-	const float fx = 2102.85441;
-	const float cx = 949.50000;
-	const float fy = 2178.28254;
-	const float cy = 724.50000;  
+
+	const float fx = 1352.73;
+	const float cx = 985.184;
+	const float fy = 1352.73;
+	const float cy = 985.184; 
 
 	cv::Mat wcamera_parameters = cv::Mat::eye(3, 3, CV_32F);
 	wcamera_parameters.at<float>(0,0) = fx; 

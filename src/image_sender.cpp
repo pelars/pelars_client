@@ -1,4 +1,10 @@
 #include "image_sender.h"
+#include <boost/filesystem.hpp>
+#include <chrono>
+#include "kinect2publisher.h"
+#include "base64.h"
+#include "screen_grabber.h"
+#include "opt.h"
 
 ImageSender::ImageSender(int session, const std::string & endpoint, const std::string & token, bool upload): 
            					token_(token), sending_complete_(true){

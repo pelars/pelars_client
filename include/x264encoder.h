@@ -24,6 +24,10 @@ extern "C" {
 #include <boost/accumulators/statistics/stats.hpp>
 #include <sstream>
 #include <stdlib.h>
+#include "param_storage.h"
+
+extern ParameterSpace parameters;
+
 
 class x264Encoder
 {

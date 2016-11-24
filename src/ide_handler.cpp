@@ -1,4 +1,6 @@
 #include <errno.h>
+#include <iostream>
+#include "opt.h"
 #include "ide_handler.h"
 
 void ideHandler(IdeTrigger & websocket, const char * endpoint,  const char * endpoint2)
