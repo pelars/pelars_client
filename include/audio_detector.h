@@ -45,6 +45,7 @@ struct FFT{
   	std::string message_;
   	TimedSender timer_;
   	Mp3encoder mp3encoder_;
+  	std::vector<float> float_cast_buf_;
 
 	FFT(DataWriter & websocket, int samplerate, int channels, int bitrate, const std::string & name);
 

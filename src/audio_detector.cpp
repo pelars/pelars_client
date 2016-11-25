@@ -3,7 +3,7 @@
 
 
 FFT::FFT(DataWriter & websocket, int samplerate, int channels, int bitrate, const std::string & name): 
-         websocket_(websocket), timer_(interval / 2.0), mp3encoder_(samplerate, channels, bitrate, name)
+         websocket_(websocket), timer_(interval / 2), mp3encoder_(samplerate, channels, bitrate, name)
 {
 	root_["obj"]["type"] = "audio";
 }
@@ -24,6 +24,8 @@ void FFT::compute(float * buf, unsigned int count){
 		amplitude_[i] = 2 * scale_ * sqrt(pow(freqvec_[i].real(), 2) + pow(freqvec_[i].imag(), 2));
 		psd_ += pow(amplitude_[i], 2) * scale_;
 	}
+
+	psd_ = 20 * log10(psd_);
 	
 	root_["obj"]["value"] = psd_;
 	std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
@@ -80,13 +82,20 @@ int portAudioCallback(const void * input, void * output,
 
 
 	FFT * fft = (FFT *)userData;
+	
 	if(frameCount > 1 ){
-		fft->compute((float *)input, frameCount);
+		uint16_t * in = (uint16_t *)input;
+		// Cast data frm unint_16 to float
+		fft->float_cast_buf_.clear();
+		for(unsigned int i = 0; i < frameCount; ++i){
+			fft->float_cast_buf_.push_back(static_cast<float>(in[i]));
+		}
+
+		fft->compute(&(fft->float_cast_buf_[0]), frameCount);
 		if(fft->timer_.needSend()){
 			const std::string message = fft->message_;
-			std::cout << message << std::endl;
-			//std::cout << fft->psd_ << std::endl;
-			if(online){
+			std::cout << fft->psd_ << std::endl;
+			if(online && !isinf(fft->psd_)){
 				io.post([&fft, message]() {
 					fft->websocket_.writeData(message);
 				});
