@@ -84,7 +84,7 @@ int portAudioCallback(const void * input, void * output,
 	FFT * fft = (FFT *)userData;
 	
 	if(frameCount > 1 ){
-		uint16_t * in = (uint16_t *)input;
+		int16_t * in = (int16_t *)input;
 		// Cast data frm unint_16 to float
 		fft->float_cast_buf_.clear();
 		for(unsigned int i = 0; i < frameCount; ++i){
@@ -94,7 +94,7 @@ int portAudioCallback(const void * input, void * output,
 		fft->compute(&(fft->float_cast_buf_[0]), frameCount);
 		if(fft->timer_.needSend()){
 			const std::string message = fft->message_;
-			std::cout << fft->psd_ << std::endl;
+			//std::cout << fft->psd_ << std::endl;
 			if(online && !isinf(fft->psd_)){
 				io.post([&fft, message]() {
 					fft->websocket_.writeData(message);
