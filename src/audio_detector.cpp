@@ -25,7 +25,7 @@ void FFT::compute(float * buf, unsigned int count){
 		psd_ += pow(amplitude_[i], 2) * scale_;
 	}
 
-	psd_ = 20 * log10(psd_);
+	//psd_ = 20 * log10(psd_);
 	
 	root_["obj"]["value"] = psd_;
 	std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
@@ -88,7 +88,7 @@ int portAudioCallback(const void * input, void * output,
 		// Cast data frm unint_16 to float
 		fft->float_cast_buf_.clear();
 		for(unsigned int i = 0; i < frameCount; ++i){
-			fft->float_cast_buf_.push_back(static_cast<float>(in[i]));
+			fft->float_cast_buf_.push_back(static_cast<float>(in[i])/32768.0);
 		}
 
 		fft->compute(&(fft->float_cast_buf_[0]), frameCount);

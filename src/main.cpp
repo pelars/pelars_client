@@ -49,7 +49,7 @@ int main(int argc, char * argv[])
 	std::cout << "WebServer endpoint : " << end_point << std::endl;
 
 #ifdef HAS_FREENECT2
-	K2G::Processor processor = static_cast<K2G::Processor>(p.get("processor") ? p.getInt("processor") : 2);
+	K2G::Processor processor = static_cast<K2G::Processor>(p.get("processor") ? p.getInt("processor") : 1);
 #endif
 	
 	if(p.get("upload")){
