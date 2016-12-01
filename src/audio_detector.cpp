@@ -1,5 +1,6 @@
 #include "audio_detector.h"
 
+#define MAXINT16 32768.0
 
 
 FFT::FFT(DataWriter & websocket, int samplerate, int channels, int bitrate, const std::string & name): 
@@ -88,13 +89,13 @@ int portAudioCallback(const void * input, void * output,
 		// Cast data frm unint_16 to float
 		fft->float_cast_buf_.clear();
 		for(unsigned int i = 0; i < frameCount; ++i){
-			fft->float_cast_buf_.push_back(static_cast<float>(in[i])/32768.0);
+			fft->float_cast_buf_.push_back(static_cast<float>(in[i])/MAXINT16);
 		}
 
 		fft->compute(&(fft->float_cast_buf_[0]), frameCount);
 		if(fft->timer_.needSend()){
 			const std::string message = fft->message_;
-			//std::cout << fft->psd_ << std::endl;
+			//std::cout << message << std::endl;
 			if(online && !isinf(fft->psd_)){
 				io.post([&fft, message]() {
 					fft->websocket_.writeData(message);
@@ -162,4 +163,5 @@ void audioDetector(DataWriter & data_writer){
 	Pa_Terminate();
 	fft.mp3encoder_.flush();
 }
+
 

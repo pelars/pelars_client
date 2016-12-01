@@ -34,6 +34,8 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 
 			if(frames->hasColor()){
 
+				cv::Mat tmp = frames->color_.clone();
+
 				if(!inited_color){
 					std::string name = frames->type_ + "_" + time2string(std::chrono::high_resolution_clock::now()) + "_" + std::to_string(session) + ".h264";
 					x264encoder = std::make_shared<x264Encoder>(video_subfolder_name, name);
@@ -46,7 +48,7 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 					inited_color = true;
 				}
 
-				x264encoder->encodeFrame((const char *)(frames->color_).data);
+				x264encoder->encodeFrame((const char *)tmp.data);
 			}
 
 			if(frames->hasDepth()){

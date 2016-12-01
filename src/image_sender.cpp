@@ -69,19 +69,24 @@ void sendImage(int session, const std::string & end_point, const std::string & t
 
 	std::shared_ptr<ImageFrame> frames;
 	std::shared_ptr<Trigger> trigger;
+	cv::Mat tmp;
 
 	while(!to_stop){
 
-		pc_trigger->read(trigger);
-		pc_kinect->read(frames);
-
 		if(!to_stop){
-			type = frames->type_;
-			name = std::string(folder_name + "/" + type + "_" + time2string(trigger->time_) + "_" + std::to_string(session) + ".jpg");
-			
+
+			pc_trigger->read(trigger);
+			pc_kinect->read(frames);
 
 			if(frames->hasColor()){
-				cv::imwrite(name, frames->color_);
+
+				//TO avoid overwriting the image while writing
+				tmp = frames->color_.clone();
+
+				type = frames->type_;
+				name = std::string(folder_name + "/" + type + "_" + time2string(trigger->time_) + "_" + std::to_string(session) + ".jpg");
+
+				cv::imwrite(name, tmp);
 
 				if(online){
 					encodeImage(name, base64_image);
