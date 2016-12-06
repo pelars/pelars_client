@@ -40,6 +40,9 @@ int main(int argc, char * argv[])
 	bool delete_h264 = p.get("h264") ? false : true;
 	bool store_video = p.get("video");
 
+	unsigned int width = p.get("width") ? p.getInt("width") : 1920;
+	unsigned int height = p.get("height") ? p.getInt("height") : 1080;
+
 	// Keep alive for Asio
 	std::thread ws_writer(asiothreadfx);
 
@@ -123,7 +126,7 @@ int main(int argc, char * argv[])
 
 	// Starting the face detection thread
 	if(p.get("face") || p.get("default")){
-		thread_list.push_back(std::thread(webcamPublisher, face_camera_id, std::ref(pc_webcam)));
+		thread_list.push_back(std::thread(webcamPublisher, face_camera_id, std::ref(pc_webcam), width, height));
 		thread_list.push_back(std::thread(detectFaces, std::ref(collector), pc_webcam.getNewChannel(), p.get("video")));
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_webcam.getNewChannel(), pc_trigger.getNewChannel(), false));

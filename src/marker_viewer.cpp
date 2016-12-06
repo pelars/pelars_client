@@ -11,42 +11,19 @@
 void show_markers(const unsigned int id, const float marker_size, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pcw){
 	
 #ifdef HAS_ARUCO
-	const int width = 1920;
-	const int height = 1080;
 
 	aruco::MarkerDetector MDetector;
 	MDetector.setMinMaxSize(0.01, 0.7);
 	vector<aruco::Marker> kmarkers;
 	vector<aruco::Marker> wmarkers;
 
-	//const float fx = 589.3588305153235;
-	//const float cx = 414.1871817694326;
-	//const float fy = 588.585116717914;
-	//const float cy = 230.3588624031242;
-
-
-	const float fx = 1352.73;
-	const float cx = 985.184;
-	const float fy = 1352.73;
-	const float cy = 985.184; 
-
-	cv::Mat wcamera_parameters = cv::Mat::eye(3, 3, CV_32F);
-	wcamera_parameters.at<float>(0,0) = fx; 
-	wcamera_parameters.at<float>(1,1) = fy; 
-	wcamera_parameters.at<float>(0,2) = cx; 
-	wcamera_parameters.at<float>(1,2) = cy;
+	cv::Mat camera_parameters, dist;
+	camera_parameters = cv::Mat::eye(3, 3, CV_32F);
 
 	cv::namedWindow("aruco ids");
-
-	cv::Mat wdist = cv::Mat(cv::Size(4, 1), CV_32F);
-	wdist.at<float>(0) = 0.1161538110871388; 
-	wdist.at<float>(1) = -0.213821121281364; 
-	wdist.at<float>(2) = 0.000927392238536357; 
-	wdist.at<float>(3) = 0.0007135216206840332;
-
-	aruco::CameraParameters wparam(wcamera_parameters, wdist, cv::Size(width, height));
-
+	
 	bool stop = false;
+	bool inited = false;
 	cv::Mat wgray, wcolor;
 
 	std::shared_ptr<ImageFrame> color_frame;
@@ -56,10 +33,17 @@ void show_markers(const unsigned int id, const float marker_size, std::shared_pt
 		if(!pcw->read(color_frame))
 			continue;
 
+		if(!inited){
+			auto params = color_frame->params_;
+			camera_parameters = params.cam_matrix_;
+			dist = params.dist_;
+			inited = true;
+		}
+
 		wcolor = color_frame->color_.clone();
 
 		cvtColor(wcolor, wgray, CV_BGR2GRAY); 
-		MDetector.detect(wgray, wmarkers, wcamera_parameters, cv::Mat(), marker_size);
+		MDetector.detect(wgray, wmarkers, camera_parameters, dist, marker_size);
 
 		if(wmarkers.size() > 0){
 			for(unsigned int i = 0; i < wmarkers.size(); ++i){

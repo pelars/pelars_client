@@ -3,16 +3,17 @@
 void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame> & pc){
 
 	synchronizer.lock();
-
+	
 	K2G k2g(processor);
 	k2g.disableLog();
-	/*
-	ParameterSpace kinect_params(parameters, "kinect2");
-	kinect_params.param("fx", kinect2parameters.fx);
-	kinect_params.param("fy", kinect2parameters.fy);
-	kinect_params.param("cx", kinect2parameters.cx);
-	kinect_params.param("cy", kinect2parameters.cy);
-	*/
+
+	cv::Mat k2_parameters = cv::Mat::eye(3, 3, CV_32F);
+	k2_parameters.at<float>(0,0) = kinect2parameters.fx;
+	k2_parameters.at<float>(1,1) = kinect2parameters.fy;
+	k2_parameters.at<float>(0,2) = kinect2parameters.cx;
+	k2_parameters.at<float>(1,2) = kinect2parameters.cy;
+
+	CamParams cam_params(k2_parameters, cv::Mat(), 1920, 1080);
 
 	synchronizer.unlock();
 	
@@ -20,6 +21,7 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 
 		std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
 		frames->type_ = std::string("workspace");
+		frames->params_ = cam_params;
 		frames->time_stamp_ = std::chrono::high_resolution_clock::now();
 		k2g.get(frames->color_, frames->depth_);
 

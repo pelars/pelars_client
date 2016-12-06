@@ -12,13 +12,9 @@
 #include "image_frame.h"
 #include "face_detector.h"
 
-double std_width = 185.0; //mm
-
-double focal_length_pixel = 1352.73; //589.3588305153235 * (1920/800);//FIX 
-
 // Returns the distance in meters
-inline double distance(int x1, int x2){
-		return ((std_width * focal_length_pixel) / std::abs(x1 - x2)) / 1000;
+inline double distance(int x1, int x2, float fx, float std_width = 185.0){
+		return ((std_width * fx) / std::abs(x1 - x2)) / 1000;
 	}
 
 #ifdef HAS_GSTREAMER
@@ -44,61 +40,32 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 	cv::CascadeClassifier face_cascade_;
 
 	cv::gpu::GpuMat gray_gpu;
-	cv::Mat faces_downloaded, color;
+	cv::Mat faces_downloaded, color, cam_matrix, dist;
 	std::shared_ptr<ImageFrame> color_frame;
 
 	const int session = websocket.getSession();
 
 	const bool findLargestObject_ = false;
 	const bool filterRects_ = true;
+	bool inited = false;
 
 	cv::gpu::CascadeClassifier_GPU cascade_gpu_;
 	cascade_gpu_.visualizeInPlace = false;
 	cascade_gpu_.findLargestObject = findLargestObject_;
 
-
-	//const float fx = 589.3588305153235;
-	//const float cx = 414.1871817694326;
-	//const float fy = 588.585116717914;
-	//const float cy = 230.3588624031242; 
-
-	const float fx = 1352.73;
-	const float cx = 985.184;
-	const float fy = 1352.73;
-	const float cy = 985.184; 
-
-/*
-	Frames used for calibration: 24 	 RMS = 0.198513
-	F = 1352.73 +- 19.6846
-	Cx = 985.184 +- 4.96863 	Cy = 544.005 +- 4.08948
-	K1 = 0.0973597 +- 0.0185098
-	K2 = -0.165152 +- 0.0509721
-	K3 = 0.027335 +- 0.0517209
-	TD1 = 0 +- 0
-	TD2 = 0 +- 0
-	*/
- 
-
 	std::string video_folder_name = std::string("../../videos");
 	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 
 	
-	/*
-	const float k1 = 0.12269303;
-	const float k2 = -0.26618881;
-	const float p1 = 0.00129035;
-	const float p2 = 0.00081791;
-	const float k3 = 0.17005303;
-	*/
-
 	Json::Value upper;
 	Json::Value root = Json::arrayValue;
 	Json::Value array;
 
-	float face_distance, tx, ty, tz, tx1, ty1, tz1, tx2, ty2, tz2, x_unproject, y_unproject;
+	float face_distance, tx, ty, tz, tx1, ty1, tz1, tx2, ty2, tz2, x_unproject, y_unproject, fx, fy, cx, cy;
 	cv::Mat pose;
 	cv::Mat face_pose = cv::Mat(cv::Size(1, 4), CV_32F);
 	face_pose.at<float>(0, 3) = 1;
 	int detections_num;
+	unsigned int width, height;
 
 	// Preapare JSON message to send to the Collectorh
 	std::string code;
@@ -127,16 +94,30 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 		if(!pcw->read(color_frame))
 			continue;
 
-		color = color_frame->color_.clone();
+		if(!inited){
+			auto params = color_frame->params_;
+			cam_matrix = params.cam_matrix_;
+			fx = cam_matrix.at<float>(0,0);
+			fy = cam_matrix.at<float>(1,1);
+			cx = cam_matrix.at<float>(0,2);
+			cy = cam_matrix.at<float>(1,2);
+			dist = params.dist_;
+			width = params.width_;
+			height = params.height_;
+			inited = true;
+		}
+
+		// too slow
+		//cv::undistort(color_frame->color_, color, cam_matrix, dist);
+		color = color_frame->color_;
 
 		//cv::flip(color, color, 1);
 
 		cv::gpu::GpuMat color_gpu(color);
 
-		//cvtColor(color, gray, CV_BGR2GRAY);
 		cv::gpu::cvtColor(color_gpu, gray_gpu, CV_BGR2GRAY);
 		
-		detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, cv::Size(color.cols, color.rows), cv::Size(), 
+		detections_num = cascade_gpu_.detectMultiScale(gray_gpu, facesBuf_gpu, cv::Size(width, height), cv::Size(), 
 														1.05, (filterRects_ || findLargestObject_) ? 4 : 0);
 
 		facesBuf_gpu.colRange(0, detections_num).download(faces_downloaded);
@@ -151,10 +132,10 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 		{
 
 			cv::Point center(faces[i].x + faces[i].width * 0.5, faces[i].y + faces[i].height * 0.5);
-			cv::ellipse(color, center, cv::Size(faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar( 255, 0, 255), 4, 8, 0);
+			cv::ellipse(color, center, cv::Size(faces[i].width * 0.5, faces[i].height * 0.5), 0, 0, 360, cv::Scalar(255, 0, 255), 4, 8, 0);
 
 			// Distance in meters
-			face_distance = distance(faces[i].x, faces[i].x + faces[i].width);
+			face_distance = distance(faces[i].x, faces[i].x + faces[i].width, fx);
 
 			const float const_x = (face_distance / fx);
 			const float const_y = (face_distance / fy);

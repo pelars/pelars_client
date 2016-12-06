@@ -23,6 +23,8 @@ void handDetector(DataWriter & websocket, float marker_size,
 	marker_detector.setMinMaxSize(0.01, 0.1);
 	marker_detector.setDesiredSpeed(3);
 
+	bool inited = false;
+
 	vector<aruco::Marker> markers;
 	if(visualization)
 		cv::namedWindow("hands");
@@ -44,25 +46,16 @@ void handDetector(DataWriter & websocket, float marker_size,
 	std::string video_folder_name = std::string("../../videos");
 	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 
 
+	// Fixed size since it has to match the kinect2 resolution
 	if(c920){
 		gs_grabber = std::make_shared<GstreamerGrabber>(1920, 1080, camera_id);
-		frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 3); 
 	}
 	
-	cv::Mat camera_parameters = cv::Mat::eye(3, 3, CV_32F);
+	frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 3); 
+	cv::Mat camera_parameters;
 
-	const float fx = 1352.73;
-	const float cx = 985.184;
-	const float fy = 1352.73;
-	const float cy = 985.184; 
-
-	camera_parameters.at<float>(0,0) = c920 ? fx : kinect2parameters.fx; 
-	camera_parameters.at<float>(1,1) = c920 ? fy : kinect2parameters.fy; 
-	camera_parameters.at<float>(0,2) = c920 ? cx : kinect2parameters.cx; 
-	camera_parameters.at<float>(1,2) = c920 ? cy : kinect2parameters.cy;
 	cv::Mat grey, color;
 	bool to_send;
-
 
 	cv::Mat camera_inverse = calib_matrix.inv();
 	cv::Mat marker_pose = cv::Mat::eye(cv::Size(4, 4), CV_32F);
@@ -79,10 +72,15 @@ void handDetector(DataWriter & websocket, float marker_size,
 		} else {
 			// Could return since it is terminated
 			pc->read(frames);
-			color = frames->color_.clone();
+			color = frames->color_;
 			if(to_stop){
 				break;
 			}
+		}
+
+		if(!inited){
+			camera_parameters = frames->params_.cam_matrix_;
+			inited = true;
 		}
 
 		cv::flip(color, color, 1); 

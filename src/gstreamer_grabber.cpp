@@ -1,4 +1,3 @@
-#pragma once
 #include <glib.h>
 #include <iostream>
 #include <sstream>

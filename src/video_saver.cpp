@@ -34,7 +34,6 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 
 			if(frames->hasColor()){
 
-				cv::Mat tmp = frames->color_.clone();
 
 				if(!inited_color){
 					std::string name = frames->type_ + "_" + time2string(std::chrono::high_resolution_clock::now()) + "_" + std::to_string(session) + ".h264";
@@ -48,7 +47,7 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 					inited_color = true;
 				}
 
-				x264encoder->encodeFrame((const char *)tmp.data);
+				x264encoder->encodeFrame((const char *)(frames->color_.clone()).data);
 			}
 
 			if(frames->hasDepth()){
@@ -60,8 +59,7 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 
 				}
 
-				depth = frames->depth_.clone();
-				depth.convertTo(depth_16, CV_16U);
+				frames->depth_.convertTo(depth_16, CV_16U);
 				XnStreamCompressDepth16Z((const XnUInt16*)depth_16.data, 512*424*2, depth_8, &depth_8_size);
 				*out_oni << depth_8_size;
 				out_oni->write((const char*)depth_8, depth_8_size);

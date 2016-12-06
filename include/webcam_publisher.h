@@ -13,4 +13,4 @@ extern bool to_stop;
 extern std::mutex synchronizer;
 extern ParameterSpace parameters;
 
-void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam);
+void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam, unsigned int width, unsigned int height);
