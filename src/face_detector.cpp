@@ -111,8 +111,6 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 		//cv::undistort(color_frame->color_, color, cam_matrix, dist);
 		color = color_frame->color_;
 
-		//cv::flip(color, color, 1);
-
 		cv::gpu::GpuMat color_gpu(color);
 
 		cv::gpu::cvtColor(color_gpu, gray_gpu, CV_BGR2GRAY);

@@ -126,7 +126,7 @@ int main(int argc, char * argv[])
 
 	// Starting the face detection thread
 	if(p.get("face") || p.get("default")){
-		thread_list.push_back(std::thread(webcamPublisher, face_camera_id, std::ref(pc_webcam), width, height));
+		thread_list.push_back(std::thread(webcamPublisher, face_camera_id, std::ref(pc_webcam), width, height, std::ref(collector)));
 		thread_list.push_back(std::thread(detectFaces, std::ref(collector), pc_webcam.getNewChannel(), p.get("video")));
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_webcam.getNewChannel(), pc_trigger.getNewChannel(), false));
@@ -138,7 +138,7 @@ int main(int argc, char * argv[])
 	// Starting the kinect grabber
 	if(p.get("hand") || p.get("default")){
 		
-		thread_list.push_back(std::thread(kinect2publisher, processor, std::ref(pc_kinect)));
+		thread_list.push_back(std::thread(kinect2publisher, processor, std::ref(pc_kinect), std::ref(collector)));
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_kinect.getNewChannel(), pc_trigger.getNewChannel(), false));
 #ifdef HAS_ARUCO

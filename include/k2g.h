@@ -31,7 +31,6 @@ public:
 	K2G(Processor p);
 	libfreenect2::Freenect2Device::IrCameraParams getIrParameters();
 	libfreenect2::Freenect2Device::ColorCameraParams getRgbParameters();
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr getCloud();
 	void shutDown();
 	cv::Mat getColor();
 	void prepareMake3D(const libfreenect2::Freenect2Device::IrCameraParams & depth_p);

@@ -47,61 +47,6 @@ qnan_(std::numeric_limits<float>::quiet_NaN())
 
 }
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr K2G::getCloud()
-{		
-		listener_.waitForNewFrame(frames_);
-		libfreenect2::Frame * rgb = frames_[libfreenect2::Frame::Color];
-		libfreenect2::Frame * depth = frames_[libfreenect2::Frame::Depth];
-
-		registration_->apply(rgb, depth, &undistorted_, &registered_, true, &big_mat_);
-		const unsigned short w = undistorted_.width;
-		const unsigned short h = undistorted_.height;
-
-		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>(w, h));
-
-		const float * itD0 = (float *)undistorted_.data;
-		const char * itRGB0 = (char *)registered_.data;
-		pcl::PointXYZRGB * itP = &cloud->points[0];
-		bool is_dense = true;
-		
-		for(int y = 0; y < h; ++y){
-
-			const unsigned int offset = y * w;
-			const float * itD = itD0 + offset;
-			const char * itRGB = itRGB0 + offset * 4;
-			const float dy = rowmap(y);
-
-			for(size_t x = 0; x < w; ++x, ++itP, ++itD, itRGB += 4 )
-			{
-				const float depth_value = *itD / 1000.0f;
-				
-				if(!std::isnan(depth_value) && !(std::abs(depth_value) < 0.0001)){
-	
-					const float rx = colmap(x) * depth_value;
-                	const float ry = dy * depth_value;               
-					itP->z = depth_value;
-					itP->x = rx;
-					itP->y = ry;
-
-					itP->b = itRGB[0];
-					itP->g = itRGB[1];
-					itP->r = itRGB[2];
-				} else {
-					itP->z = qnan_;
-					itP->x = qnan_;
-					itP->y = qnan_;
-
-					itP->b = qnan_;
-					itP->g = qnan_;
-					itP->r = qnan_;
-					is_dense = false;
- 				}
-			}
-		}
-		cloud->is_dense = is_dense;
-		listener_.release(frames_);
-		return cloud;
-}
 
 void K2G::shutDown()
 {

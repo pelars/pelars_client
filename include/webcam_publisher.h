@@ -8,9 +8,14 @@
 #include <mutex>
 #include "opt.h"
 #include "param_storage.h"
+#include <json/json.h>
+
 
 extern bool to_stop;
 extern std::mutex synchronizer;
 extern ParameterSpace parameters;
+extern bool online;
+extern boost::asio::io_service io;
 
-void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam, unsigned int width, unsigned int height);
+
+void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam, unsigned int width, unsigned int height, DataWriter & websocket);

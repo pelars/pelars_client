@@ -33,3 +33,5 @@
     1.161538e-01 -2.138211e-01 0. 0. 0.
     </data></distCoeff800x448>
 </opencv_storage>
+
+<!-- dist parameters are k1 k2 p1 p2 k3 -->

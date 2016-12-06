@@ -83,7 +83,7 @@ void handDetector(DataWriter & websocket, float marker_size,
 			inited = true;
 		}
 
-		cv::flip(color, color, 1); 
+		 
 		
 		cvtColor(color, grey, CV_BGR2GRAY);
 
