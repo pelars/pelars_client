@@ -41,7 +41,6 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 		});
 	}
 	websocket.writeLocal(message);
-	std::cout << message << std::endl;
 
 	synchronizer.unlock();
 	
