@@ -107,11 +107,9 @@ int sendCalibration(DataWriter & websocket, bool no_webcam, bool no_kinect2){
 	root["obj"]["parameters"] = array; 
 
 	std::string message = writer.write(root);
-	//std::cout << "sending " << message << std::endl;	
 	
 	// Send the message online and store it offline
 	if(online){
-		//std::cout << "Hand detector posting data to the server\n " << std::flush;
 		io.post( [&websocket, message]() {
 			websocket.writeData(message);
 		});
@@ -130,7 +128,6 @@ int sendCalibration(DataWriter & websocket, bool no_webcam, bool no_kinect2){
 
 	// Send the message online and store it offline
 	if(online){
-		//std::cout << "Hand detector posting data to the server\n " << std::flush;
 		io.post( [&websocket, message]() {
 			websocket.writeData(message);
 			});

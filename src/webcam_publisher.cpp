@@ -28,6 +28,11 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 		terminateMe();
 	}
 
+	std::cout << "Loaded webcam camera parameters : " << std::endl;
+	std::cout << c920_parameters << std::endl;
+
+	std::cout << "Loaded webcam distortion parameters : " << std::endl;
+	std::cout << k << std::endl;
 
 	Json::Value root;
 	Json::StyledWriter writer;

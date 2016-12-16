@@ -15,6 +15,9 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 
 	CamParams cam_params(k2_parameters, cv::Mat(), 1920, 1080);
 
+	std::cout << "Loaded k2 camera parameters : " << std::endl;
+	std::cout << k2_parameters << std::endl;
+
 	Json::Value root;
 	Json::StyledWriter writer;
 	root["obj"]["type"] = "calibration";

@@ -24,39 +24,56 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 	const int height = 1080;
 
 	GstreamerGrabber gs_grabber(width, height, face_camera_id);
-	sleep(5);
 
 	std::shared_ptr<K2G> k2g;
 	std::shared_ptr<GstreamerGrabber> gs_grabber_hand;
-
-	// Check if c920 is used for hands
-	if(c920){
-		gs_grabber_hand = std::make_shared<GstreamerGrabber>(1920, 1080, hand_camera_id);
-	}else{
-		k2g = std::make_shared<K2G>(processor);
-	}
 
 	cv::Mat kgray, kcolor, wgray;
 
 	aruco::MarkerDetector MDetector;
 	MDetector.setMinMaxSize(0.01, 0.7);
-	std::vector<aruco::Marker> kmarkers;
-	std::vector<aruco::Marker> wmarkers;
+	std::vector<aruco::Marker> kmarkers, wmarkers;
 
 	// Kinect2 parameters
 	cv::Mat kcamera_parameters = cv::Mat::eye(3, 3, CV_32F);
-
-
-	const float fx = 1352.73;
-	const float cx = 985.184;
-	const float fy = 1352.73;
-	const float cy = 985.184;
-
 	cv::Mat wcamera_parameters = cv::Mat::eye(3, 3, CV_32F);
-	wcamera_parameters.at<float>(0,0) = fx; 
-	wcamera_parameters.at<float>(1,1) = fy; 
-	wcamera_parameters.at<float>(0,2) = cx; 
-	wcamera_parameters.at<float>(1,2) = cy;
+	cv::Mat kdist = cv::Mat(cv::Size(4, 1), CV_32F);
+	cv::Mat wdist = cv::Mat(cv::Size(4, 1), CV_32F);
+
+	kdist.at<float>(0) = 0.0; 
+	kdist.at<float>(1) = 0.0; 
+	kdist.at<float>(2) = 0.0; 
+	kdist.at<float>(3) = 0.0;
+
+	if(!boost::filesystem::exists("../../data/c920_parameters.xml")){
+		std::cout << "ERROR: ../../data/c920_parameters.xml does not exist, using default ones" << std::endl;
+		const float fx = 1352.73;
+		const float cx = 985.184;
+		const float fy = 1352.73;
+		const float cy = 544.005;
+
+		wcamera_parameters.at<float>(0,0) = fx; 
+		wcamera_parameters.at<float>(1,1) = fy; 
+		wcamera_parameters.at<float>(0,2) = cx; 
+		wcamera_parameters.at<float>(1,2) = cy;
+
+		wdist.at<float>(0) = 0.1161538110871388; 
+		wdist.at<float>(1) = -0.213821121281364; 
+		wdist.at<float>(2) = 0.000927392238536357; 
+		wdist.at<float>(3) = 0.0007135216206840332;
+
+	} else{
+		std::cout << "Found valid c920 calibration file" << std::endl;
+		cv::FileStorage in("../../data/c920_parameters.xml", cv::FileStorage::READ);
+		in["cameraMatrix1920x1080"] >> wcamera_parameters;
+		in["distCoeff1920x1080"] >> wdist;
+
+		std::cout << "Loaded face camera parameters : " << std::endl;
+		std::cout << wcamera_parameters << std::endl;
+
+		std::cout << "Loaded face distortion parameters : " << std::endl;
+		std::cout << wdist << std::endl;
+	}
 
 	cv::Mat kcalib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 	cv::Mat wcalib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
@@ -68,24 +85,13 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 	cv::namedWindow("hands");
 	cv::namedWindow("faces");
 
-	cv::Mat kdist = cv::Mat(cv::Size(4, 1), CV_32F);
-	cv::Mat wdist = cv::Mat(cv::Size(4, 1), CV_32F);
-
-	kdist.at<float>(0) = 0; 
-	kdist.at<float>(1) = 0; 
-	kdist.at<float>(2) = 0; 
-	kdist.at<float>(3) = 0;
-
-	wdist.at<float>(0) = 0.1161538110871388; 
-	wdist.at<float>(1) = -0.213821121281364; 
-	wdist.at<float>(2) = 0.000927392238536357; 
-	wdist.at<float>(3) = 0.0007135216206840332;
-
 	shared_ptr<aruco::CameraParameters> kparam;
 
 	if(c920){
-		kparam = std::make_shared<aruco::CameraParameters>(wcamera_parameters, kdist, cv::Size(1920,1080));
+		gs_grabber_hand = std::make_shared<GstreamerGrabber>(1920, 1080, hand_camera_id);
+		kparam = std::make_shared<aruco::CameraParameters>(wcamera_parameters, wdist, cv::Size(1920,1080));
 	}else{
+		k2g = std::make_shared<K2G>(processor);
 		kcamera_parameters.at<float>(0,0) = k2g->getRgbParameters().fx; 
 		kcamera_parameters.at<float>(1,1) = k2g->getRgbParameters().fy; 
 		kcamera_parameters.at<float>(0,2) = k2g->getRgbParameters().cx; 
@@ -93,6 +99,11 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 		kparam = std::make_shared<aruco::CameraParameters>(kcamera_parameters, kdist, cv::Size(1920,1080));
 	}
 
+	std::cout << "Loaded hand camera parameters : " << std::endl;
+	std::cout << kcamera_parameters << std::endl;
+
+	std::cout << "Loaded hand distortion parameters : " << std::endl;
+	std::cout << kdist << std::endl;
 	
 	aruco::CameraParameters wparam(wcamera_parameters, wdist, cv::Size(width, height));
 
@@ -105,9 +116,9 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 		if(c920){
 			gs_grabber_hand->capture(frame2);
 			kcolor = cv::Mat(frame2);
-			cv::flip(kcolor, kcolor, 1);
 		}else{
 			kcolor = k2g->getColor();
+			cv::flip(kcolor, kcolor, 1);
 		}
 
 		cvtColor(kcolor, kgray, CV_BGR2GRAY);
@@ -117,19 +128,16 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 		// Webcam grabber
 		gs_grabber.capture(frame);
 		cv::Mat wcolor(frame);
-		cv::flip(wcolor, wcolor, 1);
 		cvtColor(wcolor, wgray, CV_BGR2GRAY); 
 		MDetector.detect(wgray, wmarkers, wcamera_parameters, cv::Mat(), marker_size);
 
-		// TODO
 		if(kmarkers.size() > 0){
 			for(unsigned int i = 0; i < kmarkers.size(); ++i){
 				if(kmarkers[i].id == 0){
 					kcalib_matrix.at<float>(0, 3) = kmarkers[i].Tvec.at<float>(0);
 					kcalib_matrix.at<float>(1, 3) = kmarkers[i].Tvec.at<float>(1);
 					kcalib_matrix.at<float>(2, 3) = kmarkers[i].Tvec.at<float>(2);
-					std::cout << kmarkers[i].Tvec.at<float>(0) << " " << kmarkers[i].Tvec.at<float>(1) << " " 
-					          << kmarkers[i].Tvec.at<float>(2) << std::endl;
+
 					cv::Rodrigues(kmarkers[i].Rvec, cv::Mat(kcalib_matrix, cv::Rect(0, 0, 3, 3)));		
 					kfound = true;
 					kmarkers[i].draw(kcolor, cv::Scalar(0, 0, 255), 2);
@@ -144,7 +152,6 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 					wcalib_matrix.at<float>(0, 3) = wmarkers[i].Tvec.at<float>(0);
 					wcalib_matrix.at<float>(1, 3) = wmarkers[i].Tvec.at<float>(1);
 					wcalib_matrix.at<float>(2, 3) = wmarkers[i].Tvec.at<float>(2);
-					//std::cout << wmarkers[i].Tvec.at<float>(0) << " " << wmarkers[i].Tvec.at<float>(1) << " " << wmarkers[i].Tvec.at<float>(2) << std::endl;
 					cv::Rodrigues(wmarkers[i].Rvec, cv::Mat(wcalib_matrix, cv::Rect(0, 0, 3, 3)));					
 					wfound = true;
 					wmarkers[i].draw(wcolor, cv::Scalar(0, 0, 255), 2);
@@ -166,8 +173,13 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 				kfound = false;
 			}
 
-		} else{
+			if((char)c == 'q') {
+				std::cout << "ABORTING!!!!" << std::endl;
+				exit(-1);
+			}
 
+		}else{
+			//Used when there is no way of vieweing the two images and we just want a stable calibration (10 stable frames)
 			if(wfound && kfound){
 				counter++;
 			}else{
@@ -180,7 +192,6 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 				store(kcalib_matrix, wcalib_matrix);
 				stop = true;
 			}
-
 		}
 
 	}
