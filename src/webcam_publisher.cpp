@@ -12,6 +12,7 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 	if(!boost::filesystem::exists("../../data/c920_parameters.xml")){
 		std::cout << "ERROR: ../../data/c920_parameters.xml does not exist" << std::endl;
 		terminateMe();
+		return;
 	}
 
 	cv::FileStorage in("../../data/c920_parameters.xml", cv::FileStorage::READ);
@@ -26,6 +27,7 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 	else{
 		std::cout << "no correct calibration for c920 found" << std::endl;
 		terminateMe();
+		return;
 	}
 
 	std::cout << "Loaded webcam camera parameters : " << std::endl;
@@ -64,15 +66,15 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 	CamParams cam_params(c920_parameters, k, width, height);
 
 	synchronizer.unlock();
+
+	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
 	
 	while(!to_stop){
-
-		IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
 
 		gs_grabber.capture(frame);
 
 		std::shared_ptr<ImageFrame> image = std::make_shared<ImageFrame>();
-		image->color_ = cv::Mat(frame);
+		image->color_ = cv::Mat(frame).clone();
 		image->type_ = std::string("people");
 		image->params_ = cam_params;
 		image->time_stamp_ = std::chrono::high_resolution_clock::now();

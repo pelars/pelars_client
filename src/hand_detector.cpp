@@ -6,6 +6,9 @@ void handDetector(DataWriter & websocket, float marker_size,
 				  std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc, const bool c920, unsigned int camera_id)
 {	
 
+	const unsigned int width = 1920;
+	const unsigned int height = 1080;
+
 	synchronizer.lock();
 	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
@@ -48,10 +51,10 @@ void handDetector(DataWriter & websocket, float marker_size,
 
 	// Fixed size since it has to match the kinect2 resolution
 	if(c920){
-		gs_grabber = std::make_shared<GstreamerGrabber>(1920, 1080, camera_id);
+		gs_grabber = std::make_shared<GstreamerGrabber>(width, height, camera_id);
 	}
 	
-	frame = cvCreateImage(cvSize(1920, 1080), IPL_DEPTH_8U, 3); 
+	frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3); 
 	cv::Mat camera_parameters;
 
 	cv::Mat grey, color;
@@ -132,6 +135,7 @@ void handDetector(DataWriter & websocket, float marker_size,
 						// Send the message online and store it offline
 						if(online){
 							//std::cout << "Hand detector posting data to the server\n " << std::flush;
+							//std::cout << "hand detector sending " << message << std::endl;
 							io.post([&websocket, message]() {
 								websocket.writeData(message);
 								});

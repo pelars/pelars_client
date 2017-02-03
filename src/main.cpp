@@ -127,7 +127,7 @@ int main(int argc, char * argv[])
 	// Starting the face detection thread
 	if(p.get("face") || p.get("default")){
 		thread_list.push_back(std::thread(webcamPublisher, face_camera_id, std::ref(pc_webcam), width, height, std::ref(collector)));
-		thread_list.push_back(std::thread(detectFaces, std::ref(collector), pc_webcam.getNewChannel(), p.get("video")));
+		thread_list.push_back(std::thread(detectFaces, std::ref(collector), pc_webcam.getNewChannel()));
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_webcam.getNewChannel(), pc_trigger.getNewChannel(), false));
 		if(store_video){
@@ -179,9 +179,10 @@ int main(int argc, char * argv[])
 
 	// Keep alive on server for status update
 	thread_list.push_back(std::thread(keep_alive, std::ref(alive_socket)));
+
+	// Write session on shell every 3s
 	if(p.get("video_session"))
 		thread_list.push_back(std::thread(sessionWriter, session));
-	//std::thread audio_recorder = std::thread(audioRecorder, session);
 	
 	//If there are no windows wait for Esc to be pressed
 	checkEscape(visualization, p.get("special"));

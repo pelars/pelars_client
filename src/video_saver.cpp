@@ -8,14 +8,9 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 	std::string video_folder_name = std::string("../../videos");
 	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 
 
-	if(!boost::filesystem::exists(video_folder_name)){
-		boost::filesystem::path dir(video_folder_name);
-		boost::filesystem::create_directory(video_folder_name);
-	}
-
 	if(!boost::filesystem::exists(video_subfolder_name)){
 		boost::filesystem::path dir(video_subfolder_name);
-		boost::filesystem::create_directory(video_subfolder_name);
+		boost::filesystem::create_directories(video_subfolder_name);
 	}
 
 	std::shared_ptr<std::ofstream> out;

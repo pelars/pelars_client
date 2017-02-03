@@ -9,7 +9,6 @@ void sig_handler(int signum)
 		to_stop = true;
 		std::cout <<"Received signal " << signum << ", killing all" << std::endl;
 		timed_stopper.notify_all();
-		// Triggers
 		
 		pc_trigger.shutDown();
 		pc_webcam.shutDown();

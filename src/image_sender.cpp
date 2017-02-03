@@ -64,7 +64,7 @@ void sendImage(int session, const std::string & end_point, const std::string & t
 	std::string folder_name = std::string("../../images/snapshots_") + std::to_string(session);
 	if(!boost::filesystem::exists(folder_name)){
 		boost::filesystem::path dir(folder_name);
-		boost::filesystem::create_directory(dir);
+		boost::filesystem::create_directories(dir);
 	}
 
 	std::shared_ptr<ImageFrame> frames;

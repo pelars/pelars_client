@@ -18,7 +18,7 @@ inline double distance(int x1, int x2, float fx, float std_width = 185.0){
 	}
 
 #ifdef HAS_GSTREAMER
-void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pcw, const bool video)
+void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pcw)
 {
 
 	synchronizer.lock();
@@ -52,9 +52,6 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 	cv::gpu::CascadeClassifier_GPU cascade_gpu_;
 	cascade_gpu_.visualizeInPlace = false;
 	cascade_gpu_.findLargestObject = findLargestObject_;
-
-	std::string video_folder_name = std::string("../../videos");
-	std::string video_subfolder_name = std::string("../../videos/videos_") + std::to_string(session); 
 	
 	Json::Value upper;
 	Json::Value root = Json::arrayValue;
@@ -109,7 +106,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 
 		// too slow
 		//cv::undistort(color_frame->color_, color, cam_matrix, dist);
-		color = color_frame->color_;
+		color = color_frame->color_.clone();
 
 		cv::gpu::GpuMat color_gpu(color);
 
@@ -122,7 +119,6 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 		cv::Rect * faces = faces_downloaded.ptr<cv::Rect>();
 
 		
-		//std::cout << " found " << detections_num << " faces" << std::endl;
 		// Take same time for all faces
 		std::chrono::high_resolution_clock::time_point p = std::chrono::high_resolution_clock::now();
 		array["time"] = (double)std::chrono::duration_cast<std::chrono::milliseconds>(p.time_since_epoch()).count();
@@ -201,6 +197,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 		// Send message
 		if(detections_num && timer.needSend()){
 			std::string out_string = writer.write(upper);
+			//std::cout << "face detector sending" << out_string << std::endl;
 			if(online){
 				io.post( [&websocket, out_string]() {
 				websocket.writeData(out_string);
@@ -225,10 +222,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 			}
 		}
 	}
-/*
-	if(video)
-		x264encoder->unInitilize();
-		*/
+
 	if(visualization)
 		cvDestroyWindow("face");
 
@@ -237,7 +231,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 
 #else
 void detectFaces(DataWriter & websocket, ScreenGrabber & screen_grabber, ImageSender & image_sender_screen, 
-	             ImageSender & image_sender_people, const int face_camera_id, const bool video)
+	             ImageSender & image_sender_people, const int face_camera_id)
 {
 }
 #endif
