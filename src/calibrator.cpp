@@ -83,7 +83,6 @@ void calibration(const unsigned int face_camera_id, const unsigned int hand_came
 	bool stop = false;
 
 	cv::namedWindow("hands");
-	sleep(2);
 	cv::namedWindow("faces");
 
 	shared_ptr<aruco::CameraParameters> kparam;
