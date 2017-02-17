@@ -26,8 +26,8 @@ void x264Encoder::initialize(const unsigned int w, const unsigned int h, const b
 	parameters_.i_keyint_max = 25;
 	parameters_.b_intra_refresh = 1;
 	parameters_.rc.i_rc_method = X264_RC_CRF;
-	parameters_.rc.i_vbv_buffer_size = 2000000;
-	parameters_.rc.i_vbv_max_bitrate = 1500000;
+	parameters_.rc.i_vbv_buffer_size = 300000;
+	parameters_.rc.i_vbv_max_bitrate = 300000;
 	parameters_.rc.f_rf_constant = 25;
 	parameters_.rc.f_rf_constant_max = 35;
 	parameters_.i_sps_id = 7;

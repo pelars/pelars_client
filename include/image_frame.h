@@ -27,6 +27,7 @@ struct ImageFrame{
 	cv::Mat color_, depth_;
 	std::string type_;
 	CamParams params_;
+	long seq_number_;
 
 	std::chrono::high_resolution_clock::time_point time_stamp_;
 };

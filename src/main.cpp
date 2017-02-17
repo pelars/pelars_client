@@ -8,7 +8,7 @@ ParameterSpace parameters(parameter_server, "pelars");
 ChannelWrapper<Trigger> pc_trigger(to_stop, 3);
 
 // Webcam frames message channels
-ChannelWrapper<ImageFrame> pc_webcam(to_stop, 3);
+ChannelWrapper<ImageFrame> pc_webcam(to_stop, 60);
 
 // Kinect frames message channels
 ChannelWrapper<ImageFrame> pc_kinect(to_stop, 3);

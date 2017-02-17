@@ -1,23 +1,36 @@
 #!/bin/bash
 
+bad=$(fuser /dev/video0)
+for i in $bad; do
+	echo "killing $i which was using the webcam"
+	kill -9 $i
+done
+
 for var in "$@"
 do
     VARS=$VARS" "$var
 done
 
-export docker_path=`pwd`
-
 xhost +
+export working_path="/home/lando/pelars/client/pelars_clientdeploy/docker"
+cd ..
+export pelars_path="/home/lando/pelars/client/pelars_clientdeploy"
+cd data
+export data_path="/home/lando/pelars/client/pelars_clientdeploy/data"
+cd $working_path
 
-#FOLDERS="-v ${pelars_path}/sensor_manager_top:/sensor_manger_top"
-NVIDIA="--device /dev/nvidia0 --device /dev/nvidiactl --device /dev/nvidia-uvm"
-KINECT2="-v /etc/udev/rules.d:/etc/udev/rules.d $(${docker_path}/mapkinect.sh)"
-VIDEO="-e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix:rw"
-OPT="--net=host -t -i --privileged"
-NAME="pelars_build"
-docker run $OPT $NVIDIA $KINECT2 $VIDEO $NAME /bin/bash -c "$VARS"
+cd /usr/local/cuda-7.5/samples/0_Simple/matrixMul
+./matrixMul >> /dev/null
 
+cd $working_path
 
-#TO COMMIT RUNNING CONTAINER (docker ps -l for container id)
-#docker commit -m="MESSAGE" ID_MACCHINA NOME_COMMIT
-#si riesegue con docker run NOME_COMMIT
+$COMMAND
+COMMAND="cd /pelars/bin/sensors && ./sensor_manager_new $VARS"
+
+#--user=${USER}
+#-v /dev/:/dev/
+#-v /etc/sudoers.d:/etc/sudoers.d:ro -v /etc/shadow:/etc/shadow:ro -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro
+
+docker run -t -i --privileged --net=host -v /dev/snd:/dev/snd --device=/dev/video0:/dev/video0  -v /dev/bus/usb:/dev/bus/usb -v /etc/udev/rules.d:/etc/udev/rules.d --device=/dev/nvidia0:/dev/nvidia0 --device=/dev/nvidiactl:/dev/nvidiactl --device=/dev/nvidia-uvm:/dev/nvidia-uvm -v $pelars_path:/pelars -e "LD_LIBRARY_PATH=/pelars/bin/lib" -v ~/NVIDIA_CUDA-7.5_Samples/bin/x86_64/linux/release:/nvidia -v $data_path:/data -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix:rw  pelars_compile /bin/bash -c "$COMMAND"  #/pelars/bin/sensors/sensor_manager $VARS
+
+#if not working internet add --net=host

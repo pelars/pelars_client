@@ -68,16 +68,21 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 	synchronizer.unlock();
 
 	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+
+	long sequence = 0;
 	
 	while(!to_stop){
 
 		gs_grabber.capture(frame);
 
 		std::shared_ptr<ImageFrame> image = std::make_shared<ImageFrame>();
-		image->color_ = cv::Mat(frame).clone();
+		image->color_ = cv::Mat(frame);
 		image->type_ = std::string("people");
 		image->params_ = cam_params;
 		image->time_stamp_ = std::chrono::high_resolution_clock::now();
+		image->seq_number_ = sequence;
+
+		sequence ++;
 
 		pc_webcam.write(image);
 		

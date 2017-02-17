@@ -23,9 +23,13 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 	XnUInt8 * depth_8 = new XnUInt8[512*424*2];
 	XnUInt32 depth_8_size;
 
+	long old_seq = 0;
+	long new_seq = 0;
+	bool kinect = false;
+
 	while(!to_stop){
 
-		if(pc->readNoWait(frames)){
+		if(pc->read(frames)){
 
 			if(frames->hasColor()){
 
@@ -38,14 +42,33 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 					x264encoder->initialize(width, height, frames->type_ == "people" ? false : true, del);
 					name = video_subfolder_name + "/time_stamps_" + frames->type_ + ".txt";
 					out = std::make_shared<std::ofstream>(name, std::ios::binary);
-
+					old_seq = frames->seq_number_;
 					inited_color = true;
 				}
 
-				x264encoder->encodeFrame((const char *)(frames->color_.clone()).data);
+				new_seq = frames->seq_number_;
+
+				//if(new_seq != 0)
+				//	std::cout << new_seq << " " << old_seq << std::endl;
+
+				if(new_seq - old_seq > 1 && old_seq != 0){
+					std::cout << "!!!frame lost!!!" << std::endl;
+					if(frames->hasDepth()){
+						std::cout << "from Kinect" << std::endl;
+					}
+					else{
+						std::cout << "from webcam" << std::endl;
+					}
+				}
+
+				old_seq = new_seq;
+
+				x264encoder->encodeFrame((const char *)(frames->color_).data);
 			}
 
 			if(frames->hasDepth()){
+
+				kinect = true;
 
 				if(!inited_depth){
 					std::string file_name =  "depth_" + time2string(std::chrono::high_resolution_clock::now()) + "_" + std::to_string(session) + ".oni";
