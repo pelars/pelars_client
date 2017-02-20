@@ -1,4 +1,6 @@
 #include "video_saver.h"
+#include <opencv2/core/core.hpp>  
+#include <opencv2/highgui/highgui.hpp>
 
 void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc, bool del){
 
@@ -26,6 +28,8 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 	long old_seq = 0;
 	long new_seq = 0;
 	bool kinect = false;
+
+	//cv::namedWindow("prova");
 
 	while(!to_stop){
 
@@ -60,6 +64,11 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 						std::cout << "from webcam" << std::endl;
 					}
 				}
+
+		
+				//cv::imshow("prova", frames->color_);
+				//int c = cv::waitKey(1);
+				
 
 				old_seq = new_seq;
 

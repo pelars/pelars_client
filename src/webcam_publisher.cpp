@@ -5,7 +5,7 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 
 	synchronizer.lock();
 
-	GstreamerGrabber gs_grabber(width, height, face_camera_id);
+	//GstreamerGrabber gs_grabber(width, height, face_camera_id);
 
 	cv::Mat c920_parameters, k;
 
@@ -70,17 +70,31 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
 
 	long sequence = 0;
+
+	//cv::namedWindow("prova");
+
+	cv::VideoCapture cap;
+
+	if(!cap.open(0)){
+	 	to_stop = true;
+	}
+	cap.set(CV_CAP_PROP_FRAME_WIDTH,1920);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT,1080);
 	
 	while(!to_stop){
 
-		gs_grabber.capture(frame);
+		//gs_grabber.capture(frame);
 
 		std::shared_ptr<ImageFrame> image = std::make_shared<ImageFrame>();
-		image->color_ = cv::Mat(frame);
+		cap >> image->color_;
+		//image->color_ = cv::Mat(frame);
 		image->type_ = std::string("people");
 		image->params_ = cam_params;
 		image->time_stamp_ = std::chrono::high_resolution_clock::now();
 		image->seq_number_ = sequence;
+
+		//cv::imshow("prova", image->color_);
+		//int c = cv::waitKey(1);
 
 		sequence ++;
 
