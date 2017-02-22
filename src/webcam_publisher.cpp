@@ -1,4 +1,6 @@
 #include "webcam_publisher.h"
+#include "timer_manager.h"
+
 
 
 void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam, unsigned int width, unsigned int height, DataWriter & websocket){
@@ -71,15 +73,21 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 
 	long sequence = 0;
 
-	//cv::namedWindow("prova");
-
 	cv::VideoCapture cap;
 
-	if(!cap.open(0)){
+	std::cout << "Capture opening" << std::endl;
+
+	if(!cap.open(1)){
 	 	to_stop = true;
 	}
+	
+	std::cout << "Capture opened" << std::endl;
+
 	cap.set(CV_CAP_PROP_FRAME_WIDTH,1920);
 	cap.set(CV_CAP_PROP_FRAME_HEIGHT,1080);
+
+	TimerManager * tm = TimerManager::instance();
+	tm->startTimer("webcamPublisher");
 	
 	while(!to_stop){
 
@@ -93,14 +101,15 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 		image->time_stamp_ = std::chrono::high_resolution_clock::now();
 		image->seq_number_ = sequence;
 
-		//cv::imshow("prova", image->color_);
-		//int c = cv::waitKey(1);
-
 		sequence ++;
 
-		pc_webcam.write(image);
+		tm->stopTimer("webcamPublisher");
+		tm->startTimer("webcamPublisher");
 		
 	}
+
+	tm->stopTimer("webcamPublisher");
+
 	std::cout << "terminating webcam publisher" << std::endl;
 
 }

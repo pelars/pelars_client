@@ -1,4 +1,5 @@
 #include "all.h"
+#include "timer_manager.h"
 
 std::mutex synchronizer;
 ParameterServer parameter_server;
@@ -8,7 +9,7 @@ ParameterSpace parameters(parameter_server, "pelars");
 ChannelWrapper<Trigger> pc_trigger(to_stop, 3);
 
 // Webcam frames message channels
-ChannelWrapper<ImageFrame> pc_webcam(to_stop, 12);
+ChannelWrapper<ImageFrame> pc_webcam(to_stop, 10);
 
 // Kinect frames message channels
 ChannelWrapper<ImageFrame> pc_kinect(to_stop, 3);
@@ -131,7 +132,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_webcam.getNewChannel(), pc_trigger.getNewChannel(), false));
 		if(store_video){
-			thread_list.push_back(std::thread(saveVideo, session, pc_webcam.getNewChannel(), delete_h264));
+			thread_list.push_back(std::thread(saveVideo, session, pc_webcam.getNewChannel(), delete_h264, "wsaver"));
 		}
 	}
 
@@ -146,7 +147,7 @@ int main(int argc, char * argv[])
 								          pc_kinect.getNewChannel(), p.get("C920"), hand_camera_id));
 #endif	
 		if(store_video){
-			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel(), delete_h264));
+			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel(), delete_h264,"ksaver"));
 		}
 	}
 
@@ -210,7 +211,19 @@ int main(int argc, char * argv[])
 	std::cout << "writer stopped" << std::endl;
 
 	//parameter_server.dump("pelars_config.yaml");
+	//retrieve time informations
+	TimerManager * tm = TimerManager::instance();
+
+	TimeStatistics wstat = tm->timeStatistics("webcamPublisher");
+	TimeStatistics fstat = tm->timeStatistics("faceDetector");
+	TimeStatistics vstat = tm->timeStatistics("wsaver");
+
+	std::cout << wstat.toString() << std::endl;
+	std::cout << fstat.toString() << std::endl;
+	std::cout << vstat.toString() << std::endl;
+
 
 	kill(0, SIGINT);
+
 	return 0;
 }

@@ -27,6 +27,7 @@
 #include "make_channel.h"
 #include "screen_grabber.h"
 #include "channel_wrapper.hpp"
+#include "timer_manager.h"
 
 
 

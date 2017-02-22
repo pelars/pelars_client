@@ -11,6 +11,7 @@
 #include "termination.h"
 #include "image_frame.h"
 #include "face_detector.h"
+#include "timer_manager.h"
 
 // Returns the distance in meters
 inline double distance(int x1, int x2, float fx, float std_width = 185.0){
@@ -83,6 +84,9 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 	cv::Mat camera_inverse = calib_matrix.inv();
 	
 	synchronizer.unlock();
+
+	TimerManager * tm = TimerManager::instance();
+	tm->startTimer("faceDetector");
 
 	while(!to_stop)
 	{	
@@ -221,7 +225,12 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 				std::cout << "stop requested by face detector" << std::endl;
 			}
 		}
+
+		tm->stopTimer("faceDetector");
+		tm->startTimer("faceDetector");
 	}
+
+	tm->stopTimer("faceDetector");
 
 	if(visualization)
 		cvDestroyWindow("face");

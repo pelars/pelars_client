@@ -38,7 +38,7 @@ namespace detailpool
 		static void initandpopulate(container_t & c, int n, std::list<T*> & fl)
 		{
 			c.resize(n);
-			for(int i = 0; i < c.size(); ++i)
+			for(uint i = 0; i < c.size(); ++i)
 				fl.push_back(&c[i]);
 		}
 

@@ -69,7 +69,7 @@ gboolean GstreamerGrabber::initVideoCapture()
 	gst_app_sink_set_drop((GstAppSink*)this->appsink, true);
 	gst_app_sink_set_max_buffers((GstAppSink*)this->appsink, 1);
 
-	char buffer[1024];     
+	char buffer[4098];     
 
 	sprintf(buffer,"video/x-h264, width=(int)%d, height=(int)%d, fframerate=30/1", width_, height_);
 	// video/x-h264,width=1920,height=1080,framerate=30/1

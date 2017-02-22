@@ -1,8 +1,9 @@
 #include "video_saver.h"
 #include <opencv2/core/core.hpp>  
 #include <opencv2/highgui/highgui.hpp>
+#include "timer_manager.h"
 
-void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc, bool del){
+void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc, bool del, const std::string tname){
 
 	bool inited_color = false;
 	bool inited_depth = false;
@@ -29,7 +30,8 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 	long new_seq = 0;
 	bool kinect = false;
 
-	//cv::namedWindow("prova");
+	TimerManager * tm = TimerManager::instance();
+	tm->startTimer(tname);
 
 	while(!to_stop){
 
@@ -52,9 +54,6 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 
 				new_seq = frames->seq_number_;
 
-				//if(new_seq != 0)
-				//	std::cout << new_seq << " " << old_seq << std::endl;
-
 				if(new_seq - old_seq > 1 && old_seq != 0){
 					std::cout << "!!!frame lost!!!" << std::endl;
 					if(frames->hasDepth()){
@@ -64,11 +63,6 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 						std::cout << "from webcam" << std::endl;
 					}
 				}
-
-		
-				//cv::imshow("prova", frames->color_);
-				//int c = cv::waitKey(1);
-				
 
 				old_seq = new_seq;
 
@@ -93,7 +87,10 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 			}
 
 			*out << time2string(frames->time_stamp_) << "\n";
-		}		
+		}	
+		tm->stopTimer(tname);
+		tm->startTimer(tname);	
 	}
+	tm->stopTimer(tname);
 	x264encoder->unInitilize();
 }
