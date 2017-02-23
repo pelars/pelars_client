@@ -8,8 +8,11 @@ ParameterSpace parameters(parameter_server, "pelars");
 // Triggers
 ChannelWrapper<Trigger> pc_trigger(to_stop, 3);
 
-// Webcam frames message channels
-ChannelWrapper<ImageFrame> pc_webcam(to_stop, 10);
+// Webcam frames message channel
+ChannelWrapper<ImageFrame> pc_webcam(to_stop, 3);
+
+//Webcam to webcam saver channel
+ChannelWrapper<ImageFrame> pc_w_saver(to_stop,12);
 
 // Kinect frames message channels
 ChannelWrapper<ImageFrame> pc_kinect(to_stop, 3);
@@ -127,12 +130,12 @@ int main(int argc, char * argv[])
 
 	// Starting the face detection thread
 	if(p.get("face") || p.get("default")){
-		thread_list.push_back(std::thread(webcamPublisher, face_camera_id, std::ref(pc_webcam), width, height, std::ref(collector)));
+		thread_list.push_back(std::thread(webcamPublisher, face_camera_id, std::ref(pc_webcam), std::ref(pc_w_saver), width, height, std::ref(collector)));
 		thread_list.push_back(std::thread(detectFaces, std::ref(collector), pc_webcam.getNewChannel()));
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_webcam.getNewChannel(), pc_trigger.getNewChannel(), false));
 		if(store_video){
-			thread_list.push_back(std::thread(saveVideo, session, pc_webcam.getNewChannel(), delete_h264, "wsaver"));
+			thread_list.push_back(std::thread(saveVideo, session, pc_w_saver.getNewChannel(), delete_h264, "wsaver"));
 		}
 	}
 
@@ -217,10 +220,22 @@ int main(int argc, char * argv[])
 	TimeStatistics wstat = tm->timeStatistics("webcamPublisher");
 	TimeStatistics fstat = tm->timeStatistics("faceDetector");
 	TimeStatistics vstat = tm->timeStatistics("wsaver");
+	TimeStatistics kstat = tm->timeStatistics("kinectPublisher");
+	TimeStatistics hstat = tm->timeStatistics("handDetector");
+	TimeStatistics vkstat = tm->timeStatistics("ksaver");
 
+	std::cout << "webcamPublisher" << std::endl;
 	std::cout << wstat.toString() << std::endl;
+	std::cout << "faceDetector" << std::endl;
 	std::cout << fstat.toString() << std::endl;
+	std::cout << "webcamSaver" << std::endl;
 	std::cout << vstat.toString() << std::endl;
+	std::cout << "kinectpublisher" << std::endl;
+	std::cout << kstat.toString() << std::endl;
+	std::cout << "handDetector" << std::endl;
+	std::cout << hstat.toString() << std::endl;
+	std::cout << "kinectSaver" << std::endl;
+	std::cout << vkstat.toString() << std::endl;
 
 
 	kill(0, SIGINT);

@@ -18,4 +18,4 @@ extern bool online;
 extern boost::asio::io_service io;
 
 
-void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam, unsigned int width, unsigned int height, DataWriter & websocket);
+void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,ChannelWrapper<ImageFrame> & pc_w_saver, unsigned int width, unsigned int height, DataWriter & websocket);

@@ -28,12 +28,14 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 
 	long old_seq = 0;
 	long new_seq = 0;
+	long lost = 0;
 	bool kinect = false;
 
 	TimerManager * tm = TimerManager::instance();
-	tm->startTimer(tname);
-
+	
 	while(!to_stop){
+
+		tm->startTimer(tname);
 
 		if(pc->read(frames)){
 
@@ -56,6 +58,8 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 
 				if(new_seq - old_seq > 1 && old_seq != 0){
 					std::cout << "!!!frame lost!!!" << std::endl;
+					lost ++;
+					std::cout << "number "  << lost << std::endl;
 					if(frames->hasDepth()){
 						std::cout << "from Kinect" << std::endl;
 					}
@@ -89,8 +93,7 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 			*out << time2string(frames->time_stamp_) << "\n";
 		}	
 		tm->stopTimer(tname);
-		tm->startTimer(tname);	
 	}
-	tm->stopTimer(tname);
+
 	x264encoder->unInitilize();
 }

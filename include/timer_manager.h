@@ -39,10 +39,12 @@ struct TimeStatistics
     double service_variance;
     double min;
     double max;
+    char name[60];
 
     std::string toString() const
     {
         std::stringstream ss;
+        //ss << "\tName: " << name << std::endl;
         ss << "\tNumber of iterations: " << iterations << std::endl;
         ss << "\tTotal    : " << elapsed << std::endl;
         ss << "\tMean     : " << mean << std::endl;
@@ -60,7 +62,7 @@ class Timer
 public:
     using time_point = std::chrono::system_clock::time_point;
 
-    explicit Timer(std::string timer_name = "") noexcept
+    explicit Timer(std::string timer_name = "")
         : name_(timer_name)
     {}
 
@@ -124,7 +126,8 @@ public:
         TimeStatistics t;
         
         while (lock_.exchange(true));
-        
+        //std::cout << name_ << std::endl;
+        //strcpy(t.name, name_.c_str());
         t.last = time_;
         t.iterations = iterations_;
         t.elapsed = elapsed_time_;

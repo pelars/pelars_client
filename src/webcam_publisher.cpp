@@ -3,7 +3,7 @@
 
 
 
-void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam, unsigned int width, unsigned int height, DataWriter & websocket){
+void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam, ChannelWrapper<ImageFrame> & pc_w_saver, unsigned int width, unsigned int height, DataWriter & websocket){
 
 	synchronizer.lock();
 
@@ -69,7 +69,7 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 
 	synchronizer.unlock();
 
-	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+	//IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
 
 	long sequence = 0;
 
@@ -77,7 +77,7 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 
 	std::cout << "Capture opening" << std::endl;
 
-	if(!cap.open(1)){
+	if(!cap.open(face_camera_id)){
 	 	to_stop = true;
 	}
 	
@@ -85,6 +85,7 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 
 	cap.set(CV_CAP_PROP_FRAME_WIDTH,1920);
 	cap.set(CV_CAP_PROP_FRAME_HEIGHT,1080);
+	
 
 	TimerManager * tm = TimerManager::instance();
 	tm->startTimer("webcamPublisher");
@@ -102,6 +103,9 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 		image->seq_number_ = sequence;
 
 		sequence ++;
+
+		pc_webcam.write(image);
+		pc_w_saver.write(image);
 
 		tm->stopTimer("webcamPublisher");
 		tm->startTimer("webcamPublisher");

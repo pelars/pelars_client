@@ -1,4 +1,5 @@
 #include "kinect2publisher.h"
+#include "timer_manager.h"
 
 void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame> & pc, DataWriter & websocket){
 
@@ -46,6 +47,9 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 	websocket.writeLocal(message);
 
 	synchronizer.unlock();
+
+	TimerManager * tm = TimerManager::instance();
+	tm->startTimer("kinectPublisher");
 	
 	while(!to_stop){
 
@@ -59,6 +63,9 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 		cv::flip(frames->depth_, frames->depth_, 1);
 
 		pc.write(frames);
+
+		tm->stopTimer("kinectPublisher");
+		tm->startTimer("kinectPublisher");
 	}
 	
 	k2g.shutDown();

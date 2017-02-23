@@ -1,5 +1,6 @@
 
 #include "hand_detector.h"
+#include "timer_manager.h"
 
 #ifdef HAS_ARUCO
 void handDetector(DataWriter & websocket, float marker_size, 
@@ -66,6 +67,10 @@ void handDetector(DataWriter & websocket, float marker_size,
 	std::shared_ptr<ImageFrame> frames;
 
 	synchronizer.unlock();
+
+
+	TimerManager * tm = TimerManager::instance();
+	tm->startTimer("handDetector");
 
 	while(!to_stop)
 	{
@@ -156,7 +161,12 @@ void handDetector(DataWriter & websocket, float marker_size,
 				std::cout << "Stop requested by hand detector" << std::endl;
 			}
 		}
+
+		tm->stopTimer("handDetector");
+		tm->startTimer("handDetector");
 	}
+
+	tm->stopTimer("handDetector");
 
 	//Destroy the window
 	if(visualization)
