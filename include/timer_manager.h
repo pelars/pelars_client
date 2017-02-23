@@ -45,14 +45,15 @@ struct TimeStatistics
     {
         std::stringstream ss;
         //ss << "\tName: " << name << std::endl;
-        ss << "\tNumber of iterations: " << iterations << std::endl;
-        ss << "\tTotal    : " << elapsed << std::endl;
-        ss << "\tMean     : " << mean << std::endl;
-        ss << "\tVariance : " << variance << std::endl;
+        ss << "\tIterations           : " << iterations << std::endl;
+        ss << "\tRun Total (s)        : " << elapsed << std::endl;
+        ss << "\tRun Mean             : " << mean << std::endl;
+        ss << "\tRun Variance         : " << variance << std::endl;
+        ss << "\tRun Min              : " << min << std::endl; 
+        ss << "\tRun Max              : " << max << std::endl;
         ss << "\tService time mean    : " << service_mean << std::endl;
         ss << "\tService time variance: " << service_variance << std::endl;
-        ss << "\tMin: " << min << std::endl; 
-        ss << "\tMax: " << max << std::endl;
+        ss << "\tWait time mean       : " << service_mean-mean << std::endl;
         return ss.str();
     }
 };
