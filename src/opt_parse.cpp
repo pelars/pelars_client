@@ -34,6 +34,8 @@ Parser::Parser(int argc, char ** argv):argc_(argc), argv_(argv), description_("P
             ("upload,u", boost::program_options::value<std::string>(), "file name to upload")
             ("no_calib_video,y", "No video during calibration")
             ("h264", "do not delete h264")
+            ("webcam_threads", boost::program_options::value<int>()->default_value(2), "number of threads for webcam conversion")
+            ("kinect2_threads", boost::program_options::value<int>()->default_value(2), "number of threads for k2 conversion")
             ("L, video_session", "write session on screen")
             ("status,j", "displays system status");
 

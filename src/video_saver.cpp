@@ -3,7 +3,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include "timer_manager.h"
 
-void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc, bool del, const std::string tname){
+void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc, bool del, const std::string tname, const int threads){
 
 	bool inited_color = false;
 	bool inited_depth = false;
@@ -47,7 +47,7 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 					x264encoder = std::make_shared<x264Encoder>(video_subfolder_name, name);
 					unsigned int width = frames->color_.cols;
 					unsigned int height = frames->color_.rows;
-					x264encoder->initialize(width, height, frames->type_ == "people" ? false : true, del);
+					x264encoder->initialize(width, height, frames->type_ == "people" ? false : true, del, threads);
 					name = video_subfolder_name + "/time_stamps_" + frames->type_ + ".txt";
 					out = std::make_shared<std::ofstream>(name, std::ios::binary);
 					old_seq = frames->seq_number_;

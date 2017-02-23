@@ -92,12 +92,12 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 	
 	while(!to_stop){
 
-		TimerScope ts(tm,"webcamPublisher");
 
 		//gs_grabber.capture(frame);
 
 		std::shared_ptr<ImageFrame> image = std::make_shared<ImageFrame>();
 		cap >> image->color_;
+		TimerScope ts(tm,"webcamPublisher");
 		//image->color_ = cv::Mat(frame);
 		image->type_ = std::string("people");
 		image->params_ = cam_params;

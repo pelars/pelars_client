@@ -6,7 +6,7 @@
 #define PIX_FMT_YUV420P AV_PIX_FMT_YUV420P
 #endif
 
-void x264Encoder::initialize(const unsigned int w, const unsigned int h, const bool kinect, const bool del)
+void x264Encoder::initialize(const unsigned int w, const unsigned int h, const bool kinect, const bool del, const int threads)
 {
 
 	delete_ = del;
@@ -18,7 +18,7 @@ void x264Encoder::initialize(const unsigned int w, const unsigned int h, const b
 	x264_param_default_preset(&parameters_, "veryfast", "zerolatency");
 
 	parameters_.i_log_level = X264_LOG_INFO;
-	parameters_.i_threads = 1;
+	parameters_.i_threads = threads;
 	parameters_.i_width = image_w_;
 	parameters_.i_height = image_h_;
 	parameters_.i_fps_num = 30;

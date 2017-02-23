@@ -79,12 +79,9 @@ void handDetector(DataWriter & websocket, float marker_size,
 		} else {
 			// Could return since it is terminated
 			pc->read(frames);
-			TimerScope ts(tm,"handDetector");
 			color = frames->color_;
-			if(to_stop){
-				break;
-			}
 		}
+		TimerScope ts(tm,"handDetector");
 
 		if(!inited){
 			camera_parameters = frames->params_.cam_matrix_;

@@ -36,7 +36,7 @@ public:
 	x264Encoder(const std::string folder_name = "./", const std::string file_name = "video.mp4"): 
 	            file_name_(file_name), folder_name_(folder_name){}
 
-	void initialize(const unsigned int w, const unsigned int h, const bool kinect, const bool del);
+	void initialize(const unsigned int w, const unsigned int h, const bool kinect, const bool del, const int threads = 1);
 	void unInitilize();
 	void encodeFrame(const char *rgb_buffer);
 	bool isNalsAvailableInOutputQueue();

@@ -135,7 +135,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_webcam.getNewChannel(), pc_trigger.getNewChannel(), false));
 		if(store_video){
-			thread_list.push_back(std::thread(saveVideo, session, pc_w_saver.getNewChannel(), delete_h264, "wsaver"));
+			thread_list.push_back(std::thread(saveVideo, session, pc_w_saver.getNewChannel(), delete_h264, "wsaver",p["webcam_threads"].as<int>()));
 		}
 	}
 
@@ -150,7 +150,7 @@ int main(int argc, char * argv[])
 								          pc_kinect.getNewChannel(), p.get("C920"), hand_camera_id));
 #endif	
 		if(store_video){
-			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel(), delete_h264,"ksaver"));
+			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel(), delete_h264,"ksaver",p["kinect2_threads"].as<int>()));
 		}
 	}
 
