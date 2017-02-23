@@ -49,9 +49,10 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 	synchronizer.unlock();
 
 	TimerManager * tm = TimerManager::instance();
-	tm->startTimer("kinectPublisher");
 	
 	while(!to_stop){
+
+		TimerScope ts(tm,"kinectPublisher");
 
 		std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
 		frames->type_ = std::string("workspace");
@@ -63,9 +64,6 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 		cv::flip(frames->depth_, frames->depth_, 1);
 
 		pc.write(frames);
-
-		tm->stopTimer("kinectPublisher");
-		tm->startTimer("kinectPublisher");
 	}
 	
 	k2g.shutDown();

@@ -268,3 +268,12 @@ private:
     std::unordered_map<std::string, std::shared_ptr<Timer> > timer_list_;
     std::atomic<bool> lock_ = {false};
 };
+
+struct TimerScope
+{
+    TimerScope(TimerManager * x, const char * name) : tm_(x), name_(name) { x->startTimer(name); }
+    ~TimerScope() { tm_->stopTimer(name_); }
+
+    TimerManager * tm_;
+    const char * name_;
+};

@@ -12,7 +12,7 @@ ChannelWrapper<Trigger> pc_trigger(to_stop, 3);
 ChannelWrapper<ImageFrame> pc_webcam(to_stop, 3);
 
 //Webcam to webcam saver channel
-ChannelWrapper<ImageFrame> pc_w_saver(to_stop,12);
+ChannelWrapper<ImageFrame> pc_w_saver(to_stop,600);
 
 // Kinect frames message channels
 ChannelWrapper<ImageFrame> pc_kinect(to_stop, 3);

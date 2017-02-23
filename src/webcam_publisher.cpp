@@ -88,9 +88,11 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 	
 
 	TimerManager * tm = TimerManager::instance();
-	tm->startTimer("webcamPublisher");
+	
 	
 	while(!to_stop){
+
+		TimerScope ts(tm,"webcamPublisher");
 
 		//gs_grabber.capture(frame);
 
@@ -106,13 +108,7 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 
 		pc_webcam.write(image);
 		pc_w_saver.write(image);
-
-		tm->stopTimer("webcamPublisher");
-		tm->startTimer("webcamPublisher");
-		
 	}
-
-	tm->stopTimer("webcamPublisher");
 
 	std::cout << "terminating webcam publisher" << std::endl;
 

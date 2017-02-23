@@ -35,9 +35,9 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 	
 	while(!to_stop){
 
-		tm->startTimer(tname);
-
 		if(pc->read(frames)){
+
+			TimerScope ts(tm,tname.c_str());
 
 			if(frames->hasColor()){
 
@@ -92,7 +92,6 @@ void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageF
 
 			*out << time2string(frames->time_stamp_) << "\n";
 		}	
-		tm->stopTimer(tname);
 	}
 
 	x264encoder->unInitilize();

@@ -70,7 +70,6 @@ void handDetector(DataWriter & websocket, float marker_size,
 
 
 	TimerManager * tm = TimerManager::instance();
-	tm->startTimer("handDetector");
 
 	while(!to_stop)
 	{
@@ -80,6 +79,7 @@ void handDetector(DataWriter & websocket, float marker_size,
 		} else {
 			// Could return since it is terminated
 			pc->read(frames);
+			TimerScope ts(tm,"handDetector");
 			color = frames->color_;
 			if(to_stop){
 				break;
@@ -161,12 +161,7 @@ void handDetector(DataWriter & websocket, float marker_size,
 				std::cout << "Stop requested by hand detector" << std::endl;
 			}
 		}
-
-		tm->stopTimer("handDetector");
-		tm->startTimer("handDetector");
 	}
-
-	tm->stopTimer("handDetector");
 
 	//Destroy the window
 	if(visualization)

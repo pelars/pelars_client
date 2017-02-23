@@ -86,7 +86,6 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 	synchronizer.unlock();
 
 	TimerManager * tm = TimerManager::instance();
-	tm->startTimer("faceDetector");
 
 	while(!to_stop)
 	{	
@@ -94,6 +93,8 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 		cv::gpu::GpuMat facesBuf_gpu;
 		if(!pcw->read(color_frame))
 			continue;
+
+		TimerScope ts(tm,"faceDetector");
 
 		if(!inited){
 			auto params = color_frame->params_;
@@ -225,12 +226,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 				std::cout << "stop requested by face detector" << std::endl;
 			}
 		}
-
-		tm->stopTimer("faceDetector");
-		tm->startTimer("faceDetector");
 	}
-
-	tm->stopTimer("faceDetector");
 
 	if(visualization)
 		cvDestroyWindow("face");
