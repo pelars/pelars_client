@@ -12,7 +12,7 @@ ChannelWrapper<Trigger> pc_trigger(to_stop, 3);
 ChannelWrapper<ImageFrame> pc_webcam(to_stop, 3);
 
 //Webcam to webcam saver channel
-ChannelWrapper<ImageFrame> pc_w_saver(to_stop,600);
+ChannelWrapper<ImageFrame> pc_w_saver(to_stop, 125);
 
 // Kinect frames message channels
 ChannelWrapper<ImageFrame> pc_kinect(to_stop, 3);
@@ -27,8 +27,8 @@ int main(int argc, char * argv[])
 	signal(SIGHUP, sig_handler);
 	signal(SIGTERM, sig_handler);
 
-	static unsigned int trigger_time = 60;
-	static unsigned int scree_shotter_timer_ms = 100;
+	static unsigned int trigger_time = 30;
+	static unsigned int scree_shotter_timer_ms = 500;
 	int session;
 
 	// Thread container
@@ -135,7 +135,7 @@ int main(int argc, char * argv[])
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_webcam.getNewChannel(), pc_trigger.getNewChannel(), false));
 		if(store_video){
-			thread_list.push_back(std::thread(saveVideo, session, pc_w_saver.getNewChannel(), delete_h264, "wsaver",p["webcam_threads"].as<int>()));
+			thread_list.push_back(std::thread(saveVideo, session, pc_w_saver.getNewChannel(), delete_h264, "wsaver",p.get("webcam_threads")));
 		}
 	}
 
@@ -150,7 +150,7 @@ int main(int argc, char * argv[])
 								          pc_kinect.getNewChannel(), p.get("C920"), hand_camera_id));
 #endif	
 		if(store_video){
-			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel(), delete_h264,"ksaver",p["kinect2_threads"].as<int>()));
+			thread_list.push_back(std::thread(saveVideo, session, pc_kinect.getNewChannel(), delete_h264,"ksaver",p.get("kinect2_threads")));
 		}
 	}
 
@@ -235,7 +235,7 @@ int main(int argc, char * argv[])
 	std::cout << "handDetector" << std::endl;
 	std::cout << hstat.toString() << std::endl;
 	std::cout << "kinectSaver" << std::endl;
-	std::cout << vkstat.toString() << std::endl;
+	std::cout << vkstat.toString() << std::endl; 
 
 
 	kill(0, SIGINT);

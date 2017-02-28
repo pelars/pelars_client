@@ -60,6 +60,7 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 
 		k2g.get(frames->color_, frames->depth_);
 		TimerScope ts(tm,"kinectPublisher");
+		//try to async flip of color
 		cv::flip(frames->color_, frames->color_, 1);
 		cv::flip(frames->depth_, frames->depth_, 1);
 

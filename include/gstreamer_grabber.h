@@ -8,7 +8,8 @@ class GstreamerGrabber
 {
 public:
 
-    GstreamerGrabber(int width, int height, int device_id = 0, bool h264 = true, const char * pipeline = 0);
+    //GstreamerGrabber(int width, int height, int device_id = 0);
+    GstreamerGrabber(int width, int height, int device_id, bool h264 = true, const char * xpipeline = 0);
 
     ~GstreamerGrabber(void);
 
@@ -32,7 +33,7 @@ public:
 
 private:
 
-    GstElement * appsink;
+    GstAppSink * appsink;
     GstElement * colorSpace1, * colorSpace2;    
     GstElement * pipeline;
     GstElement * vsource_capsfilter, * cspappsink_capsfilter;
@@ -45,6 +46,7 @@ private:
     GstCaps * cspappsink_caps;    
     GstBus * bus;
     GstMessage * msg_;
+    GError * err_;
     int height_, width_, device_id_;        
 };
 #endif

@@ -7,7 +7,7 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 
 	synchronizer.lock();
 
-	//GstreamerGrabber gs_grabber(width, height, face_camera_id);
+	GstreamerGrabber gs_grabber(width, height, face_camera_id, true, 0);
 
 	cv::Mat c920_parameters, k;
 
@@ -67,13 +67,9 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 
 	CamParams cam_params(c920_parameters, k, width, height);
 
-	synchronizer.unlock();
-
-	//IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
-
 	long sequence = 0;
 
-	cv::VideoCapture cap;
+/*	cv::VideoCapture cap;
 
 	std::cout << "Capture opening" << std::endl;
 
@@ -83,22 +79,30 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 	
 	std::cout << "Capture opened" << std::endl;
 
-	cap.set(CV_CAP_PROP_FRAME_WIDTH,1920);
-	cap.set(CV_CAP_PROP_FRAME_HEIGHT,1080);
-	
+	cap.set(CV_CAP_PROP_FRAME_WIDTH,1360);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT,768);
+	//cap.set(CV_CAP_PROP_FRAME_WIDTH,1920);
+    //cap.set(CV_CAP_PROP_FRAME_HEIGHT,1080);
+    cap.set(CV_CAP_PROP_FPS, 30);
+	 */
 
 	TimerManager * tm = TimerManager::instance();
+
+	IplImage * frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+
+	synchronizer.unlock();
 	
 	
 	while(!to_stop){
 
-
-		//gs_grabber.capture(frame);
-
 		std::shared_ptr<ImageFrame> image = std::make_shared<ImageFrame>();
-		cap >> image->color_;
+
+		gs_grabber >> frame;
+
 		TimerScope ts(tm,"webcamPublisher");
-		//image->color_ = cv::Mat(frame);
+		
+		//cap >> image->color_;
+		image->color_ = cv::Mat(frame);
 		image->type_ = std::string("people");
 		image->params_ = cam_params;
 		image->time_stamp_ = std::chrono::high_resolution_clock::now();
@@ -108,6 +112,8 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 
 		pc_webcam.write(image);
 		pc_w_saver.write(image);
+
+		//cvReleaseImage(&frame);
 	}
 
 	std::cout << "terminating webcam publisher" << std::endl;

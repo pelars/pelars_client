@@ -5,11 +5,10 @@
 #include "gstreamer_grabber.h"
 
 #ifdef HAS_GSTREAMER
-
-
+//#define OLD_GSTREAMER true
 #ifndef OLD_GSTREAMER
 
-GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id, bool h264 , const char * xpipeline): height_(height), width_(width), device_id_(device_id), pipeline(0),bus(0),appsink(0)
+GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id, bool h264, const char * xpipeline): height_(height), width_(width), device_id_(device_id), pipeline(0),bus(0),appsink(0)
 {
 	GError * error_ = 0;
 	gst_init(NULL, NULL);
@@ -22,7 +21,7 @@ GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id, bool h2
 			sprintf(buffer,"v4l2src device=/dev/video%d ! queue ! video/x-raw,format=RGB, width=%d,height=%d ! appsink name=sink",device_id,width,height);
 		xpipeline =buffer;
 	}
-    pipeline = gst_parse_launch(xpipeline,???);
+    pipeline = gst_parse_launch(xpipeline,&error_);
     if(!pipeline)
     {
     	std::cerr << "invalid gstreamer pipeline:" << xpipeline << "\n";
@@ -35,7 +34,7 @@ GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id, bool h2
     	return;
     }
     appsink = (GstAppSink*)(sink);
-    g_signal_connect(pipeline_, "deep-notify", G_CALLBACK(gst_object_default_deep_notify ), NULL);             
+    g_signal_connect(pipeline, "deep-notify", G_CALLBACK(gst_object_default_deep_notify ), NULL);             
     gst_app_sink_set_emit_signals(appsink, true);
     gst_app_sink_set_drop(appsink, true);
     gst_app_sink_set_max_buffers(appsink, 1);    
@@ -116,7 +115,7 @@ void GstreamerGrabber::getPipelineBus()
 
 void GstreamerGrabber::capture(IplImage * frame)
 {
-	*this >> frame.get();
+	*this >> frame;
 }
 
 void GstreamerGrabber::operator >>(IplImage * frame){
@@ -141,7 +140,7 @@ void GstreamerGrabber::operator >>(std::shared_ptr<IplImage> frame)
 
 #else
 
-GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id = 0): height_(height), width_(width), device_id_(device_id)
+GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id): height_(height), width_(width), device_id_(device_id)
 {
 
 	std::cout << "Opening device /dev/video" << device_id << std::endl;
