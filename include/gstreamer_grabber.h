@@ -8,7 +8,7 @@ class GstreamerGrabber
 {
 public:
 
-    GstreamerGrabber(int width, int height, int device_id);
+    GstreamerGrabber(int width, int height, int device_id = 0, bool h264 = true, const char * pipeline = 0);
 
     ~GstreamerGrabber(void);
 
@@ -28,6 +28,7 @@ public:
     void capture(std::shared_ptr<IplImage> frame);
     void operator >>(std::shared_ptr<IplImage> frame);
 
+    bool isValid() const { return appsink != 0; }
 
 private:
 

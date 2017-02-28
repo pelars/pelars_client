@@ -5,6 +5,142 @@
 #include "gstreamer_grabber.h"
 
 #ifdef HAS_GSTREAMER
+
+
+#ifndef OLD_GSTREAMER
+
+GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id, bool h264 , const char * xpipeline): height_(height), width_(width), device_id_(device_id), pipeline(0),bus(0),appsink(0)
+{
+	GError * error_ = 0;
+	gst_init(NULL, NULL);
+	char buffer[128];
+	if(xpipeline == 0)
+	{
+		if(h264)
+			sprintf(buffer,"v4l2src device=/dev/video%d ! queue ! video/x-h264, width=(int)%d, height=(int)%d, fframerate=30/1 ! h264parse ! avdec_h264 ! video/x-raw,format=RGB, width=%d,height=%d ! appsink name=sink",device_id,width,height,width,height);
+		else
+			sprintf(buffer,"v4l2src device=/dev/video%d ! queue ! video/x-raw,format=RGB, width=%d,height=%d ! appsink name=sink",device_id,width,height);
+		xpipeline =buffer;
+	}
+    pipeline = gst_parse_launch(xpipeline,???);
+    if(!pipeline)
+    {
+    	std::cerr << "invalid gstreamer pipeline:" << xpipeline << "\n";
+    	return;
+    }
+    GstElement * sink = gst_bin_get_by_name(GST_BIN(pipeline), "sink");
+    if(!sink)
+    {
+    	std::cerr << "cannot find sink in pipeline: append \"! appsink name=sink\"" << xpipeline << "\n";
+    	return;
+    }
+    appsink = (GstAppSink*)(sink);
+    g_signal_connect(pipeline_, "deep-notify", G_CALLBACK(gst_object_default_deep_notify ), NULL);             
+    gst_app_sink_set_emit_signals(appsink, true);
+    gst_app_sink_set_drop(appsink, true);
+    gst_app_sink_set_max_buffers(appsink, 1);    
+    gst_element_set_state(pipeline, GST_STATE_PLAYING);
+    bus = gst_element_get_bus(pipeline);
+
+
+}
+
+GstreamerGrabber::~GstreamerGrabber()
+{
+	std::cout << "Closing gstreamer grabber" << std::endl;
+	deinitVideoLive();
+}
+
+void GstreamerGrabber::createPipeline()
+{
+}
+
+
+gboolean GstreamerGrabber::initVideoCapture()
+{    
+	return TRUE;
+}
+ 
+void GstreamerGrabber::deletePipeline()
+{
+	//g_print ("delete_pipeline\n");
+	gst_element_set_state (this->pipeline, GST_STATE_NULL);
+	//g_print ("Pipeline set to NULL\n");
+    //  gst_object_unref (this->bus);
+	gst_object_unref (this->pipeline);
+	//g_print ("Pipeline deleted\n");
+}
+ 
+gboolean GstreamerGrabber::addBinCaptureToPipe()
+{
+	return TRUE;
+}
+ 
+gboolean GstreamerGrabber::removeBinCaptureFromPipe()
+{
+	return TRUE;
+}
+ 
+gboolean GstreamerGrabber::startCapturePipe()
+{
+	int r = 0;
+	if((r = gst_element_set_state (this->pipeline, GST_STATE_PLAYING)) != GST_STATE_CHANGE_FAILURE)
+		return TRUE;
+	else
+	{
+		std::cout << "Failed to set pipeline state to PLAYING " << r << std::endl;
+		return FALSE;
+	}
+}
+ 
+gboolean GstreamerGrabber::stopCapturePipe()
+{
+	gst_element_set_state (this->pipeline, GST_STATE_NULL);
+	return TRUE;
+}
+ 
+gboolean GstreamerGrabber::deinitVideoLive()
+{
+	gst_element_set_state (this->pipeline, GST_STATE_NULL);
+	return TRUE;
+}
+ 
+gboolean GstreamerGrabber::checkBusCb()
+{
+	return TRUE;
+}
+ 
+void GstreamerGrabber::getPipelineBus()
+{
+}
+
+void GstreamerGrabber::capture(IplImage * frame)
+{
+	*this >> frame.get();
+}
+
+void GstreamerGrabber::operator >>(IplImage * frame){
+
+    GstSample * sample = gst_app_sink_pull_sample(appsink);
+    GstBuffer * gstImageBuffer= gst_sample_get_buffer(sample); 
+    GstCaps * c = gst_sample_get_caps(sample); 
+	gst_buffer_extract(gstImageBuffer,0,frame->imageData,frame->imageSize);	
+	gst_buffer_unref(gstImageBuffer);
+}
+
+void GstreamerGrabber::capture(std::shared_ptr<IplImage> frame)
+{
+	*this >> frame.get();
+}
+
+void GstreamerGrabber::operator >>(std::shared_ptr<IplImage> frame)
+{
+	*this >> frame.get();
+}
+
+
+#else
+
 GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id = 0): height_(height), width_(width), device_id_(device_id)
 {
 
@@ -273,4 +409,4 @@ void GstreamerGrabber::operator >>(std::shared_ptr<IplImage> frame){
 	gst_buffer_unref(gstImageBuffer);
 }
 #endif
-
+#endif
