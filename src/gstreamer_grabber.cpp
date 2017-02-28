@@ -12,7 +12,7 @@ GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id, bool h2
 {
 	GError * error_ = 0;
 	gst_init(NULL, NULL);
-	char buffer[128];
+	char buffer[1024];
 	if(xpipeline == 0)
 	{
 		if(h264)
