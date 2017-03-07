@@ -45,8 +45,8 @@ void x264Encoder::initialize(const unsigned int w, const unsigned int h,
   x264_picture_alloc(&picture_in_, X264_CSP_I420, parameters_.i_width,
                      parameters_.i_height);
 
-  auto fmt = hasalpha ? (isbgr : PIX_FMT_BGR32 : PIX_FMT_RGB32) : (isbgr ? PIX_FMT_BGR24 : PIX_FMT_RGB24);
-  bytes_ = hasalpha ? 4 : 3;
+  auto fmt = hasAlpha ? (isBGR ? PIX_FMT_BGR32 : PIX_FMT_RGB32) : (isBGR ? PIX_FMT_BGR24 : PIX_FMT_RGB24);
+  bytes_ = hasAlpha ? 4 : 3;
 	convert_context_ =
 	    sws_getContext(parameters_.i_width, parameters_.i_height, fmt,
 	                   parameters_.i_width, parameters_.i_height,
@@ -90,7 +90,7 @@ void x264Encoder::encodeFrame(const char *rgb_buffer) {
 
   if (frame_size > 0 && onf_)
     for (int i = 0; i < i_nals; i++) {
-      onf_.write((const char *)nals[i].p_payload, nals[i].i_payload);
+      onf_->write((const char *)nals[i].p_payload, nals[i].i_payload);
     }
 }
 

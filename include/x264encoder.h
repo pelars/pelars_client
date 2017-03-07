@@ -33,7 +33,7 @@ class x264Encoder
 {
 
 public:
-	x264Encoder(std::ofstream & onf) : onf_(onf) {}
+	x264Encoder(std::ofstream * onf) : onf_(onf) {}
 
 	void initialize(const unsigned int w, const unsigned int h, const bool isBGR, const bool hasAlpha, const int threads = 1);
 	void unInitilize();
@@ -54,11 +54,11 @@ private:
 	x264_t * encoder_;
 	long int time_base_;
 	bool first_;
-	std::ofstream onf_;
+	std::ofstream * onf_;
 	int bytes_;
 	boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::mean>> acc_;
 };
 
-void x262convertmp4(std::string infile, std::string outfile, bool deleteinput);
+void x262convertmp4(std::string infile, std::string outfile, bool deleteinput,boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::mean>>&);
 
 

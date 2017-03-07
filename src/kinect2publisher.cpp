@@ -8,8 +8,8 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 	K2G k2g(processor);
 	k2g.disableLog();
 
-	auto mode = K2G::RegistrationMode::Undistorted; 
-	auto framemode = ImageFrame::RegistrationMode::Undistorted;
+	auto mode = K2G::Registration::Undistorted; 
+	auto framemode = ImageFrame::DepthRegistration::Undistorted;
 	K2G_Parameters cameraparams(k2g,mode);
 
 	/*
@@ -25,7 +25,6 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 
 
 	std::cout << "Loaded k2 camera parameters : " << std::endl;
-	std::cout << k2_parameters << std::endl;
 
 	Json::Value root;
 	Json::StyledWriter writer;

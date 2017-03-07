@@ -149,7 +149,7 @@ void K2G::prepareMake3D(const libfreenect2::Freenect2Device::IrCameraParams & de
     }
 }
 
-K2G_Parameters::K2G_Parameters(K2G & k2g, K2G::RegistrationMode mode)
+K2G_Parameters::K2G_Parameters(K2G & k2g, K2G::Registration mode)
 {
 	auto cp = k2g.getRgbCameraParams();
 	auto dp = k2g.getIrParameters();

@@ -44,8 +44,6 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 	cv::Mat faces_downloaded, color, cam_matrix, dist;
 	std::shared_ptr<ImageFrame> color_frame;
 
-	const int session = websocket.getSession();
-
 	const bool findLargestObject_ = false;
 	const bool filterRects_ = true;
 	bool inited = false;
@@ -97,7 +95,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 		TimerScope ts(tm,"faceDetector");
 
 		if(!inited){
-			auto params = color_frame->params_;
+			auto params = color_frame->color_params_;
 			cam_matrix = params.cam_matrix_;
 			fx = cam_matrix.at<float>(0,0);
 			fy = cam_matrix.at<float>(1,1);

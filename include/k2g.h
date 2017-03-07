@@ -61,7 +61,7 @@ private:
 struct K2G_Parameters
 {
 public:
-	K2G_Parameters(K2G & k2g, K2G::RegistrationMode mode);
+	K2G_Parameters(K2G & k2g, K2G::Registration mode);
 
 	libfreenect2::Freenect2Device::IrCameraParams ir;
 	libfreenect2::Freenect2Device::ColorCameraParams rgb;

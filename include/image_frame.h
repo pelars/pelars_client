@@ -2,7 +2,7 @@
 #include <chrono>
 #include <opencv2/core/core.hpp>
 #include <string>
-#include <json/json.hpp>
+#include <json/json.h>
 
 struct CamParams 
 {
@@ -54,10 +54,10 @@ inline void CamParams::toJSON(Json::Value & root)
 
 	Json::Value dist = Json::arrayValue;
 
-	for(size_t i = 0; i < dist_.rows; ++i)
+	for(int i = 0; i < dist_.rows; ++i)
 			dist.append(dist_.at<float>(i,0));
 	root["dist"] = dist;
-	root["width"] = width;
-	root["height"] = height;
+	root["width"] = width_;
+	root["height"] = height_;
 
 }
