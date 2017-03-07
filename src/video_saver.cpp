@@ -98,6 +98,7 @@ void saveVideo(int session,
 	      out_oni.write((const char *)depth_compressed.data(), depth_8_size);
 	  }
       frame->depth_params_.toJSON(root["depth"]);
+      root["depth"]["registration"] = ImageFrame::mode2str(frame_->registrationmode_);
     }
 
     {

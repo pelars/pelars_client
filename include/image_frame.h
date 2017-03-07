@@ -25,6 +25,12 @@ struct ImageFrame {
   bool hasColor() const { return !color_.empty(); }
   bool hasDepth() const { return !depth_.empty(); }
 
+  static const char * mode2str(DepthRegistration x)
+  {
+  	const char * cp[4] = {"none","undistorted","colortodepth","depthtocolor"};
+  	return cp[(int)x];
+  }
+
   DepthRegistration depthmode_ = DepthRegistration::None; 
   cv::Mat color_, depth_;
   std::string type_;
@@ -34,6 +40,7 @@ struct ImageFrame {
 
   std::chrono::high_resolution_clock::time_point time_stamp_;
 };
+
 
 
 inline void CamParams::toJSON(Json::Value & root)
