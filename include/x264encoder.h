@@ -33,10 +33,9 @@ class x264Encoder
 {
 
 public:
-	x264Encoder(const std::string folder_name = "./", const std::string file_name = "video.mp4"): 
-	            file_name_(file_name), folder_name_(folder_name){}
+	x264Encoder(std::ofstream & onf) : onf_(onf) {}
 
-	void initialize(const unsigned int w, const unsigned int h, const bool kinect, const bool del, const int threads = 1);
+	void initialize(const unsigned int w, const unsigned int h, const bool isBGR, const bool hasAlpha, const int threads = 1);
 	void unInitilize();
 	void encodeFrame(const char *rgb_buffer);
 	bool isNalsAvailableInOutputQueue();
@@ -53,11 +52,13 @@ private:
 	x264_param_t parameters_;
 	x264_picture_t picture_in_, picture_out_;
 	x264_t * encoder_;
-	std::ofstream os_;
 	long int time_base_;
-	bool first_, delete_;
+	bool first_;
+	std::ofstream onf_;
 	int bytes_;
-	std::string file_name_, folder_name_;
 	boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::mean>> acc_;
 };
+
+void x262convertmp4(std::string infile, std::string outfile, bool deleteinput);
+
 

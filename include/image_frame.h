@@ -1,35 +1,56 @@
 #pragma once
-#include <opencv2/core/core.hpp>        
-#include <string>
 #include <chrono>
+#include <opencv2/core/core.hpp>
+#include <string>
+#include <json/json.hpp>
 
-struct CamParams{
+struct CamParams 
+{
+  CamParams(cv::Mat cam_matrix, cv::Mat dist, unsigned int width,
+            unsigned int height)
+      : cam_matrix_(cam_matrix), dist_(dist), width_(width), height_(height) {}
 
-	CamParams(cv::Mat cam_matrix, cv::Mat dist, unsigned int width, unsigned int height):
-				cam_matrix_(cam_matrix), dist_(dist), width_(width), height_(height) {}
+  CamParams() {}
 
-	CamParams(){}
+  cv::Mat cam_matrix_, dist_;
+  unsigned int width_ = 0;
+  unsigned int height_ = 0;
 
-	cv::Mat cam_matrix_, dist_;
-	unsigned int width_;
-	unsigned int height_;
+  void toJSON(Json::Value & root);
 };
 
-struct ImageFrame{
+struct ImageFrame {
+   enum class DepthRegistration { None, Undistorted, ColorToDepth, DepthToColor };
 
-	bool hasColor(){
-		return (color_.cols * color_.rows) > 0;
-	}
-	bool hasDepth(){
-		return (depth_.cols * depth_.rows) > 0;
-	}
+  bool hasColor() const { return !color_.empty(); }
+  bool hasDepth() const { return !depth_.empty(); }
 
-	cv::Mat color_, depth_;
-	std::string type_;
-	CamParams params_;
-	long seq_number_;
+  DepthRegistration depthmode_ = DepthRegistration::None; 
+  cv::Mat color_, depth_;
+  std::string type_;
+  CamParams color_params_;
+  CamParams depth_params_;
+  long seq_number_;
 
-	std::chrono::high_resolution_clock::time_point time_stamp_;
+  std::chrono::high_resolution_clock::time_point time_stamp_;
 };
 
 
+inline void CamParams::toJSON(Json::Value & root)
+{
+	Json::Value intrinsics = Json::arrayValue;
+
+	for(size_t i = 0; i < 3; ++i)
+		for(size_t j = 0; j < 3; ++j)
+			intrinsics.append(cam_matrix_.at<float>(i,j));
+	root["intrinsics"] = intrinsics;
+
+	Json::Value dist = Json::arrayValue;
+
+	for(size_t i = 0; i < dist_.rows; ++i)
+			dist.append(dist_.at<float>(i,0));
+	root["dist"] = dist;
+	root["width"] = width;
+	root["height"] = height;
+
+}

@@ -8,13 +8,21 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 	K2G k2g(processor);
 	k2g.disableLog();
 
+	auto mode = K2G::RegistrationMode::Undistorted; 
+	auto framemode = ImageFrame::RegistrationMode::Undistorted;
+	K2G_Parameters cameraparams(k2g,mode);
+
+	/*
 	cv::Mat k2_parameters = cv::Mat::eye(3, 3, CV_32F);
 	k2_parameters.at<float>(0,0) = kinect2parameters.fx;
 	k2_parameters.at<float>(1,1) = kinect2parameters.fy;
 	k2_parameters.at<float>(0,2) = kinect2parameters.cx;
 	k2_parameters.at<float>(1,2) = kinect2parameters.cy;
+	*/
 
-	CamParams cam_params(k2_parameters, cv::Mat(), 1920, 1080);
+	CamParams color_params(cameraparams.getKrgb(), cameraparams.getDrgb(), cameraparams.rgb_size.width,cameraparams.rgb_size.height);
+	CamParams depth_params(cameraparams.getKir(), cameraparams.getDir(), cameraparams.ir_size.width, cameraparams.ir_size.height); // undistored depth NON registered
+
 
 	std::cout << "Loaded k2 camera parameters : " << std::endl;
 	std::cout << k2_parameters << std::endl;
@@ -23,19 +31,8 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 	Json::StyledWriter writer;
 	root["obj"]["type"] = "calibration";
 	root["obj"]["camera"] = "kinect2";
-
-	Json::Value intrinsics = Json::arrayValue;
-
-	for(size_t i = 0; i < 3; ++i)
-		for(size_t j = 0; j < 3; ++j)
-			intrinsics.append(k2_parameters.at<float>(i,j));
-	root["obj"]["intrinsics"] = intrinsics;
-
-	Json::Value dist = Json::arrayValue;
-
-	for(size_t i = 0; i < 5; ++i)
-			dist.append(0.);
-	root["obj"]["dist"] = dist;
+	color_params.toJSON(root["obj"]);
+	depth_params.toJSON(root["obj"]["depth"]);
 
 	std::string message = writer.write(root);
 
@@ -55,15 +52,14 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 
 		std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
 		frames->type_ = std::string("workspace");
-		frames->params_ = cam_params;
+		frames->color_params_ = color_params;
+		frames->depth_params_ = depth_params;
 		frames->time_stamp_ = std::chrono::high_resolution_clock::now();
+		frames->depthmode_ = framemode;
 
-		k2g.get(frames->color_, frames->depth_);
+		k2g.get(frames->color_, frames->depth_, mode, false);
 		TimerScope ts(tm,"kinectPublisher");
-		//try to async flip of color
-		cv::flip(frames->color_, frames->color_, 1);
-		cv::flip(frames->depth_, frames->depth_, 1);
-
+		
 		pc.write(frames);
 	}
 	
