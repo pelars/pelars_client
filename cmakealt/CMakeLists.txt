@@ -29,12 +29,12 @@ link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 find_package(cmakego REQUIRED)
 
-usepackage(opencv gstreamer freenect freenect2 tinyxml2 x264 ffmpeg  portaudio x264 tinyxml2 glfw zeromq)
+usepackage(opencv2 gstreamer freenect freenect2 tinyxml2 x264 ffmpeg  portaudio x264 tinyxml2 glfw zeromq)
 
-usepackage(json libusb lame REQUIRED)
+usepackage(json libusb lame yamlnew eigen REQUIRED)
 usepackage(cairo ffmpeg curl x11 REQUIRED)
 
-find_package(PCL 1.7 REQUIRED)
+#find_package(PCL 1.7 REQUIRED)
 #TODO for cmakego
 #openssl
 #websocketpp
@@ -71,6 +71,7 @@ optlibrary(p::curlpp HAS_CURL)
 optlibrary(p::qrencode HAS_QRENCODE)
 optlibrary(p::aruco HAS_ARUCO)
 optlibrary(p::gstreamer HAS_GSTREAMER)
+optlibrary(p::freenect2 HAS_FREENECT2)
 
 #Should be fixed in the future
 #find_library(GSTREAMER_O     NAMES gobject-2.0)
@@ -84,7 +85,6 @@ else()
 endif()
 set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} boost_program_options boost_random)
 
-
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
@@ -92,8 +92,8 @@ add_definitions(${PCL_DEFINITIONS})
 add_executable(sensor_manager   ${SRC}/main.cpp 
 								${SRC}/session_manager.cpp 
 								${SRC}/face_detector.cpp
-								${SRC}/linemod.cpp 
-								${SRC}/kinect_grabber.cpp 
+								#${SRC}/linemod.cpp
+								#${SRC}/kinect_grabber.cpp
 								${SRC}/data_writer.cpp 
 								${SRC}/mongoose.cpp 
 								#${SRC}/x264decoder.cpp 
@@ -108,6 +108,7 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/audio_detector.cpp
 								#${SRC}/end_dec.cpp
 								${SRC}/k2g.cpp
+        ${SRC}/param_storage.cpp
 								${SRC}/screen_grabber.cpp
 								${SRC}/image_sender.cpp
 								${SRC}/base64.cpp
@@ -128,8 +129,11 @@ target_link_libraries(sensor_manager
 	p::ffmpeg
 	p::ffmpeg::swscale
 	p::lame
+        p::yamlnew
 	p::ffmpeg
 	p::glfw
+        p::eigen
+        p::gstreamer
 	p::portaudio
 	p::cairo
 	p::cppnetlib

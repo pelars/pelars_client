@@ -141,8 +141,10 @@ int main(int argc, char * argv[])
 
 	// Starting the kinect grabber
 	if(p.get("hand") || p.get("default")){
-		
+
+#ifdef HAS_FREENECT2
 		thread_list.push_back(std::thread(kinect2publisher, processor, std::ref(pc_kinect), std::ref(collector)));
+#endif
 		thread_list.push_back(std::thread(sendImage, session, std::ref(end_point), 
 			                              std::ref(token), pc_kinect.getNewChannel(), pc_trigger.getNewChannel(), false));
 #ifdef HAS_ARUCO

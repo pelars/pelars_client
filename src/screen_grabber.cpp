@@ -2,7 +2,8 @@
 
 
 ScreenGrabber::ScreenGrabber(){
-   
+
+#ifndef __APPLE__
    disp_ = XOpenDisplay(nullptr);
    root_ = DefaultRootWindow(disp_);
    XWindowAttributes attributes = {0};
@@ -11,7 +12,7 @@ ScreenGrabber::ScreenGrabber(){
    width_ = attributes.width;
    height_ = attributes.height;
    disp_ = XOpenDisplay(nullptr);
-   
+#endif
 }
 
 cv::Mat ScreenGrabber::grabScreen(){
@@ -28,7 +29,10 @@ cv::Mat ScreenGrabber::grabScreen(){
 #endif
 }
 
-ScreenGrabber::~ScreenGrabber(){
-
+ScreenGrabber::~ScreenGrabber()
+{
+#ifdef __APPLE__
+#else
 	XCloseDisplay(disp_);
+#endif
 }

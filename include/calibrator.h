@@ -1,4 +1,5 @@
 #pragma once
+#include <opencv2/opencv.hpp>
 
 #if defined(HAS_ARUCO) && defined(HAS_FREENECT2)
 #include "k2g.h"

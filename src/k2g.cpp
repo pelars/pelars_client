@@ -1,9 +1,9 @@
 #include "k2g.h"
 
-libfreenect2::Freenect2Device::ColorCameraParams kinect2parameters;
 
 
 #ifdef HAS_FREENECT2
+libfreenect2::Freenect2Device::ColorCameraParams kinect2parameters;
 K2G::K2G(Processor p): undistorted_(512, 424, 4), registered_(512, 424, 4), tmp_big_mat_(1920, 1082, 4), listener_(libfreenect2::Frame::Color | libfreenect2::Frame::Depth),
 qnan_(std::numeric_limits<float>::quiet_NaN())
 {

@@ -7,6 +7,7 @@
  * Copyright (c) 2014 Cesanta Software Limited
  * All rights reserved
  */
+#define register
 
 #ifndef NS_INTERNAL_HEADER_INCLUDED
 #define NS_INTERNAL_HEADER_INCLUDED

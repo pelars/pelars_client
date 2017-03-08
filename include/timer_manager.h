@@ -256,7 +256,7 @@ public:
 
     void resetTimers()
     {
-        while (lock_.exchange(true));
+        while (lock_.exchange(true))
             timer_list_.clear();
         lock_ = false;
     }

@@ -27,9 +27,10 @@ public:
 private:
 
     int width_, height_;
+#ifndef __APPLE__
     Display * disp_;
     Window root_;
     XImage * img_;
-
+#endif
 };
 

@@ -1,6 +1,6 @@
 #pragma once
 #ifdef HAS_GSTREAMER
-#include <gst/gst.h> 
+#include <gst/gst.h>
 #include <gst/app/gstappsink.h>
 #include <memory>   
 
