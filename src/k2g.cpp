@@ -80,7 +80,7 @@ void K2G::get(cv::Mat & color_mat, cv::Mat & depth_mat, Registration mode, bool 
 		}
 		case Registration::Undistorted:
 		{
-			registration_->undistorDepth(depth,&undistorted_);
+			registration_->undistortDepth(depth,&undistorted_);
 			// return: undistorted_ + rgb
 			//
 			// rgb_ is owened by FRAME => need clone
@@ -151,11 +151,11 @@ void K2G::prepareMake3D(const libfreenect2::Freenect2Device::IrCameraParams & de
 
 K2G_Parameters::K2G_Parameters(K2G & k2g, K2G::Registration mode)
 {
-	auto cp = k2g.getRgbCameraParams();
+	auto cp = k2g.getRgbParameters();
 	auto dp = k2g.getIrParameters();
 	switch(mode)
 	{
-		case K2G::RegistrationMode::None:
+		case K2G::Registration::None:
 		{
 			rgb =cp;
 			ir = dp;
@@ -163,7 +163,7 @@ K2G_Parameters::K2G_Parameters(K2G & k2g, K2G::Registration mode)
 			ir_size = {512,424};
 			break;
 		}
-		case K2G::RegistrationMode::Undistorted:
+		case K2G::Registration::Undistorted:
 		{
 			rgb =cp;
 			ir = dp;
@@ -176,7 +176,7 @@ K2G_Parameters::K2G_Parameters(K2G & k2g, K2G::Registration mode)
 			ir_size = {512,424};
 			break;
 		}
-		case K2G::RegistrationMode::ColorToDepth:
+		case K2G::Registration::ColorToDepth:
 		{
 			ir = dp;
 			ir.k1 = 0;
@@ -184,14 +184,14 @@ K2G_Parameters::K2G_Parameters(K2G & k2g, K2G::Registration mode)
 			ir.k3 = 0;
 			ir.p1 = 0;
 			ir.p2 = 0;
-			rgb = ir;
+			//rgb = ir;
 			ir_size = rgb_size = {512,424};
 			break;
 		}
-		case K2G::RegistrationMode::DepthToColor:
+		case K2G::Registration::DepthToColor:
 		{
 			rgb = cp;
-			ir = rgb;
+			//ir = rgb;
 			ir_size = rgb_size = {1920,1080};
 			break;
 		}	
@@ -221,11 +221,11 @@ cv::Mat K2G_Parameters::getKrgb()
 cv::Mat K2G_Parameters::getDir()
 {
 	cv::Mat m = cv::Mat::eye(5, 1, CV_32F);
-	m.at<float>(0,0) = rgb.k1;
-	m.at<float>(1,0) = rgb.k2;
-	m.at<float>(2,0) = rgb.k3;
-	m.at<float>(3,0) = rgb.p1;
-	m.at<float>(4,0) = rgb.p2;
+	m.at<float>(0,0) = 0;
+	m.at<float>(1,0) = 0;
+	m.at<float>(2,0) = 0;
+	m.at<float>(3,0) = 0;
+	m.at<float>(4,0) = 0;
 	return m;
 }
 

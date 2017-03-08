@@ -104,7 +104,7 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 		//cap >> image->color_;
 		image->color_ = cv::Mat(frame);
 		image->type_ = std::string("people");
-		image->params_ = cam_params;
+		image->color_params_ = cam_params;
 		image->time_stamp_ = std::chrono::high_resolution_clock::now();
 		image->seq_number_ = sequence;
 

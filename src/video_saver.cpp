@@ -6,8 +6,6 @@
 void saveVideo(int session,
                std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc,
                bool del, const std::string tname, const int threads) {
-  bool inited_color = false;
-  bool inited_depth = false;
 
   std::string video_folder_name = std::string("../../videos");
   std::string video_subfolder_name =
@@ -32,11 +30,10 @@ void saveVideo(int session,
   long old_seq = 0;
   long new_seq = 0;
   long lost = 0;
-  bool kinect = false;
 
   TimerManager *tm = TimerManager::instance();
   std::string name_base, name_timestampfile, name_depthfile, name_h264file,
-      name_mp4file;
+      name_mp4file,name_jsonfile;
 
   // read first frames and init variables
   if (!to_stop && pc->read(frames)) {
@@ -44,7 +41,7 @@ void saveVideo(int session,
     unsigned int height = frames->color_.rows;
     bool has4channels = frames->color_.channels() == 4;
     old_seq = frames->seq_number_;
-    inited_color = true;
+   
     // 4 channels RGBA is Kinect as PIX_FMT_RGB32
     // 3 channels BGR  is Webcam as PIX_FMT_BGR24
 
@@ -62,7 +59,7 @@ void saveVideo(int session,
 	{
 		std::cerr << "canont save the rgb file: " << out_color << std::endl;
 	}
-    x264encoder = std::make_shared<x264Encoder>(out_color);
+    x264encoder = std::make_shared<x264Encoder>(&out_color);
     x264encoder->initialize(width, height, has4channels ? false : true,
                             has4channels, threads);
 
@@ -75,11 +72,9 @@ void saveVideo(int session,
     Json::Value root;
     root["type"] = "calibration";
     root["camera"] = "kinect2";
-    frame->color_params_.toJSON(root);
+    frames->color_params_.toJSON(root);
 
     if (frames->hasDepth()) {
-      kinect = true;
-      inited_depth = true;
 
       out_oni.open(name_depthfile, std::ios::binary);
       if(!out_oni)
@@ -97,8 +92,8 @@ void saveVideo(int session,
 	      out_oni.write((const char *)&depth_8_size, 4);
 	      out_oni.write((const char *)depth_compressed.data(), depth_8_size);
 	  }
-      frame->depth_params_.toJSON(root["depth"]);
-      root["depth"]["registration"] = ImageFrame::mode2str(frame_->registrationmode_);
+      frames->depth_params_.toJSON(root["depth"]);
+      root["depth"]["registration"] = ImageFrame::mode2str(frames->depthmode_);
     }
 
     {
@@ -143,8 +138,7 @@ void saveVideo(int session,
     out_time << time2string(frames->time_stamp_) << "\n";
   }
 
+  x264convertmp4(name_h264file, name_mp4file, del, *x264encoder.get());
   x264encoder->unInitilize();
-
   out_color.close(); // close before conversion
-  x262convertmp4(name_h264file, name_mp4file, del);
 }

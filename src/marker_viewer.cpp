@@ -34,7 +34,7 @@ void show_markers(const unsigned int id, const float marker_size, std::shared_pt
 			continue;
 
 		if(!inited){
-			auto params = color_frame->params_;
+			auto params = color_frame->color_params_;
 			camera_parameters = params.cam_matrix_;
 			dist = params.dist_;
 			inited = true;

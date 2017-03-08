@@ -61,13 +61,7 @@ void x264Encoder::unInitilize() {
 
 
 void x264Encoder::encodeFrame(const char *rgb_buffer) {
-  const uint8_t *rgb_buffer_slice[1] = {(const uint8_t *)rgb_buffer};
-  int stride[1] = {(int)bytes_ * image_w_};  // RGB stride
 
-  // Convert the frame from RGB to YUV420
-  int slice_size =
-      sws_scale(convert_context_, rgb_buffer_slice, stride, 0, image_h_,
-                picture_in_.img.plane, picture_in_.img.i_stride);
   x264_nal_t *nals;
   int i_nals = 0;
   int frame_size = -1;
@@ -109,10 +103,10 @@ x264_nal_t x264Encoder::getNalUnit() {
 }
 
 
-void x262convertmp4(std::string input, std::string output, bool deleteinput)
+void x264convertmp4(std::string input, std::string output, bool deleteinput, x264Encoder & enc)
 {
   std::ostringstream strs;
-  strs << "ffmpeg -r " << 1000.0 / boost::accumulators::mean(acc_)
+  strs << "ffmpeg -r " << 1000.0 / boost::accumulators::mean(enc.getAcc())
        << " -f h264 -i \"" << input << "\" -reset_timestamps 1 -y -c copy -an "
        << "\"" << output << "\"";
   std::string command = strs.str();

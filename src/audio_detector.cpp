@@ -97,8 +97,9 @@ int portAudioCallback(const void * input, void * output,
 			const std::string message = fft->message_;
 			//std::cout << fft->psd_ << std::endl;
 			if(online && !isinf(fft->psd_)){
-				io.post([&fft, message]() {
-					fft->websocket_.writeData(message);
+				DataWriter & ws = fft->websocket_;
+				io.post([&ws, message]() {
+					ws.writeData(message);
 				});
 			}
 			fft->websocket_.writeLocal(message);  

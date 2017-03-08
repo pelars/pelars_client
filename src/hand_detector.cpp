@@ -84,7 +84,7 @@ void handDetector(DataWriter & websocket, float marker_size,
 		TimerScope ts(tm,"handDetector");
 
 		if(!inited){
-			camera_parameters = frames->params_.cam_matrix_;
+			camera_parameters = frames->color_params_.cam_matrix_;
 			inited = true;
 		}
 

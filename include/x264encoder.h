@@ -44,6 +44,7 @@ public:
 	x264_nal_t getNalUnit();
 	x264_t * getx264Encoder() { return encoder_; }
 	int nal_size() { return output_queue_.size(); }
+	boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::mean>> getAcc(){ return acc_; }
 
 private:
 
@@ -59,6 +60,6 @@ private:
 	boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::mean>> acc_;
 };
 
-void x262convertmp4(std::string infile, std::string outfile, bool deleteinput,boost::accumulators::accumulator_set<double, boost::accumulators::stats<boost::accumulators::tag::mean>>&);
+void x264convertmp4(std::string infile, std::string outfile, bool deleteinput,x264Encoder&);
 
 
