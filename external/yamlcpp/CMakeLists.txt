@@ -33,8 +33,8 @@ enable_testing()
 ### Project options
 ###
 ## Project stuff
-option(YAML_CPP_BUILD_TOOLS "Enable testing and parse tools" ON)
-option(YAML_CPP_BUILD_CONTRIB "Enable contrib stuff in library" ON)
+option(YAML_CPP_BUILD_TOOLS "Enable testing and parse tools" OFF)
+option(YAML_CPP_BUILD_CONTRIB "Enable contrib stuff in library" OFF)
 
 ## Build options
 # --> General
@@ -229,7 +229,7 @@ set(_INSTALL_DESTINATIONS
 ###
 ### Library
 ###
-add_library(yaml-cpp
+add_library(yaml-cppx
 	${sources}
 	${public_headers}
 	${private_headers}
@@ -238,7 +238,7 @@ add_library(yaml-cpp
 	${contrib_private_headers}
 )
 
-set_target_properties(yaml-cpp PROPERTIES
+set_target_properties(yaml-cppx PROPERTIES
 	VERSION "${YAML_CPP_VERSION}"
 	SOVERSION "${YAML_CPP_VERSION_MAJOR}.${YAML_CPP_VERSION_MINOR}"
 	PROJECT_LABEL "yaml-cpp ${LABEL_SUFFIX}"
@@ -262,7 +262,7 @@ if(MSVC)
 	endif()
 endif()
 
-install(TARGETS yaml-cpp ${_INSTALL_DESTINATIONS})
+install(TARGETS yaml-cppx ${_INSTALL_DESTINATIONS})
 install(
 	DIRECTORY ${header_directory}
 	DESTINATION ${INCLUDE_INSTALL_DIR}

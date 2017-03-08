@@ -57,7 +57,7 @@ void saveVideo(int session,
     out_color.open(name_h264file,std::ios::binary);
 	if(!out_color)
 	{
-		std::cerr << "canont save the rgb file: " << out_color << std::endl;
+		std::cerr << "canont save the rgb file: " << name_h264file << std::endl;
 	}
     x264encoder = std::make_shared<x264Encoder>(&out_color);
     x264encoder->initialize(width, height, has4channels ? false : true,
@@ -66,7 +66,7 @@ void saveVideo(int session,
     out_time.open(name_timestampfile, std::ios::binary);
 	if(!out_time)
 	{
-		std::cerr << "canont save the timestamp file: " << out_time << std::endl;
+		std::cerr << "canont save the timestamp file: " << name_timestampfile << std::endl;
 	}
 
     Json::Value root;
@@ -79,7 +79,7 @@ void saveVideo(int session,
       out_oni.open(name_depthfile, std::ios::binary);
       if(!out_oni)
       {
-      	std::cerr << "canont save the depth file: " << out_oni << std::endl;
+      	std::cerr << "canont save the depth file: " << name_depthfile << std::endl;
       }
       else
       {

@@ -12,6 +12,7 @@ set(SRC                ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 set(INCLUDE            ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 include_directories(${INCLUDE})
 
+
 find_package(OpenMP)
 if (OPENMP_FOUND)
 	set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${OpenMP_C_FLAGS}")
@@ -19,13 +20,16 @@ if (OPENMP_FOUND)
 endif()
 
 include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../external/yamlcpp ${CMAKE_CURRENT_BINARY_DIR}/yamlcppx)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../external/yamlcpp/include)
 
-set(Boost_USE_MULTITHREADED ON) 
+set(Boost_USE_MULTITHREADED ON)
 
 find_package(PkgConfig REQUIRED)
 #1.58 is the first with ASIO
-find_package(Boost 1.58 COMPONENTS random program_options REQUIRED)
+find_package(Boost 1.58 COMPONENTS random program_options filesystem system thread REQUIRED)
 link_directories(${Boost_LIBRARY_DIRS})
+link_libraries(${Boost_LIBRARIES})
 include_directories(${Boost_INCLUDE_DIRS})
 find_package(cmakego REQUIRED)
 
@@ -73,12 +77,6 @@ optlibrary(p::aruco HAS_ARUCO)
 optlibrary(p::gstreamer HAS_GSTREAMER)
 optlibrary(p::freenect2 HAS_FREENECT2)
 
-#Should be fixed in the future
-#find_library(GSTREAMER_O     NAMES gobject-2.0)
-#find_library(GSTREAMER       NAMES gstreamer-1.0)
-#find_library(GSTREAMER_A     NAMES gstapp-1.0)
-#find_library(GLIB            NAMES glib-2.0)
-#set(GSTREAMER_ALL ${GSTREAMER} ${GSTREAMER_O} ${GSTREAMER_A} ${GLIB})
 if(LINUX)
 set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES}  rt p::x11)
 else()
@@ -108,35 +106,29 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 								${SRC}/audio_detector.cpp
 								#${SRC}/end_dec.cpp
 								${SRC}/k2g.cpp
+								${SRC}/trigger.cpp
+								${SRC}/termination.cpp
         ${SRC}/param_storage.cpp
+        ${SRC}/webcam_publisher.cpp
+								${SRC}/screen_shotter.cpp
 								${SRC}/screen_grabber.cpp
+								${SRC}/video_saver.cpp
 								${SRC}/image_sender.cpp
 								${SRC}/base64.cpp
 								${SRC}/qr_creator.cpp
 								${SRC}/upload.cpp
+								${SRC}/oni_compressor.cpp
 								${SRC}/calibrator.cpp
 								${SRC}/aliver.cpp
 								${SRC}/marker_viewer.cpp
 								${SRC}/opt_parse.cpp
 								)
 
-target_link_libraries(sensor_manager 	
-	p::opencv
-	p::tinyxml2
-	p::json
-	p::zeromq
-	p::x264
-	p::ffmpeg
-	p::ffmpeg::swscale
-	p::lame
-        p::yamlnew
-	p::ffmpeg
-	p::glfw
-        p::eigen
-        p::gstreamer
-	p::portaudio
-	p::cairo
-	p::cppnetlib
+message(STATUS ${CMAKEGO_LIBRARIES})
+target_link_libraries(sensor_manager
+        ${CMAKEGO_LIBRARIES}
+        yaml-cppx
+        p::cppnetlib 
 	${PCL_LIBRARIES}
 	${BOOST_LIBRARIES} 
 	${EXTRA_LIBRARIES}
