@@ -75,34 +75,39 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
+add_library(sensor_core STATIC 
+								${SRC}/data_writer.cpp 
+								${SRC}/gstreamer_grabber.cpp
+								${SRC}/trigger.cpp
+								${SRC}/termination.cpp
+        ${SRC}/param_storage.cpp
+								${SRC}/base64.cpp
+
+
+	)
+
 add_executable(sensor_manager   ${SRC}/main.cpp 
 								${SRC}/session_manager.cpp 
 								${SRC}/face_detector.cpp
 								#${SRC}/linemod.cpp
 								#${SRC}/kinect_grabber.cpp
-								${SRC}/data_writer.cpp 
 								${SRC}/mongoose.cpp 
 								#${SRC}/x264decoder.cpp 
 								${SRC}/x264encoder.cpp
 								${SRC}/sse_handler.cpp 
 								#${SRC}/xn16zdec.cpp
 								${SRC}/hand_detector.cpp
-								${SRC}/gstreamer_grabber.cpp
 								${SRC}/opt.cpp
 								#${SRC}/gstreamer_grabber2.cpp
 								${SRC}/ide_handler.cpp
 								${SRC}/audio_detector.cpp
 								#${SRC}/end_dec.cpp
 								${SRC}/k2g.cpp
-								${SRC}/trigger.cpp
-								${SRC}/termination.cpp
-        ${SRC}/param_storage.cpp
         ${SRC}/webcam_publisher.cpp
 								${SRC}/screen_shotter.cpp
 								${SRC}/screen_grabber.cpp
 								${SRC}/video_saver.cpp
 								${SRC}/image_sender.cpp
-								${SRC}/base64.cpp
 								${SRC}/qr_creator.cpp
 								${SRC}/upload.cpp
 								${SRC}/oni_compressor.cpp
@@ -116,10 +121,23 @@ message(STATUS ${CMAKEGO_LIBRARIES})
 target_link_libraries(sensor_manager
         yaml-cppx
         p::cppnetlib 
+        sensor_core
         ${CMAKEGO_LIBRARIES}
 		${PCL_LIBRARIES}
 		${EXTRA_LIBRARIES}
 )
+
+add_executable(sensor_managertest ${SRC}/sensor_managertest.cpp ${SRC}/video_saver.cpp ${SRC}/webcam_publisher.cpp)
+
+target_link_libraries(sensor_managertest
+        yaml-cppx
+        p::cppnetlib 
+        sensor_core
+        ${CMAKEGO_LIBRARIES}
+		${PCL_LIBRARIES}
+		${EXTRA_LIBRARIES}
+)
+
 #display should be display2d
 
 
