@@ -13,3 +13,5 @@
 extern bool to_stop;
 
 void saveVideo(int session, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pc, bool del, const std::string, const int threads);
+
+void x264convertmp4(const std::string name_h264file, const std::string name_mp4file, bool del, x264Encoder & x264encoder);

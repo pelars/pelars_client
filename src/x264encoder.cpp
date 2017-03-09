@@ -47,12 +47,33 @@ void x264Encoder::initialize(const unsigned int w, const unsigned int h,
   x264_picture_alloc(&picture_in_, X264_CSP_I420, parameters_.i_width,
                      parameters_.i_height);
 
-  auto fmt = hasAlpha ? (isBGR ? PIX_FMT_BGR32 : PIX_FMT_RGB32) : (isBGR ? PIX_FMT_BGR24 : PIX_FMT_RGB24);
-  bytes_ = hasAlpha ? 4 : 3;
-	convert_context_ =
+  if(hasAlpha){
+     std::cout << "Recording Kinect2" << std::endl;
+     convert_context_ = sws_getContext(parameters_.i_width,
+                     parameters_.i_height,
+                     PIX_FMT_RGB32, 
+                     parameters_.i_width,
+                     parameters_.i_height,
+                     PIX_FMT_YUV420P,
+                     SWS_FAST_BILINEAR, NULL, NULL, NULL);
+     bytes_ = 4;
+   }
+   else
+   {
+     std::cout << "Recording Webcam" << std::endl;
+     convert_context_ = sws_getContext(parameters_.i_width,
+                     parameters_.i_height,
+                     PIX_FMT_BGR24, 
+                     parameters_.i_width,
+                     parameters_.i_height,
+                     PIX_FMT_YUV420P,
+                     SWS_FAST_BILINEAR, NULL, NULL, NULL);
+     bytes_ = 3;
+   }
+	/*convert_context_ =
 	    sws_getContext(parameters_.i_width, parameters_.i_height, fmt,
 	                   parameters_.i_width, parameters_.i_height,
-	                   PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+	                   PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);*/
 }
 
 void x264Encoder::unInitilize() {
@@ -63,6 +84,14 @@ void x264Encoder::unInitilize() {
 
 
 void x264Encoder::encodeFrame(const char *rgb_buffer) {
+
+  const uint8_t * rgb_buffer_slice[1] = {(const uint8_t *)rgb_buffer};
+  int stride[1] = { (int)bytes_ * image_w_ }; // RGB stride
+
+  //Convert the frame from RGB to YUV420
+  int slice_size = sws_scale(convert_context_, rgb_buffer_slice,
+                 stride, 0, image_h_, picture_in_.img.plane,
+                 picture_in_.img.i_stride);
 
   x264_nal_t *nals;
   int i_nals = 0;
@@ -84,7 +113,7 @@ void x264Encoder::encodeFrame(const char *rgb_buffer) {
 
   if (first_) first_ = false;
 
-  if (frame_size > 0 && onf_)
+  if (frame_size > 0)
     for (int i = 0; i < i_nals; i++) {
       onf_->write((const char *)nals[i].p_payload, nals[i].i_payload);
     }

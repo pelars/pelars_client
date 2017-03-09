@@ -20,9 +20,10 @@ inline double distance(int x1, int x2, float fx, float std_width = 185.0){
 
 #ifdef HAS_GSTREAMER
 void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shared_ptr<ImageFrame>>> pcw)
-{
+{	
 
 	synchronizer.lock();
+	TimerManager * tm = TimerManager::instance();
 	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
 	cv::FileStorage file("../../data/calibration_webcam.xml", cv::FileStorage::READ);
@@ -83,16 +84,12 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 	
 	synchronizer.unlock();
 
-	TimerManager * tm = TimerManager::instance();
-
 	while(!to_stop)
 	{	
 
 		cv::gpu::GpuMat facesBuf_gpu;
 		if(!pcw->read(color_frame))
 			continue;
-
-		TimerScope ts(tm,"faceDetector");
 
 		if(!inited){
 			auto params = color_frame->color_params_;
@@ -106,7 +103,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 			height = params.height_;
 			inited = true;
 		}
-
+		TimerScope ts(tm,"faceDetector");
 		// too slow
 		//cv::undistort(color_frame->color_, color, cam_matrix, dist);
 		color = color_frame->color_.clone();
