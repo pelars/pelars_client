@@ -19,32 +19,20 @@ if (OPENMP_FOUND)
 	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../external/yamlcpp ${CMAKE_CURRENT_BINARY_DIR}/yamlcppx)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../external/yamlcpp/include)
 
+
+#include(${CMAKE_ROOT}/Modules/FindPkgConfig.cmake)
+#find_package(PkgConfig REQUIRED)
+
+#TODO1.58 is the first with ASIO
 set(Boost_USE_MULTITHREADED ON)
+set(CMAKEGO_BOOST random program_options filesystem system thread )
+find_package(cmakego REQUIRED COMPONENTS boost json libusb lame yamlnew eigen cairo ffmpeg curl REQUIRED)
 
-find_package(PkgConfig REQUIRED)
-#1.58 is the first with ASIO
-find_package(Boost 1.58 COMPONENTS random program_options filesystem system thread REQUIRED)
-link_directories(${Boost_LIBRARY_DIRS})
-link_libraries(${Boost_LIBRARIES})
-include_directories(${Boost_INCLUDE_DIRS})
-find_package(cmakego REQUIRED)
-
+# these are optional
 usepackage(opencv2 gstreamer freenect freenect2 tinyxml2 x264 ffmpeg  portaudio x264 tinyxml2 glfw zeromq)
-
-usepackage(json libusb lame yamlnew eigen REQUIRED)
-usepackage(cairo ffmpeg curl x11 REQUIRED)
-
-#find_package(PCL 1.7 REQUIRED)
-#TODO for cmakego
-#openssl
-#websocketpp
-#cppnetlib
-#curl
-#qrencode
 
 find_package(Websocketpp REQUIRED)
 
@@ -64,6 +52,7 @@ if(CURLPP_FOUND)
 	set_property(TARGET p::curlpp PROPERTY INTERFACE_LINK_LIBRARIES ${CURLPP_LIBRARIES} p::curl)
 endif()		
 
+# this function maps the presence of a library to a macro definition in the code
 function(optlibrary NAME FLAG)
 	if(TARGET ${NAME})
 		add_definitions(-D${FLAG})
@@ -78,10 +67,9 @@ optlibrary(p::gstreamer HAS_GSTREAMER)
 optlibrary(p::freenect2 HAS_FREENECT2)
 
 if(LINUX)
-set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES}  rt p::x11)
-else()
+	set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES}  rt p::x11)
 endif()
-set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} boost_program_options boost_random)
+
 
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
@@ -126,14 +114,11 @@ add_executable(sensor_manager   ${SRC}/main.cpp
 
 message(STATUS ${CMAKEGO_LIBRARIES})
 target_link_libraries(sensor_manager
-        ${CMAKEGO_LIBRARIES}
         yaml-cppx
         p::cppnetlib 
-	${PCL_LIBRARIES}
-	${BOOST_LIBRARIES} 
-	${EXTRA_LIBRARIES}
-	#p::openssl
-	#p::qrencode
+        ${CMAKEGO_LIBRARIES}
+		${PCL_LIBRARIES}
+		${EXTRA_LIBRARIES}
 )
 #display should be display2d
 
