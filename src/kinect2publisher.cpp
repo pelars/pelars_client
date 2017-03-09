@@ -50,14 +50,15 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 
 
 		std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
+
+		k2g.get(frames->color_, frames->depth_, mode, false);
+		TimerScope ts(tm,"kinectPublisher");
+
 		frames->type_ = std::string("workspace");
 		frames->color_params_ = color_params;
 		frames->depth_params_ = depth_params;
 		frames->time_stamp_ = std::chrono::high_resolution_clock::now();
 		frames->depthmode_ = framemode;
-
-		k2g.get(frames->color_, frames->depth_, mode, false);
-		TimerScope ts(tm,"kinectPublisher");
 		
 		pc.write(frames);
 	}

@@ -46,34 +46,12 @@ void x264Encoder::initialize(const unsigned int w, const unsigned int h,
   picture_in_.img.i_csp = X264_CSP_I420;
   x264_picture_alloc(&picture_in_, X264_CSP_I420, parameters_.i_width,
                      parameters_.i_height);
-
-  if(hasAlpha){
-     std::cout << "Recording Kinect2" << std::endl;
-     convert_context_ = sws_getContext(parameters_.i_width,
-                     parameters_.i_height,
-                     PIX_FMT_RGB32, 
-                     parameters_.i_width,
-                     parameters_.i_height,
-                     PIX_FMT_YUV420P,
-                     SWS_FAST_BILINEAR, NULL, NULL, NULL);
-     bytes_ = 4;
-   }
-   else
-   {
-     std::cout << "Recording Webcam" << std::endl;
-     convert_context_ = sws_getContext(parameters_.i_width,
-                     parameters_.i_height,
-                     PIX_FMT_BGR24, 
-                     parameters_.i_width,
-                     parameters_.i_height,
-                     PIX_FMT_YUV420P,
-                     SWS_FAST_BILINEAR, NULL, NULL, NULL);
-     bytes_ = 3;
-   }
-	/*convert_context_ =
-	    sws_getContext(parameters_.i_width, parameters_.i_height, fmt,
-	                   parameters_.i_width, parameters_.i_height,
-	                   PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);*/
+auto fmt = hasAlpha ? (isBGR ? PIX_FMT_BGR32 : PIX_FMT_RGB32) : (isBGR ? PIX_FMT_BGR24 : PIX_FMT_RGB24);
+   bytes_ = hasAlpha ? 4 : 3;
+   convert_context_ =
+       sws_getContext(parameters_.i_width, parameters_.i_height, fmt,
+                      parameters_.i_width, parameters_.i_height,
+                      PIX_FMT_YUV420P, SWS_FAST_BILINEAR, NULL, NULL, NULL);
 }
 
 void x264Encoder::unInitilize() {

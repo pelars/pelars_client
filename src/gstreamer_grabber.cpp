@@ -16,7 +16,7 @@ GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id, bool h2
 	if(xpipeline == 0)
 	{
 		if(h264)
-			sprintf(buffer,"v4l2src device=/dev/video%d ! queue ! video/x-h264, width=(int)%d, height=(int)%d, fframerate=30/1 ! avdec_h264 ! videoconvert ! queue ! video/x-raw,format=BGR, width=%d,height=%d ! videoconvert ! appsink name=sink",device_id,width,height,width,height);
+			sprintf(buffer,"v4l2src device=/dev/video%d ! queue ! video/x-h264, width=(int)%d, height=(int)%d, fframerate=30/1 ! avdec_h264 ! videoconvert ! queue ! video/x-raw,format=BGR, width=%d,height=%d ! queue ! appsink name=sink",device_id,width,height,width,height);
 		else
 			sprintf(buffer,"v4l2src device=/dev/video%d ! queue ! video/x-raw,format=RGB, width=%d,height=%d ! appsink name=sink",device_id,width,height);
 		xpipeline =buffer;
@@ -36,7 +36,7 @@ GstreamerGrabber::GstreamerGrabber(int width, int height, int device_id, bool h2
     appsink = (GstAppSink*)(sink);
     g_signal_connect(pipeline, "deep-notify", G_CALLBACK(gst_object_default_deep_notify ), NULL);             
     gst_app_sink_set_emit_signals(appsink, true);
-    gst_app_sink_set_drop(appsink, false);
+    gst_app_sink_set_drop(appsink, true);
     gst_app_sink_set_max_buffers(appsink, 1);    
     gst_element_set_state(pipeline, GST_STATE_PLAYING);
     bus = gst_element_get_bus(pipeline);
