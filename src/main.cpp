@@ -217,27 +217,30 @@ int main(int argc, char * argv[])
 
 	//parameter_server.dump("pelars_config.yaml");
 	//retrieve time informations
-	TimerManager * tm = TimerManager::instance();
+	#ifdef MONITOR
 
-	TimeStatistics wstat = tm->timeStatistics("webcamPublisher");
-	TimeStatistics fstat = tm->timeStatistics("faceDetector");
-	TimeStatistics vstat = tm->timeStatistics("wsaver");
-	TimeStatistics kstat = tm->timeStatistics("kinectPublisher");
-	TimeStatistics hstat = tm->timeStatistics("handDetector");
-	TimeStatistics vkstat = tm->timeStatistics("ksaver");
+		TimerManager * tm = TimerManager::instance();
 
-	std::cout << "webcamPublisher" << std::endl;
-	std::cout << wstat.toString() << std::endl;
-	std::cout << "faceDetector" << std::endl;
-	std::cout << fstat.toString() << std::endl;
-	std::cout << "webcamSaver" << std::endl;
-	std::cout << vstat.toString() << std::endl;
-	std::cout << "kinectpublisher" << std::endl;
-	std::cout << kstat.toString() << std::endl;
-	std::cout << "handDetector" << std::endl;
-	std::cout << hstat.toString() << std::endl;
-	std::cout << "kinectSaver" << std::endl;
-	std::cout << vkstat.toString() << std::endl; 
+		TimeStatistics wstat = tm->timeStatistics("webcamPublisher");
+		TimeStatistics fstat = tm->timeStatistics("faceDetector");
+		TimeStatistics vstat = tm->timeStatistics("wsaver");
+		TimeStatistics kstat = tm->timeStatistics("kinectPublisher");
+		TimeStatistics hstat = tm->timeStatistics("handDetector");
+		TimeStatistics vkstat = tm->timeStatistics("ksaver");
+
+		std::cout << "webcamPublisher" << std::endl;
+		std::cout << wstat.toString() << std::endl;
+		std::cout << "faceDetector" << std::endl;
+		std::cout << fstat.toString() << std::endl;
+		std::cout << "webcamSaver" << std::endl;
+		std::cout << vstat.toString() << std::endl;
+		std::cout << "kinectpublisher" << std::endl;
+		std::cout << kstat.toString() << std::endl;
+		std::cout << "handDetector" << std::endl;
+		std::cout << hstat.toString() << std::endl;
+		std::cout << "kinectSaver" << std::endl;
+		std::cout << vkstat.toString() << std::endl; 
+	#endif
 
 
 	kill(0, SIGINT);

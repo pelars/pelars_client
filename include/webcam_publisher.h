@@ -10,6 +10,7 @@
 #include "param_storage.h"
 #include <json/json.h>
 
+#define OPENCV_CAP true
 
 extern bool to_stop;
 extern std::mutex synchronizer;

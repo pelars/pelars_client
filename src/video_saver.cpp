@@ -31,7 +31,10 @@ void saveVideo(int session,
   long new_seq = 0;
   long lost = 0;
 
+  #ifdef MONITOR
   TimerManager *tm = TimerManager::instance();
+  #endif
+  
   std::string name_base, name_timestampfile, name_depthfile, name_h264file,
       name_mp4file,name_jsonfile;
 
@@ -108,8 +111,10 @@ void saveVideo(int session,
   }
 
   while (!to_stop && pc->read(frames)) {
-    TimerScope ts(tm, tname.c_str());
 
+    #ifdef MONITOR
+      TimerScope ts(tm, tname.c_str());
+    #endif
     new_seq = frames->seq_number_;
 
     if (new_seq - old_seq > 1 && old_seq != 0) {

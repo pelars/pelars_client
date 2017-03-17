@@ -37,6 +37,7 @@ Parser::Parser(int argc, char ** argv):argc_(argc), argv_(argv), description_("P
             ("webcam_threads", boost::program_options::value<int>()->default_value(2), "number of threads for webcam conversion")
             ("kinect2_threads", boost::program_options::value<int>()->default_value(2), "number of threads for k2 conversion")
             ("L, video_session", "write session on screen")
+            ("monitor, m", "monitor threads time")
             ("status,j", "displays system status");
 
     boost::program_options::options_description hidden("Hidden options");

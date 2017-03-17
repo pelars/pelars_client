@@ -23,7 +23,11 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 {	
 
 	synchronizer.lock();
+
+	#ifdef MONITOR
 	TimerManager * tm = TimerManager::instance();
+	#endif
+	
 	cv::Mat calib_matrix = cv::Mat::eye(cv::Size(4, 4), CV_32F);
 
 	cv::FileStorage file("../../data/calibration_webcam.xml", cv::FileStorage::READ);
@@ -79,7 +83,7 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 		cv::namedWindow("face");
 
 	TimedSender timer(interval);
-
+	
 	cv::Mat camera_inverse = calib_matrix.inv();
 	
 	synchronizer.unlock();
@@ -103,7 +107,10 @@ void detectFaces(DataWriter & websocket, std::shared_ptr<PooledChannel<std::shar
 			height = params.height_;
 			inited = true;
 		}
-		TimerScope ts(tm,"faceDetector");
+
+		#ifdef MONITOR
+			TimerScope ts(tm,"faceDetector");
+		#endif
 		// too slow
 		//cv::undistort(color_frame->color_, color, cam_matrix, dist);
 		color = color_frame->color_.clone();

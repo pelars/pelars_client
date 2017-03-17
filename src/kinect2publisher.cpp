@@ -44,7 +44,9 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 
 	synchronizer.unlock();
 
+	#ifdef MONITOR
 	TimerManager * tm = TimerManager::instance();
+	#endif
 	
 	while(!to_stop){
 
@@ -52,7 +54,10 @@ void kinect2publisher(const K2G::Processor processor, ChannelWrapper<ImageFrame>
 		std::shared_ptr<ImageFrame> frames = std::make_shared<ImageFrame>();
 
 		k2g.get(frames->color_, frames->depth_, mode, false);
-		TimerScope ts(tm,"kinectPublisher");
+
+		#ifdef MONITOR
+			TimerScope ts(tm,"kinectPublisher");
+		#endif
 
 		frames->type_ = std::string("workspace");
 		frames->color_params_ = color_params;

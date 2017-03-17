@@ -2,8 +2,6 @@
 #include "timer_manager.h"
 #include <unistd.h>
 
-//#define OPENCV_CAP true
-
 
 //TODO:try to open a gstreamer grabber that publishes h263 stream to network
 //gst-launch-1.0 -v -e v4l2src device=/dev/video0 ! h264parse ! rtph264pay ! udpsink  host=127.0.0.1 port=5100
@@ -102,7 +100,9 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
     IplImage * frame_for_save = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
 	#endif
 
+    #ifdef MONITOR
 	TimerManager * tm = TimerManager::instance();
+	#endif
 
 	synchronizer.unlock();
 	
@@ -122,7 +122,9 @@ void webcamPublisher(int face_camera_id, ChannelWrapper<ImageFrame> & pc_webcam,
 		//image_for_save->color_ = cv::Mat(frame_for_save);
 		#endif
 
-		TimerScope ts(tm,"webcamPublisher");
+		#ifdef MONITOR
+			TimerScope ts(tm,"webcamPublisher");
+		#endif
 
 		image_for_face->type_ = std::string("people");
 		image_for_face->color_params_ = cam_params;

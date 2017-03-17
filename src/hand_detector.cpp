@@ -68,9 +68,10 @@ void handDetector(DataWriter & websocket, float marker_size,
 
 	synchronizer.unlock();
 
-
+	#ifdef MONITR
 	TimerManager * tm = TimerManager::instance();
-
+	#endif
+	
 	while(!to_stop)
 	{
 		if(c920){
@@ -81,7 +82,10 @@ void handDetector(DataWriter & websocket, float marker_size,
 			pc->read(frames);
 			color = frames->color_;
 		}
+
+		#ifdef MONITOR
 		TimerScope ts(tm,"handDetector");
+		#endif
 
 		if(!inited){
 			camera_parameters = frames->color_params_.cam_matrix_;

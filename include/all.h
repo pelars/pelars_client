@@ -28,6 +28,7 @@
 #include "screen_grabber.h"
 #include "channel_wrapper.hpp"
 #include "timer_manager.h"
+#include "config.h"
 
 
 
