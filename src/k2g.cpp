@@ -80,7 +80,7 @@ void K2G::get(cv::Mat & color_mat, cv::Mat & depth_mat, Registration mode, bool 
 		}
 		case Registration::Undistorted:
 		{
-			registration_->undistortDepth(depth,&undistorted_);
+			//registration_->undistortDepth(depth,&undistorted_);
 			// return: undistorted_ + rgb
 			//
 			// rgb_ is owened by FRAME => need clone
