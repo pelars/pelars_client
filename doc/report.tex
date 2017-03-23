@@ -1,0 +1,171 @@
+\documentclass[a4paper,notitlepage,onecolumn]{hitec}  % list options between brackets
+\usepackage[pdftex]{graphicx}              % list packages between braces
+\usepackage[colorlinks=true,linkcolor=blue]{hyperref}
+%\usepackage{bera}% optional: just to have a nice mono-spaced font
+
+%PELARS
+%Titles should be done in TRIM SEMIBOLD or FRANKLIN GOTHIC MEDIUM as fallback font. 
+%The titles should be done in all caps. 
+%The text should be done in Officiana Sans ITC Std or Calibri as fallback font.
+
+%LuaLaTex supporting OpenType fonts
+\usepackage{ifluatex}
+%\usepackage{bibtex}
+\ifluatex
+\usepackage{fontspec}
+\setmainfont{Calibri}
+\else
+%PDFLaTex we pick a Sans Serif
+\usepackage[sfdefault]{cabin}
+\usepackage[T1]{fontenc}
+%\renewcommand{\familydefault}{\sfdefault}
+\fi
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[english]{babel}
+%\usepackage[latin1]{inputenc}
+\usepackage{longtable}
+\usepackage{acro}
+\usepackage{cite}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{array}
+%\usepackage{natbib}
+\usepackage{enumerate}
+\usepackage[section]{extraplaceins}
+\usepackage{booktabs}
+\let\footruleskip\undefined
+\usepackage{fancyhdr}
+%\usepackage{apacite}
+\usepackage[strict]{changepage}
+\graphicspath{{./figures/}}
+
+\newcommand{\itemb}[1]{\item \textbf{#1}:}
+
+\input{styles}
+\input{acros}
+
+\begin{document}
+
+\title{$\vcenter{\hbox{\includegraphics{pelarslogo.png}}}$ Collector Documentation}   % type title between braces
+\author{Emanuele Ruffaldi\\
+		Giacomo Dabisias\\
+		Lorenzo Landolfi\\PERCRO, Scuola superiore S.Anna}         % type author(s) between braces
+\date{31 January 2016}    % type date between braces
+\maketitle
+\pagestyle{fancy}
+\fancyhead[]{}
+\fancyfoot[]{}
+\fancyfoot[C] {{$\vcenter{\hbox{\includegraphics{pelarslogo.png}}}$}}
+%\fancyhead[CO,CE]{TECHOPT Experiment}
+\fancyfoot[RO, LE] {\thepage}
+
+%\begin{abstract}
+%\end{abstract}
+
+\tableofcontents 
+
+%\printacronyms[include-classes=acro,name=Acronyms]
+
+
+\section{Introduction}
+Document TODOs: complete components, maybe interconnection diagram, add command line options, add data rates, cite the other paired document about the server.
+
+This document provides a detailed description of the PELARS collector, discussing the different components. At high level the collector, as from the name, employs a series of interface component that acquire data, then transform them into JSON messages that are stored locally and sent to the server if the connection is available. Each execution of the collector requires (or creates) a new Session of the server to which data is related.
+
+For the case of Computer Vision processing tasks are further applied for extracting features.
+
+These are the functionalities provided:
+
+\begin{itemize}
+	\item Face Recognition
+	\item Hand Tracking via Markers
+	\item Websocket server for receiving data
+	\item Keyboard input
+	\item Taking pictures with the camera
+	\item Taking snapshots from the computer screen
+	\item Accessing Web streams as in SSE format
+	\item Acquire audio and verify level
+	\item Offline storage of Session
+	\item Diagnostics of status
+\end{itemize}
+
+All these functionalities have been organized in a multithreaded reactive structure in which the data sources react to external event and activate additional processing events.
+
+The resulting stream of JSON messages and media content toward the Server is highly associated to the above functionalities. In general the Collector-Server communication has a REST based interface for managing the Session and a Websocket connection for the streaming of JSON and media.
+
+In the following sections a recap of the components of the Collector is given together with some estimation of networking cost.
+
+\section{Components}
+
+This section presents the components of the systems and their interactions. 
+
+\subsection{Camera Drivers}
+The camera drivers allow to access the Kinect One and the C920 Webcam. While accessing cameras is typically trivial it is work describing what happens in this two cases.
+
+The Kinect One (USB3) is based on libfreenect2\footnote{\url{https://github.com/OpenKinect/libfreenect2}} for providing a RGB-D stream. Native resolutions are Full HD for color and 584x412 for depth, meaning that a RGBD image needs to be in one of these two resolutions depending on the rectification. In terms of processing the color is based on a JPEG image, while the depth is encoded and requires a good amount of CPU.
+
+The C920 Logitech webcam (USB2) provides a compressed h264 stream in addition to the audio channel. The h264 stream is the only way to obtain a low-latency Full HD stream. Internally it is decoded via the gstreamer library. 
+
+The output of both cameras is an image (RGB/RGBD) paired with a Camera Info data structure that provides intrinsics and distortion. In both cases the components run at 30Hz.
+
+
+\subsection{Calibration}
+
+This is a setup-time component that computes the relative transformation between the cameras. This operation is performed by having a Fiducial Marker visible by both cameras. The objective is to provide a table reference frame whose origin is located in the middle of the border of the table fartest to the cameras. The reference frame has the Z up and the X axis oriented from the border of the table to the inner part of the table.
+
+After the calibration is possible to associate a local frame to every camera, and to transform poses from camera to table space.
+
+Without calibration the table should not be able to work. Also it could be USEFUL to have a verification of the calibration in a form of a plot that displays over the image from the two cameras the origin such that to verify that the cameras are still calibrated. 
+
+\subsection{Face Tracker}
+
+\begin{itemize}
+	\item Input: image
+	\item Output: array of faces with rectangle in image space
+\end{itemize}
+
+The face tracker is based on the OpenCV face tracker implemented as a Haar CASCADE \cite{viola2004robust}. This CASCADE tracker uses multiscale processing for obtaining rectangles of faces in the scene with associated weight. Each image is a rectangle in the image plate. The GPU version uses CUDA, while the CPU one uses TBB. The CASCADE classifier internally uses a set of edge, line and center-surround features organized at multiple levels.
+
+The resulting rectangles in image space can be transformed into a 3D pose in the camera frame for the purpose of obtaining a world frame pose. 
+
+For the future it could be interesting to investigate other types of face/head trackers for obtaining orientation indication. In addition the rectangle could be used for blurring the acquired image.
+
+%#Classifier: haarcascade_frontalface_alt2
+
+\subsection{Hand Tracker}
+
+\begin{itemize}
+	\item Input: image
+	\item Output: array of markers found with identifier and pose
+\end{itemize}
+
+The hand tracked is based on the use of Augmented Reality Fiducial Markers \cite{Aruco2014}. These markers are placed on the wrist of the students attached to wristbands, and they allow to provide the pose of the student wrt the camera, and then, via calibration to the world frame.
+
+\subsection{IDE Interface}
+
+The PELARS Arduino IDE is a specialized version of the Arduino Talkoo IDE that logs every interaction with the blocks and sends them to a WebSocket. 
+
+\subsection{Audio Estimator}
+
+\subsection{Particle Handler}
+
+\subsection{Keyboard Handler}
+
+\subsection{Snapshot Taker}
+
+\subsection{Session Manager}
+
+The session manager is the core element of the Collector. This component opens, if possible, a connection to the remote server, and activates all the services. If the connection is not available the system is considered offline.
+
+The session manager receives all the JSON messages from the other components, stores them, and, if the session is not offline sends them to the network.
+
+\subsection{Offline Uploader}
+
+
+
+\bibliographystyle{alpha}
+\bibliography{report}
+
+
+\end{document}}

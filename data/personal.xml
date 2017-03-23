@@ -1,0 +1,9 @@
+<Root>
+	<name>test_name</name>
+	<email>test@email.com</email>
+	<affiliation>test_affiliation</affiliation>
+	<institution_name>test_institution</institution_name>
+	<institution_address>test_address</institution_address>
+	<namespace>test_country_name</namespace>
+	<password>testpwd</password>
+</Root>
